@@ -16,7 +16,8 @@ import type { Vendor, Product } from "@/lib/types";
 import { formatNaira, getInitials } from "@/lib/format";
 import { KovaHeader } from "./KovaHeader";
 import { KovaFooter } from "./KovaFooter";
-import { ChatDrawer } from "./ChatDrawer";
+import { DownloadChatModal } from "./DownloadChatModal";
+import { RateVendorModal } from "./RateVendorModal";
 import { UserProfileModal } from "./UserProfileModal";
 
 interface ProductDetailClientProps {
@@ -55,8 +56,13 @@ export function ProductDetailClient({
   unavailableReason,
 }: ProductDetailClientProps) {
   const searchParams = useSearchParams();
-  const [chatOpen, setChatOpen] = useState(false);
+  const [chatPromptOpen, setChatPromptOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [rateOpen, setRateOpen] = useState(false);
+  const [liveRating, setLiveRating] = useState(vendor.rating);
+  const [liveRatingCount, setLiveRatingCount] = useState(
+    vendor.ratingCount ?? 120
+  );
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [readMoreDesc, setReadMoreDesc] = useState(false);
@@ -66,9 +72,7 @@ export function ProductDetailClient({
   );
 
   const qs = searchParams.toString();
-  const backHref = qs
-    ? `/store/${encodeURIComponent(vendor.username)}?${qs}`
-    : `/store/${encodeURIComponent(vendor.username)}`;
+  const backHref = qs ? `/?${qs}` : `/`;
 
   const checkoutHref = selectedOption
     ? `/checkout/${product.id}?option=${encodeURIComponent(selectedOption)}`
@@ -113,7 +117,6 @@ export function ProductDetailClient({
 
       <main id="main" className="ref-detail-page">
         <div className="ref-detail-shell">
-          {/* Hero Media Area (Full-bleed on Mobile like Images 1 & 2; Editorial Left Column on Desktop) */}
           <div
             className={`ref-detail-hero ${
               expanded ? "ref-detail-hero--expanded" : ""
@@ -141,7 +144,6 @@ export function ProductDetailClient({
             )}
           </div>
 
-          {/* White Sheet Details Panel (Exact match to Images 1 & 2) */}
           <div className="ref-detail-sheet">
             <div className="ref-detail-sheet__inner">
               <button
@@ -175,32 +177,56 @@ export function ProductDetailClient({
                   </div>
                 </div>
 
-                {/* Clickable Seller Avatar & Rating */}
-                <button
-                  type="button"
-                  className="ref-seller-badge-btn"
-                  onClick={() => setProfileOpen(true)}
-                  title={`View ${vendor.fullName}'s profile`}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "0.32rem",
+                    flex: "none",
+                  }}
                 >
-                  <div className="ref-avatar ref-avatar--sm">
-                    <div className="ref-avatar__circle" style={{ fontSize: "0.95rem" }}>
-                      {vendor.avatarUrl ? (
-                        <img src={vendor.avatarUrl} alt={vendor.fullName} />
-                      ) : (
-                        getInitials(vendor.fullName)
+                  <button
+                    type="button"
+                    className="ref-seller-badge-btn"
+                    onClick={() => setProfileOpen(true)}
+                    title={`View ${vendor.fullName}'s profile`}
+                  >
+                    <div className="ref-avatar ref-avatar--sm">
+                      <div
+                        className="ref-avatar__circle"
+                        style={{ fontSize: "0.95rem" }}
+                      >
+                        {vendor.avatarUrl ? (
+                          <img src={vendor.avatarUrl} alt={vendor.fullName} />
+                        ) : (
+                          getInitials(vendor.fullName)
+                        )}
+                      </div>
+                      {vendor.verificationStatus === "verified" && (
+                        <span className="ref-verified-seal">
+                          <VerifiedSealSmall />
+                        </span>
                       )}
                     </div>
-                    {vendor.verificationStatus === "verified" && (
-                      <span className="ref-verified-seal">
-                        <VerifiedSealSmall />
-                      </span>
-                    )}
-                  </div>
-                  <span className="ref-seller-rating">
-                    {vendor.rating.toFixed(1)}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setRateOpen(true)}
+                    className="ref-seller-rating"
+                    style={{
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      cursor: "pointer",
+                    }}
+                    title="Rate this seller"
+                  >
+                    {liveRating.toFixed(1)}
                     <Star size={14} fill="#FACC15" color="#FACC15" />
-                  </span>
-                </button>
+                  </button>
+                </div>
               </div>
 
               {!effectiveAvailable && (
@@ -212,7 +238,7 @@ export function ProductDetailClient({
                     background: "var(--danger-soft)",
                     color: "var(--danger)",
                     fontSize: "0.86rem",
-                    fontWeight: 600,
+                    fontWeight: 500,
                   }}
                 >
                   {unavailableReason ||
@@ -220,7 +246,6 @@ export function ProductDetailClient({
                 </div>
               )}
 
-              {/* Make Payment CTA */}
               {effectiveAvailable ? (
                 <Link href={checkoutHref} className="ref-make-payment-btn">
                   Make Payment
@@ -235,7 +260,6 @@ export function ProductDetailClient({
                 </button>
               )}
 
-              {/* Expanded Details matching Reference Image 1 */}
               {expanded && (
                 <div>
                   <div className="ref-fees-row">
@@ -304,7 +328,7 @@ export function ProductDetailClient({
                   <div
                     style={{
                       display: "flex",
-                      gap: "0.65rem",
+                      gap: "0.6rem",
                       marginTop: "1.25rem",
                       flexWrap: "wrap",
                     }}
@@ -312,8 +336,8 @@ export function ProductDetailClient({
                     <button
                       type="button"
                       className="btn btn--outline btn--sm"
-                      style={{ flex: 1 }}
-                      onClick={() => setChatOpen(true)}
+                      style={{ flex: 1, fontWeight: 500 }}
+                      onClick={() => setChatPromptOpen(true)}
                     >
                       <MessageCircle size={15} />
                       Chat with Seller
@@ -321,6 +345,16 @@ export function ProductDetailClient({
                     <button
                       type="button"
                       className="btn btn--outline btn--sm"
+                      style={{ fontWeight: 500 }}
+                      onClick={() => setRateOpen(true)}
+                    >
+                      <Star size={15} fill="#FACC15" color="#FACC15" />
+                      Rate Seller
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--outline btn--sm"
+                      style={{ fontWeight: 500 }}
                       onClick={handleShareProduct}
                     >
                       {copied ? (
@@ -340,7 +374,6 @@ export function ProductDetailClient({
               )}
             </div>
 
-            {/* Bottom Mint Bar matching Reference Image 2 */}
             <button
               type="button"
               className="ref-view-more-bar"
@@ -358,14 +391,28 @@ export function ProductDetailClient({
         open={profileOpen}
         onClose={() => setProfileOpen(false)}
         vendor={vendor}
-        onStartChat={() => setChatOpen(true)}
+        rating={liveRating}
+        onStartChat={() => setChatPromptOpen(true)}
+        onRateUser={() => setRateOpen(true)}
       />
 
-      <ChatDrawer
-        open={chatOpen}
-        onClose={() => setChatOpen(false)}
+      <DownloadChatModal
+        open={chatPromptOpen}
+        onClose={() => setChatPromptOpen(false)}
         vendor={vendor}
         product={product}
+      />
+
+      <RateVendorModal
+        open={rateOpen}
+        onClose={() => setRateOpen(false)}
+        vendor={vendor}
+        currentRating={liveRating}
+        currentRatingCount={liveRatingCount}
+        onRated={(nextRating, nextCount) => {
+          setLiveRating(nextRating);
+          setLiveRatingCount(nextCount);
+        }}
       />
     </>
   );

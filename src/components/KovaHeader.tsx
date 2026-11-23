@@ -51,9 +51,6 @@ export function KovaHeader(_props: KovaHeaderProps) {
           <Link className="nav__link" href="/">
             Storefront
           </Link>
-          <Link className="nav__link" href="/store/Freddy">
-            @Freddy
-          </Link>
           <Link
             className="nav__link"
             href="/account/receipts"
@@ -123,13 +120,6 @@ export function KovaHeader(_props: KovaHeaderProps) {
                 onClick={() => setMobileOpen(false)}
               >
                 Storefront
-              </Link>
-              <Link
-                className="mobile-drawer__link"
-                href="/store/Freddy"
-                onClick={() => setMobileOpen(false)}
-              >
-                @Freddy Storefront
               </Link>
               <Link
                 className="mobile-drawer__link"

@@ -11,18 +11,24 @@ interface UserProfileModalProps {
   open: boolean;
   onClose: () => void;
   vendor: Vendor;
+  rating?: number;
   listingsCount?: number;
   onStartChat?: () => void;
+  onRateUser?: () => void;
 }
 
 export function UserProfileModal({
   open,
   onClose,
   vendor,
+  rating,
   listingsCount,
   onStartChat,
+  onRateUser,
 }: UserProfileModalProps) {
   if (!open) return null;
+
+  const displayRating = rating ?? vendor.rating;
 
   return (
     <div
@@ -77,7 +83,6 @@ export function UserProfileModal({
                 color: "#fff",
                 display: "grid",
                 placeItems: "center",
-                fontFamily: "var(--font-display)",
                 fontWeight: 600,
                 fontSize: "1.3rem",
               }}
@@ -101,7 +106,7 @@ export function UserProfileModal({
                   width: 24,
                   height: 24,
                   borderRadius: "50%",
-                  background: "#2563eb",
+                  background: "#1d9bf0",
                   color: "#fff",
                   display: "grid",
                   placeItems: "center",
@@ -117,7 +122,7 @@ export function UserProfileModal({
             <h2 className="display display--sm" style={{ color: "var(--ink-strong)" }}>
               @{vendor.username}
             </h2>
-            <div style={{ color: "var(--muted)", fontWeight: 600, fontSize: "0.95rem" }}>
+            <div style={{ color: "var(--muted)", fontWeight: 500, fontSize: "0.94rem" }}>
               {vendor.fullName} · {vendor.role}
             </div>
             <div style={{ marginTop: "0.4rem" }}>
@@ -133,7 +138,7 @@ export function UserProfileModal({
             gap: "0.5rem",
             textAlign: "center",
             padding: "0.9rem 0.5rem",
-            background: "var(--paper)",
+            background: "var(--paper-subtle)",
             borderRadius: 12,
             border: "1px solid var(--line)",
             marginBlock: "1.25rem",
@@ -143,7 +148,7 @@ export function UserProfileModal({
             <dd style={{ margin: 0, fontWeight: 600, fontSize: "1.1rem" }}>
               {listingsCount ?? vendor.stats.posts}
             </dd>
-            <dt style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Posts</dt>
+            <dt style={{ fontSize: "0.78rem", color: "var(--muted)" }}>Posts</dt>
           </div>
           <div>
             <dd style={{ margin: 0, fontWeight: 600, fontSize: "1.1rem" }}>
@@ -151,33 +156,54 @@ export function UserProfileModal({
                 ? `${(vendor.stats.followers / 1000).toFixed(0)}k`
                 : vendor.stats.followers}
             </dd>
-            <dt style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Followers</dt>
+            <dt style={{ fontSize: "0.78rem", color: "var(--muted)" }}>Followers</dt>
           </div>
           <div>
             <dd style={{ margin: 0, fontWeight: 600, fontSize: "1.1rem" }}>
               {vendor.stats.deals}
             </dd>
-            <dt style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Deals</dt>
+            <dt style={{ fontSize: "0.78rem", color: "var(--muted)" }}>Deals</dt>
           </div>
           <div>
-            <dd
-              style={{
-                margin: 0,
-                fontWeight: 600,
-                fontSize: "1.1rem",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 3,
+            <button
+              type="button"
+              onClick={() => {
+                if (onRateUser) {
+                  onClose();
+                  onRateUser();
+                }
               }}
+              style={{
+                background: "none",
+                border: "none",
+                padding: 0,
+                cursor: onRateUser ? "pointer" : "default",
+                width: "100%",
+              }}
+              title="Rate this user"
             >
-              {vendor.rating.toFixed(1)}
-              <Star size={14} fill="#f59e0b" color="#f59e0b" />
-            </dd>
-            <dt style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Rating</dt>
+              <dd
+                style={{
+                  margin: 0,
+                  fontWeight: 600,
+                  fontSize: "1.1rem",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 3,
+                  color: "var(--ink-strong)",
+                }}
+              >
+                {displayRating.toFixed(1)}
+                <Star size={14} fill="#FACC15" color="#FACC15" />
+              </dd>
+              <dt style={{ fontSize: "0.78rem", color: "var(--brand)" }}>
+                Rate
+              </dt>
+            </button>
           </div>
         </dl>
 
-        <p style={{ color: "var(--ink-soft)", fontSize: "0.94rem", margin: "0 0 1rem" }}>
+        <p style={{ color: "var(--ink-soft)", fontSize: "0.93rem", margin: "0 0 1rem" }}>
           {vendor.bio}
         </p>
 
@@ -201,25 +227,39 @@ export function UserProfileModal({
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: "0.65rem", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
           {onStartChat && (
             <button
               type="button"
               className="btn btn--brand btn--sm"
-              style={{ flex: 1 }}
+              style={{ flex: 1, fontWeight: 500 }}
               onClick={() => {
                 onClose();
                 onStartChat();
               }}
             >
               <MessageCircle size={15} />
-              Message Vendor
+              Message
+            </button>
+          )}
+          {onRateUser && (
+            <button
+              type="button"
+              className="btn btn--outline btn--sm"
+              style={{ flex: 1, fontWeight: 500 }}
+              onClick={() => {
+                onClose();
+                onRateUser();
+              }}
+            >
+              <Star size={15} fill="#FACC15" color="#FACC15" />
+              Rate User
             </button>
           )}
           <Link
-            href={`/store/${encodeURIComponent(vendor.username)}`}
+            href="/"
             className="btn btn--outline btn--sm"
-            style={{ flex: 1 }}
+            style={{ width: "100%", fontWeight: 500 }}
             onClick={onClose}
           >
             <Store size={15} />
@@ -230,4 +270,3 @@ export function UserProfileModal({
     </div>
   );
 }
-

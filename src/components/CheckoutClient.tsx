@@ -218,7 +218,7 @@ export function CheckoutClient({
               <h3>Sorry, this product is currently unavailable.</h3>
               <p>It may have just been purchased or reserved by another buyer.</p>
               <Link
-                href={`/store/${vendor.username}`}
+                href="/"
                 className="btn btn--brand btn--sm"
               >
                 Browse Other Products

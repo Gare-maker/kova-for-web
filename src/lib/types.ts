@@ -19,6 +19,7 @@ export interface Vendor {
   verificationStatus: VerificationStatus;
   eligible: boolean;
   rating: number;
+  ratingCount: number;
   stats: {
     posts: number;
     followers: number;
@@ -178,10 +179,20 @@ export interface ChatMessage {
   createdAt: string;
 }
 
+export interface VendorRating {
+  id: string;
+  vendorId: string;
+  stars: number;
+  reviewerName: string;
+  comment: string;
+  createdAt: string;
+}
+
 export interface KovaDatabase {
   vendors: Vendor[];
   products: Product[];
   users: UserAccount[];
+  ratings: VendorRating[];
   reservations: Reservation[];
   orders: Order[];
   receipts: Receipt[];

@@ -268,7 +268,7 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
                 re-downloads.
               </span>
               <Link
-                href={`/store/${receipt.vendorUsername}`}
+                href="/"
                 className="btn btn--outline btn--sm"
               >
                 <Store size={15} />

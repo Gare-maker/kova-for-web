@@ -14,7 +14,8 @@ import type { Vendor, Product } from "@/lib/types";
 import { formatNaira, getInitials } from "@/lib/format";
 import { KovaHeader, getAppStoreUrl } from "./KovaHeader";
 import { KovaFooter } from "./KovaFooter";
-import { ChatDrawer } from "./ChatDrawer";
+import { DownloadChatModal } from "./DownloadChatModal";
+import { RateVendorModal } from "./RateVendorModal";
 import { UserProfileModal } from "./UserProfileModal";
 
 export interface StorefrontProduct extends Product {
@@ -68,8 +69,13 @@ export function StorefrontClient({
     searchParams.get("category") ?? "All"
   );
   const [showFilters, setShowFilters] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
+  const [chatPromptOpen, setChatPromptOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [rateOpen, setRateOpen] = useState(false);
+  const [liveRating, setLiveRating] = useState(vendor.rating);
+  const [liveRatingCount, setLiveRatingCount] = useState(
+    vendor.ratingCount ?? 120
+  );
 
   const categories = useMemo(() => {
     const set = new Set<string>(["All"]);
@@ -115,7 +121,6 @@ export function StorefrontClient({
       <KovaHeader />
 
       <main id="main" className="ref-storefront">
-        {/* Exact Reference Profile & Stats Header */}
         <section className="ref-profile-wrap" aria-labelledby="vendor-handle">
           <div className="container">
             <div className="ref-profile-header">
@@ -152,7 +157,8 @@ export function StorefrontClient({
                 <button
                   type="button"
                   className="btn btn--outline btn--sm ref-chat-desktop-btn"
-                  onClick={() => setChatOpen(true)}
+                  style={{ fontWeight: 500 }}
+                  onClick={() => setChatPromptOpen(true)}
                 >
                   <MessageCircle size={15} />
                   Message
@@ -186,22 +192,34 @@ export function StorefrontClient({
                 <dt className="ref-stat-label">Deals</dt>
               </div>
               <div>
-                <dd className="ref-stat-val">
-                  {vendor.rating.toFixed(1)}
-                  <Star
-                    size={17}
-                    fill="#FACC15"
-                    color="#FACC15"
-                    aria-hidden="true"
-                  />
-                </dd>
-                <dt className="ref-stat-label">Rating</dt>
+                <button
+                  type="button"
+                  onClick={() => setRateOpen(true)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    width: "100%",
+                  }}
+                  title="Tap to rate this user"
+                >
+                  <dd className="ref-stat-val">
+                    {liveRating.toFixed(1)}
+                    <Star
+                      size={17}
+                      fill="#FACC15"
+                      color="#FACC15"
+                      aria-hidden="true"
+                    />
+                  </dd>
+                  <dt className="ref-stat-label">Rating</dt>
+                </button>
               </div>
             </dl>
           </div>
         </section>
 
-        {/* Rounded Pill Search Bar & Listing Grid */}
         <section className="container ref-search-section">
           <div className="ref-search-pill">
             <Search size={19} color="#52525B" aria-hidden="true" />
@@ -248,7 +266,7 @@ export function StorefrontClient({
             <div className="empty-state">
               <ShoppingBag size={30} style={{ marginInline: "auto" }} />
               <h3>This vendor hasn&apos;t listed any products yet.</h3>
-              <p>Check back soon or message the vendor directly.</p>
+              <p>Check back soon or message the vendor on the Kova app.</p>
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="empty-state">
@@ -266,7 +284,7 @@ export function StorefrontClient({
                     background: "none",
                     border: "none",
                     color: "var(--brand)",
-                    fontWeight: 700,
+                    fontWeight: 600,
                     cursor: "pointer",
                     textDecoration: "underline",
                   }}
@@ -332,14 +350,28 @@ export function StorefrontClient({
         open={profileOpen}
         onClose={() => setProfileOpen(false)}
         vendor={vendor}
-        listingsCount={products.length}
-        onStartChat={() => setChatOpen(true)}
+        rating={liveRating}
+        listingsCount={vendor.stats.posts}
+        onStartChat={() => setChatPromptOpen(true)}
+        onRateUser={() => setRateOpen(true)}
       />
 
-      <ChatDrawer
-        open={chatOpen}
-        onClose={() => setChatOpen(false)}
+      <DownloadChatModal
+        open={chatPromptOpen}
+        onClose={() => setChatPromptOpen(false)}
         vendor={vendor}
+      />
+
+      <RateVendorModal
+        open={rateOpen}
+        onClose={() => setRateOpen(false)}
+        vendor={vendor}
+        currentRating={liveRating}
+        currentRatingCount={liveRatingCount}
+        onRated={(nextRating, nextCount) => {
+          setLiveRating(nextRating);
+          setLiveRatingCount(nextCount);
+        }}
       />
     </>
   );

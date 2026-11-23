@@ -8,6 +8,7 @@ import {
   Order,
   Receipt,
   UserAccount,
+  VendorRating,
   VendorNotification,
   ChatConversation,
   ChatMessage,
@@ -34,31 +35,13 @@ function createSeedDatabase(): KovaDatabase {
       verificationStatus: "verified",
       eligible: true,
       rating: 4.5,
+      ratingCount: 120,
       stats: {
         posts: 67,
         followers: 2000,
         deals: 500,
       },
       memberSince: "2024",
-    },
-    {
-      id: "01a1813d-0eaa-71a8-8991-4f84a10c2984",
-      username: "Freddy",
-      fullName: "Fred Kamsy",
-      role: "Agent & Verified Vendor",
-      avatarUrl:
-        "https://minio.kovadml.com/media/images/01a1813d-0eaa-71a8-8991-4f84a10c2984/AVATAR/01a1813d-0eaa-71a8-8991-4f84a10c2984/01a1d0a5-e455-7219-a7ee-d55517ec3555",
-      location: "Auchi, Edo State",
-      bio: "Campus essentials, study furniture, apartments, and verified student housing items around Auchi.",
-      verificationStatus: "verified",
-      eligible: true,
-      rating: 4.5,
-      stats: {
-        posts: 18,
-        followers: 420,
-        deals: 64,
-      },
-      memberSince: "2025",
     },
   ];
 
@@ -204,96 +187,24 @@ function createSeedDatabase(): KovaDatabase {
       createdAt: now,
       updatedAt: now,
     },
+  ];
+
+  const ratings: VendorRating[] = [
     {
-      id: "freddy-flat-01",
-      vendorId: "01a1813d-0eaa-71a8-8991-4f84a10c2984",
-      name: "2 bedroom flat, for sale",
-      description:
-        "Durable, stylish, and perfect for any family or student group. Built with quality finishes, modern glass facade, and spacious compound parking in Auchi.",
-      price: 120000,
-      pricePeriod: "Per year",
-      deliveryFee: 0,
-      waybillLabel: "Free waybill",
-      inspectionLabel: "Free",
-      agentFee: 17000,
-      condition: "New",
-      category: "Apartments",
-      location: "Sabo, Auchi, Edo State",
-      images: ["/listings/flat-exterior.jpg"],
-      isVideo: true,
-      quantity: 2,
-      status: "approved",
-      availability: "available",
+      id: "rat_seed_1",
+      vendorId: "vendor-micheal-01",
+      stars: 5,
+      reviewerName: "Blessing O.",
+      comment: "Very smooth inspection and transparent payment process.",
       createdAt: now,
-      updatedAt: now,
     },
     {
-      id: "freddy-desk-02",
-      vendorId: "01a1813d-0eaa-71a8-8991-4f84a10c2984",
-      name: "Nordic oak study desk (120cm)",
-      description:
-        "Durable, stylish, and perfect for any bedroom. Built with quality wood and a smooth finish to provide both comfort and elegance.",
-      price: 35000,
-      deliveryFee: 0,
-      waybillLabel: "Free waybill",
-      inspectionLabel: "Free",
-      options: ["Natural Oak", "Walnut"],
-      condition: "New",
-      category: "Furniture",
-      location: "Auchi, Edo State",
-      images: ["/listings/study-desk.jpg"],
-      isVideo: false,
-      quantity: 4,
-      status: "approved",
-      availability: "available",
+      id: "rat_seed_2",
+      vendorId: "vendor-micheal-01",
+      stars: 4,
+      reviewerName: "Samuel E.",
+      comment: "Clean apartment, exactly as shown in the listing photos.",
       createdAt: now,
-      updatedAt: now,
-    },
-    {
-      id: "freddy-living-03",
-      vendorId: "01a1813d-0eaa-71a8-8991-4f84a10c2984",
-      name: "Two bedroom flat, for rent",
-      description:
-        "Sunlit two bedroom apartment with wooden dining area, serene environment, and constant water supply.",
-      price: 120000,
-      pricePeriod: "Per year",
-      deliveryFee: 0,
-      waybillLabel: "Free waybill",
-      inspectionLabel: "Free",
-      agentFee: 17000,
-      condition: "New",
-      category: "Apartments",
-      location: "Sabo, Auchi, Edo State",
-      images: ["/listings/living-room-cozy.jpg"],
-      isVideo: true,
-      quantity: 2,
-      status: "approved",
-      availability: "available",
-      createdAt: now,
-      updatedAt: now,
-    },
-    {
-      id: "freddy-bedroom-04",
-      vendorId: "01a1813d-0eaa-71a8-8991-4f84a10c2984",
-      name: "Furnished self-contained room",
-      description:
-        "Clean furnished self-contained apartment with bed frame, wardrobe, and study space near Auchi Polytechnic.",
-      price: 85000,
-      pricePeriod: "Per year",
-      deliveryFee: 0,
-      waybillLabel: "Free waybill",
-      inspectionLabel: "Free",
-      agentFee: 10000,
-      condition: "Like New",
-      category: "Apartments",
-      location: "Auchi, Edo State",
-      images: ["/listings/bedroom-suite.jpg"],
-      isVideo: false,
-      quantity: 3,
-      status: "approved",
-      availability: "available",
-      createdAt: now,
-      updatedAt: now,
     },
   ];
 
@@ -301,6 +212,7 @@ function createSeedDatabase(): KovaDatabase {
     vendors,
     products,
     users: [],
+    ratings,
     reservations: [],
     orders: [],
     receipts: [],
@@ -323,6 +235,7 @@ function ensureDbFile(): KovaDatabase {
     const raw = fs.readFileSync(DB_PATH, "utf8");
     const parsed = JSON.parse(raw) as KovaDatabase;
     if (!Array.isArray(parsed.users)) parsed.users = [];
+    if (!Array.isArray(parsed.ratings)) parsed.ratings = [];
     return parsed;
   } catch {
     const seed = createSeedDatabase();
@@ -796,6 +709,49 @@ export function updateVendorVerification(
   vendor.verificationStatus = status;
   writeDb(db);
   return vendor;
+}
+
+export function getVendorRatings(vendorId: string): VendorRating[] {
+  const db = readDb();
+  return db.ratings
+    .filter((r) => r.vendorId === vendorId)
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+}
+
+export function addVendorRating(params: {
+  vendorId: string;
+  stars: number;
+  reviewerName: string;
+  comment: string;
+}): { rating: number; ratingCount: number; review: VendorRating } | null {
+  const db = readDb();
+  const vendor = db.vendors.find((v) => v.id === params.vendorId);
+  if (!vendor) return null;
+
+  const clamped = Math.min(5, Math.max(1, Math.round(params.stars)));
+  const prevCount = vendor.ratingCount || 1;
+  const totalScore = vendor.rating * prevCount + clamped;
+  const nextCount = prevCount + 1;
+  const nextAverage = Math.round((totalScore / nextCount) * 10) / 10;
+
+  vendor.rating = nextAverage;
+  vendor.ratingCount = nextCount;
+
+  const review: VendorRating = {
+    id: `rat_${crypto.randomUUID()}`,
+    vendorId: vendor.id,
+    stars: clamped,
+    reviewerName: params.reviewerName.trim() || "Verified Visitor",
+    comment: params.comment.trim(),
+    createdAt: new Date().toISOString(),
+  };
+
+  db.ratings.unshift(review);
+  writeDb(db);
+  return { rating: vendor.rating, ratingCount: vendor.ratingCount, review };
 }
 
 export function toggleProductAvailability(

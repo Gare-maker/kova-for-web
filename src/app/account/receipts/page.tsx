@@ -204,7 +204,7 @@ export default function AccountReceiptsPage() {
                 Once you complete a verified Paystack purchase, your receipt will
                 be saved here permanently.
               </p>
-              <Link href="/store/Freddy" className="btn btn--brand btn--sm">
+              <Link href="/" className="btn btn--brand btn--sm">
                 Browse Products
               </Link>
             </div>
