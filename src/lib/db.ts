@@ -1,4 +1,5 @@
 import fs from "fs";
+import os from "os";
 import path from "path";
 import crypto from "crypto";
 import {
@@ -17,9 +18,15 @@ import {
 } from "./types";
 import { calculateCommission } from "./format";
 
-const DATA_DIR = path.join(process.cwd(), ".data");
+const DATA_DIR = process.env.VERCEL
+  ? path.join(os.tmpdir(), "kova-data")
+  : path.join(process.cwd(), ".data");
 const DB_PATH = path.join(DATA_DIR, "kova-db.json");
 const RESERVATION_TTL_MS = 15 * 60 * 1000; // 15 minutes
+
+const globalForDb = globalThis as unknown as {
+  __kovaMemoryDb?: KovaDatabase;
+};
 
 function createSeedDatabase(): KovaDatabase {
   const now = new Date().toISOString();
@@ -223,24 +230,27 @@ function createSeedDatabase(): KovaDatabase {
 }
 
 function ensureDbFile(): KovaDatabase {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-  if (!fs.existsSync(DB_PATH)) {
-    const seed = createSeedDatabase();
-    fs.writeFileSync(DB_PATH, JSON.stringify(seed, null, 2), "utf8");
-    return seed;
-  }
   try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(DB_PATH)) {
+      const seed = globalForDb.__kovaMemoryDb ?? createSeedDatabase();
+      globalForDb.__kovaMemoryDb = seed;
+      fs.writeFileSync(DB_PATH, JSON.stringify(seed, null, 2), "utf8");
+      return seed;
+    }
     const raw = fs.readFileSync(DB_PATH, "utf8");
     const parsed = JSON.parse(raw) as KovaDatabase;
     if (!Array.isArray(parsed.users)) parsed.users = [];
     if (!Array.isArray(parsed.ratings)) parsed.ratings = [];
+    globalForDb.__kovaMemoryDb = parsed;
     return parsed;
   } catch {
-    const seed = createSeedDatabase();
-    fs.writeFileSync(DB_PATH, JSON.stringify(seed, null, 2), "utf8");
-    return seed;
+    if (!globalForDb.__kovaMemoryDb) {
+      globalForDb.__kovaMemoryDb = createSeedDatabase();
+    }
+    return globalForDb.__kovaMemoryDb;
   }
 }
 
@@ -254,12 +264,17 @@ export function readDb(): KovaDatabase {
 }
 
 export function writeDb(db: KovaDatabase): void {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+  globalForDb.__kovaMemoryDb = db;
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    const tmpPath = `${DB_PATH}.${process.pid}.tmp`;
+    fs.writeFileSync(tmpPath, JSON.stringify(db, null, 2), "utf8");
+    fs.renameSync(tmpPath, DB_PATH);
+  } catch {
+    // Fallback safely to in-memory store on read-only serverless environments
   }
-  const tmpPath = `${DB_PATH}.${process.pid}.tmp`;
-  fs.writeFileSync(tmpPath, JSON.stringify(db, null, 2), "utf8");
-  fs.renameSync(tmpPath, DB_PATH);
 }
 
 function releaseExpiredReservationsInMemory(db: KovaDatabase): boolean {
