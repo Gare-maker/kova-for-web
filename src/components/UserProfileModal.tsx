@@ -78,8 +78,8 @@ export function UserProfileModal({
                 display: "grid",
                 placeItems: "center",
                 fontFamily: "var(--font-display)",
-                fontWeight: 800,
-                fontSize: "1.4rem",
+                fontWeight: 600,
+                fontSize: "1.3rem",
               }}
             >
               {vendor.avatarUrl ? (
@@ -140,13 +140,13 @@ export function UserProfileModal({
           }}
         >
           <div>
-            <dd style={{ margin: 0, fontWeight: 800, fontSize: "1.15rem" }}>
+            <dd style={{ margin: 0, fontWeight: 600, fontSize: "1.1rem" }}>
               {listingsCount ?? vendor.stats.posts}
             </dd>
             <dt style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Posts</dt>
           </div>
           <div>
-            <dd style={{ margin: 0, fontWeight: 800, fontSize: "1.15rem" }}>
+            <dd style={{ margin: 0, fontWeight: 600, fontSize: "1.1rem" }}>
               {vendor.stats.followers >= 1000
                 ? `${(vendor.stats.followers / 1000).toFixed(0)}k`
                 : vendor.stats.followers}
@@ -154,7 +154,7 @@ export function UserProfileModal({
             <dt style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Followers</dt>
           </div>
           <div>
-            <dd style={{ margin: 0, fontWeight: 800, fontSize: "1.15rem" }}>
+            <dd style={{ margin: 0, fontWeight: 600, fontSize: "1.1rem" }}>
               {vendor.stats.deals}
             </dd>
             <dt style={{ fontSize: "0.75rem", color: "var(--muted)" }}>Deals</dt>
@@ -163,8 +163,8 @@ export function UserProfileModal({
             <dd
               style={{
                 margin: 0,
-                fontWeight: 800,
-                fontSize: "1.15rem",
+                fontWeight: 600,
+                fontSize: "1.1rem",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 3,
@@ -217,7 +217,7 @@ export function UserProfileModal({
             </button>
           )}
           <Link
-            href={`/store/${vendor.username}`}
+            href={`/store/${encodeURIComponent(vendor.username)}`}
             className="btn btn--outline btn--sm"
             style={{ flex: 1 }}
             onClick={onClose}

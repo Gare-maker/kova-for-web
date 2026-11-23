@@ -9,9 +9,8 @@ import {
   Share2,
   Check,
   Star,
-  BadgeCheck,
-  ChevronDown,
-  ChevronUp,
+  Pause,
+  Play,
 } from "lucide-react";
 import type { Vendor, Product } from "@/lib/types";
 import { formatNaira, getInitials } from "@/lib/format";
@@ -28,6 +27,26 @@ interface ProductDetailClientProps {
   unavailableReason: string | null;
 }
 
+function VerifiedSealSmall() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-label="Verified">
+      <path
+        d="M12 1.75l2.37 1.72 2.9-.31 1.18 2.68 2.68 1.18-.31 2.9L22.25 12l-1.72 2.37.31 2.9-2.68 1.18-1.18 2.68-2.9-.31L12 22.25l-2.37-1.72-2.9.31-1.18-2.68-2.68-1.18.31-2.9L1.75 12l1.72-2.37-.31-2.9 2.68-1.18 1.18-2.68 2.9.31L12 1.75z"
+        fill="#1D9BF0"
+        stroke="#FFFFFF"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M8.6 12.2l2.2 2.2 4.6-4.8"
+        stroke="#FFFFFF"
+        strokeWidth="2.1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function ProductDetailClient({
   product,
   vendor,
@@ -39,17 +58,17 @@ export function ProductDetailClient({
   const [chatOpen, setChatOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [showMoreDetails, setShowMoreDetails] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [readMoreDesc, setReadMoreDesc] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [selectedOption, setSelectedOption] = useState(
     product.options?.[0] ?? ""
   );
 
-  // Preserve browsing search/category state when navigating back
   const qs = searchParams.toString();
   const backHref = qs
-    ? `/store/${vendor.username}?${qs}`
-    : `/store/${vendor.username}`;
+    ? `/store/${encodeURIComponent(vendor.username)}?${qs}`
+    : `/store/${encodeURIComponent(vendor.username)}`;
 
   const checkoutHref = selectedOption
     ? `/checkout/${product.id}?option=${encodeURIComponent(selectedOption)}`
@@ -78,300 +97,122 @@ export function ProductDetailClient({
     }
   };
 
-  const descPreview =
-    product.description.length > 110 && !readMoreDesc
-      ? product.description.slice(0, 110).trimEnd() + "..."
+  const isLongDesc = product.description.length > 120;
+  const displayedDesc =
+    isLongDesc && !readMoreDesc
+      ? product.description.slice(0, 120).trimEnd()
       : product.description;
+
+  const isProperty =
+    product.category.toLowerCase().includes("apartment") ||
+    product.category.toLowerCase().includes("property");
 
   return (
     <>
       <KovaHeader />
 
-      <main id="main" className="storefront-main">
-        <div className="container" style={{ maxWidth: 780 }}>
-          {/* Reference Image 1 & 2 Layout: Hero Media + Overlapping Bottom-Sheet Details Card */}
+      <main id="main" className="ref-detail-page">
+        <div className="ref-detail-shell">
+          {/* Hero Media Area (Full-bleed on Mobile like Images 1 & 2; Editorial Left Column on Desktop) */}
           <div
-            style={{
-              background: "var(--paper-warm)",
-              borderRadius: 20,
-              overflow: "hidden",
-              border: "1px solid var(--line)",
-              boxShadow: "var(--shadow-soft)",
-            }}
+            className={`ref-detail-hero ${
+              expanded ? "ref-detail-hero--expanded" : ""
+            }`}
           >
-            {/* Hero Image with Back Arrow */}
-            <div
-              style={{
-                position: "relative",
-                background: "var(--paper-deep)",
-                aspectRatio: "16 / 11",
-                maxHeight: 440,
-                width: "100%",
-              }}
-            >
-              <img
-                src={product.images[0] || "/products/desk.svg"}
-                alt={product.name}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-              <Link
-                href={backHref}
-                style={{
-                  position: "absolute",
-                  top: "1rem",
-                  left: "1rem",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.45rem",
-                  background: "rgba(18, 18, 31, 0.56)",
-                  backdropFilter: "blur(8px)",
-                  color: "#fff",
-                  padding: "0.45rem 0.85rem",
-                  borderRadius: 999,
-                  fontSize: "0.86rem",
-                  fontWeight: 700,
-                }}
-              >
-                <ArrowLeft size={16} />
-                Product Details
-              </Link>
-            </div>
+            <img
+              src={product.images[0] || "/listings/flat-exterior.jpg"}
+              alt={product.name}
+            />
+            <div className="ref-detail-hero__scrim" aria-hidden="true" />
+            <Link href={backHref} className="ref-detail-back">
+              <ArrowLeft size={20} />
+              {isProperty ? "Property Details" : "Product Details"}
+            </Link>
 
-            {/* Bottom Sheet Card */}
-            <div
-              style={{
-                background: "var(--paper-warm)",
-                borderRadius: "24px 24px 0 0",
-                marginTop: -22,
-                position: "relative",
-                padding: "0.75rem clamp(1.25rem, 3vw, 2rem) 1.75rem",
-              }}
-            >
-              {/* Drag Handle */}
-              <div
-                style={{
-                  width: 44,
-                  height: 4,
-                  borderRadius: 999,
-                  background: "var(--line-strong)",
-                  margin: "0 auto 1.15rem",
-                }}
+            {product.isVideo && !expanded && (
+              <button
+                type="button"
+                className="ref-detail-media-btn"
+                onClick={() => setIsPlaying((p) => !p)}
+                aria-label={isPlaying ? "Pause preview" : "Play preview"}
+              >
+                {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+              </button>
+            )}
+          </div>
+
+          {/* White Sheet Details Panel (Exact match to Images 1 & 2) */}
+          <div className="ref-detail-sheet">
+            <div className="ref-detail-sheet__inner">
+              <button
+                type="button"
+                className="ref-drag-handle"
+                onClick={() => setExpanded((v) => !v)}
+                aria-label={expanded ? "Collapse details" : "Expand details"}
               />
 
-              {/* Top Info Row: Title/Location/Price on Left, Clickable Seller Avatar + Rating on Right */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  gap: "1rem",
-                }}
-              >
+              <div className="ref-detail-header-row">
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <h1
-                    className="display"
-                    style={{
-                      fontSize: "clamp(1.25rem, 2.2vw, 1.55rem)",
-                      color: "var(--ink-strong)",
-                      margin: 0,
-                    }}
-                  >
-                    {product.name}
-                  </h1>
+                  <h1 className="ref-detail-title">{product.name}</h1>
 
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      flexWrap: "wrap",
-                      gap: "0.5rem",
-                      marginTop: "0.35rem",
-                    }}
-                  >
-                    <span style={{ fontSize: "0.88rem", color: "var(--muted)" }}>
-                      {product.location}
-                    </span>
-                    <span
-                      style={{
-                        background: "var(--brand-soft)",
-                        color: "var(--brand-dark)",
-                        fontSize: "0.74rem",
-                        fontWeight: 700,
-                        padding: "0.18rem 0.55rem",
-                        borderRadius: 6,
-                      }}
-                    >
-                      {product.waybillLabel ||
-                        (product.deliveryFee === 0
-                          ? "Free waybill"
-                          : `Delivery ${formatNaira(product.deliveryFee)}`)}
-                    </span>
+                  <div className="ref-detail-loc-row">
+                    <span className="ref-detail-loc">{product.location}</span>
+                    {!expanded && (
+                      <span className="ref-waybill-pill">
+                        {product.waybillLabel ||
+                          (product.deliveryFee === 0
+                            ? "Free waybill"
+                            : `Delivery ${formatNaira(product.deliveryFee)}`)}
+                      </span>
+                    )}
                   </div>
 
-                  <div
-                    style={{
-                      fontFamily: "var(--font-display)",
-                      fontSize: "1.35rem",
-                      fontWeight: 800,
-                      color: "var(--ink-strong)",
-                      marginTop: "0.55rem",
-                    }}
-                  >
+                  <div className="ref-detail-price">
                     {formatNaira(product.price)}
                     {product.pricePeriod ? (
-                      <span
-                        style={{
-                          fontWeight: 500,
-                          fontSize: "0.95rem",
-                          color: "var(--muted)",
-                        }}
-                      >
-                        {" "}
-                        - {product.pricePeriod}
-                      </span>
+                      <span> - {product.pricePeriod}</span>
                     ) : null}
                   </div>
                 </div>
 
-                {/* Clickable Seller Avatar & Rating (opens User Details Modal) */}
+                {/* Clickable Seller Avatar & Rating */}
                 <button
                   type="button"
+                  className="ref-seller-badge-btn"
                   onClick={() => setProfileOpen(true)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    padding: 0,
-                    cursor: "pointer",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: "0.35rem",
-                    flex: "none",
-                  }}
-                  title={`View ${vendor.fullName} profile`}
+                  title={`View ${vendor.fullName}'s profile`}
                 >
-                  <div style={{ position: "relative", width: 48, height: 48 }}>
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        borderRadius: "50%",
-                        overflow: "hidden",
-                        background: "var(--forest)",
-                        color: "#fff",
-                        display: "grid",
-                        placeItems: "center",
-                        fontWeight: 800,
-                      }}
-                    >
+                  <div className="ref-avatar ref-avatar--sm">
+                    <div className="ref-avatar__circle" style={{ fontSize: "0.95rem" }}>
                       {vendor.avatarUrl ? (
-                        <img
-                          src={vendor.avatarUrl}
-                          alt={vendor.fullName}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                          }}
-                        />
+                        <img src={vendor.avatarUrl} alt={vendor.fullName} />
                       ) : (
                         getInitials(vendor.fullName)
                       )}
                     </div>
                     {vendor.verificationStatus === "verified" && (
-                      <span
-                        style={{
-                          position: "absolute",
-                          bottom: -2,
-                          right: -2,
-                          width: 18,
-                          height: 18,
-                          borderRadius: "50%",
-                          background: "#2563eb",
-                          color: "#fff",
-                          display: "grid",
-                          placeItems: "center",
-                          border: "2px solid #fff",
-                        }}
-                      >
-                        <BadgeCheck size={10} />
+                      <span className="ref-verified-seal">
+                        <VerifiedSealSmall />
                       </span>
                     )}
                   </div>
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 3,
-                      fontSize: "0.82rem",
-                      fontWeight: 700,
-                      color: "var(--ink-strong)",
-                    }}
-                  >
+                  <span className="ref-seller-rating">
                     {vendor.rating.toFixed(1)}
-                    <Star size={13} fill="#f59e0b" color="#f59e0b" />
+                    <Star size={14} fill="#FACC15" color="#FACC15" />
                   </span>
                 </button>
               </div>
 
-              {/* Options / Variations if applicable */}
-              {product.options && product.options.length > 0 && (
-                <div style={{ marginTop: "1rem" }}>
-                  <div
-                    style={{
-                      fontSize: "0.78rem",
-                      fontWeight: 700,
-                      color: "var(--muted)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                      marginBottom: "0.4rem",
-                    }}
-                  >
-                    Available Options
-                  </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem" }}>
-                    {product.options.map((opt) => {
-                      const active = selectedOption === opt;
-                      return (
-                        <button
-                          key={opt}
-                          type="button"
-                          onClick={() => setSelectedOption(opt)}
-                          style={{
-                            padding: "0.38rem 0.8rem",
-                            borderRadius: 8,
-                            border: active
-                              ? "1.5px solid var(--brand)"
-                              : "1px solid var(--line-strong)",
-                            background: active
-                              ? "var(--brand-soft)"
-                              : "var(--paper)",
-                            color: active
-                              ? "var(--forest)"
-                              : "var(--ink-soft)",
-                            fontSize: "0.84rem",
-                            fontWeight: 700,
-                            cursor: "pointer",
-                          }}
-                        >
-                          {opt}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
               {!effectiveAvailable && (
                 <div
                   style={{
-                    marginTop: "1rem",
-                    padding: "0.8rem 1rem",
+                    marginTop: "0.9rem",
+                    padding: "0.75rem 0.9rem",
                     borderRadius: 10,
                     background: "var(--danger-soft)",
                     color: "var(--danger)",
-                    fontSize: "0.88rem",
-                    fontWeight: 700,
+                    fontSize: "0.86rem",
+                    fontWeight: 600,
                   }}
                 >
                   {unavailableReason ||
@@ -379,129 +220,80 @@ export function ProductDetailClient({
                 </div>
               )}
 
-              {/* Primary CTA: Make Payment (matching Image 1 & 2) */}
-              <div style={{ marginTop: "1.15rem" }}>
-                {effectiveAvailable ? (
-                  <Link
-                    href={checkoutHref}
-                    className="btn btn--brand"
-                    style={{ width: "100%", fontSize: "0.95rem" }}
-                  >
-                    Make Payment
-                  </Link>
-                ) : (
-                  <button
-                    type="button"
-                    className="btn btn--brand"
-                    disabled
-                    style={{ width: "100%", fontSize: "0.95rem" }}
-                  >
-                    Currently Unavailable
-                  </button>
-                )}
-              </div>
-
-              {/* View More Details Toggle (matching Image 2 -> expands to Image 1) */}
-              <div style={{ textAlign: "center", marginTop: "0.85rem" }}>
+              {/* Make Payment CTA */}
+              {effectiveAvailable ? (
+                <Link href={checkoutHref} className="ref-make-payment-btn">
+                  Make Payment
+                </Link>
+              ) : (
                 <button
                   type="button"
-                  onClick={() => setShowMoreDetails((v) => !v)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "var(--brand)",
-                    fontWeight: 700,
-                    fontSize: "0.9rem",
-                    cursor: "pointer",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.3rem",
-                  }}
+                  className="ref-make-payment-btn"
+                  disabled
                 >
-                  {showMoreDetails ? "Hide Details" : "View More Details"}
-                  {showMoreDetails ? (
-                    <ChevronUp size={16} />
-                  ) : (
-                    <ChevronDown size={16} />
-                  )}
+                  Currently Unavailable
                 </button>
-              </div>
+              )}
 
-              {/* Expanded Details Section (matching Image 1) */}
-              {showMoreDetails && (
-                <div
-                  style={{
-                    marginTop: "1.15rem",
-                    paddingTop: "1.15rem",
-                    borderTop: "1px solid var(--line)",
-                  }}
-                >
-                  {/* 2-Column Detail Row */}
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      gap: "1rem",
-                      paddingBottom: "1rem",
-                      borderBottom: "1px solid var(--line)",
-                    }}
-                  >
+              {/* Expanded Details matching Reference Image 1 */}
+              {expanded && (
+                <div>
+                  <div className="ref-fees-row">
                     <div>
-                      <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
-                        Condition &amp; Stock
+                      <div className="ref-fee-label">
+                        {isProperty ? "Inspection" : "Waybill / Delivery"}
                       </div>
-                      <div style={{ fontWeight: 800, color: "var(--ink-strong)" }}>
-                        {product.condition} ·{" "}
-                        {effectiveAvailable
-                          ? `${effectiveRemaining} left`
-                          : "Unavailable"}
-                      </div>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
-                        Delivery / Waybill
-                      </div>
-                      <div style={{ fontWeight: 800, color: "var(--ink-strong)" }}>
-                        {product.deliveryFee === 0
+                      <div className="ref-fee-val">
+                        {isProperty
+                          ? product.inspectionLabel || "Free"
+                          : product.deliveryFee === 0
                           ? "Free"
                           : formatNaira(product.deliveryFee)}
                       </div>
                     </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div className="ref-fee-label">
+                        {isProperty ? "Agent fee" : "Condition"}
+                      </div>
+                      <div className="ref-fee-val">
+                        {isProperty
+                          ? formatNaira(product.agentFee ?? 17000)
+                          : `${product.condition} · ${effectiveRemaining} left`}
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Description with Read More... toggle */}
-                  <div style={{ marginTop: "1rem" }}>
-                    <h2
-                      className="display"
-                      style={{
-                        fontSize: "1rem",
-                        color: "var(--ink-strong)",
-                        margin: "0 0 0.45rem",
-                      }}
-                    >
-                      Description
-                    </h2>
-                    <p
-                      style={{
-                        margin: 0,
-                        color: "var(--ink-soft)",
-                        fontSize: "0.93rem",
-                        lineHeight: 1.6,
-                      }}
-                    >
-                      {descPreview}{" "}
-                      {product.description.length > 110 && (
+                  {product.options && product.options.length > 0 && (
+                    <div style={{ paddingTop: "1rem" }}>
+                      <div className="ref-fee-label">Available Options</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem" }}>
+                        {product.options.map((opt) => (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() => setSelectedOption(opt)}
+                            className={`ref-cat-chip ${
+                              selectedOption === opt
+                                ? "ref-cat-chip--active"
+                                : ""
+                            }`}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="ref-desc-block">
+                    <h2 className="ref-desc-heading">Description</h2>
+                    <p className="ref-desc-text">
+                      {displayedDesc}{" "}
+                      {isLongDesc && (
                         <button
                           type="button"
+                          className="ref-read-more-btn"
                           onClick={() => setReadMoreDesc((r) => !r)}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            color: "var(--brand)",
-                            fontWeight: 700,
-                            cursor: "pointer",
-                            padding: 0,
-                          }}
                         >
                           {readMoreDesc ? "Show Less" : "Read More..."}
                         </button>
@@ -509,20 +301,19 @@ export function ProductDetailClient({
                     </p>
                   </div>
 
-                  {/* Secondary Actions */}
                   <div
                     style={{
                       display: "flex",
-                      flexWrap: "wrap",
                       gap: "0.65rem",
                       marginTop: "1.25rem",
+                      flexWrap: "wrap",
                     }}
                   >
                     <button
                       type="button"
                       className="btn btn--outline btn--sm"
-                      onClick={() => setChatOpen(true)}
                       style={{ flex: 1 }}
+                      onClick={() => setChatOpen(true)}
                     >
                       <MessageCircle size={15} />
                       Chat with Seller
@@ -535,12 +326,12 @@ export function ProductDetailClient({
                       {copied ? (
                         <>
                           <Check size={15} />
-                          Link Copied
+                          Copied
                         </>
                       ) : (
                         <>
                           <Share2 size={15} />
-                          Share Product
+                          Share
                         </>
                       )}
                     </button>
@@ -548,6 +339,15 @@ export function ProductDetailClient({
                 </div>
               )}
             </div>
+
+            {/* Bottom Mint Bar matching Reference Image 2 */}
+            <button
+              type="button"
+              className="ref-view-more-bar"
+              onClick={() => setExpanded((v) => !v)}
+            >
+              {expanded ? "Show Less Details" : "View More Details"}
+            </button>
           </div>
         </div>
       </main>

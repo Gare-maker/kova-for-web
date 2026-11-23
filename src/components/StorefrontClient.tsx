@@ -7,10 +7,7 @@ import {
   Search,
   SlidersHorizontal,
   Star,
-  BadgeCheck,
   MessageCircle,
-  Share2,
-  Check,
   ShoppingBag,
 } from "lucide-react";
 import type { Vendor, Product } from "@/lib/types";
@@ -28,11 +25,43 @@ export interface StorefrontProduct extends Product {
 interface StorefrontClientProps {
   vendor: Vendor;
   products: StorefrontProduct[];
+  basePath?: string;
 }
 
-export function StorefrontClient({ vendor, products }: StorefrontClientProps) {
+function VerifiedSeal({ size = 21 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-label="Verified"
+    >
+      <path
+        d="M12 1.75l2.37 1.72 2.9-.31 1.18 2.68 2.68 1.18-.31 2.9L22.25 12l-1.72 2.37.31 2.9-2.68 1.18-1.18 2.68-2.9-.31L12 22.25l-2.37-1.72-2.9.31-1.18-2.68-2.68-1.18.31-2.9L1.75 12l1.72-2.37-.31-2.9 2.68-1.18 1.18-2.68 2.9.31L12 1.75z"
+        fill="#1D9BF0"
+        stroke="#FFFFFF"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M8.6 12.2l2.2 2.2 4.6-4.8"
+        stroke="#FFFFFF"
+        strokeWidth="2.1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function StorefrontClient({
+  vendor,
+  products,
+  basePath,
+}: StorefrontClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const routePath = basePath ?? `/store/${encodeURIComponent(vendor.username)}`;
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") ?? "");
   const [selectedCategory, setSelectedCategory] = useState(
@@ -41,7 +70,6 @@ export function StorefrontClient({ vendor, products }: StorefrontClientProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   const categories = useMemo(() => {
     const set = new Set<string>(["All"]);
@@ -51,16 +79,13 @@ export function StorefrontClient({ vendor, products }: StorefrontClientProps) {
     return Array.from(set);
   }, [products]);
 
-  // Persist search & category in URL so navigating back preserves browsing state
   useEffect(() => {
     const params = new URLSearchParams();
     if (searchQuery.trim()) params.set("q", searchQuery.trim());
     if (selectedCategory !== "All") params.set("category", selectedCategory);
     const qs = params.toString();
-    router.replace(qs ? `/store/${vendor.username}?${qs}` : `/store/${vendor.username}`, {
-      scroll: false,
-    });
-  }, [searchQuery, selectedCategory, vendor.username, router]);
+    router.replace(qs ? `${routePath}?${qs}` : routePath, { scroll: false });
+  }, [searchQuery, selectedCategory, routePath, router]);
 
   const filteredProducts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -77,29 +102,6 @@ export function StorefrontClient({ vendor, products }: StorefrontClientProps) {
     });
   }, [products, searchQuery, selectedCategory]);
 
-  const handleShareStorefront = async () => {
-    const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${vendor.fullName} (@${vendor.username}) · Kova Storefront`,
-          text: `Browse products from ${vendor.fullName} on Kova`,
-          url,
-        });
-        return;
-      } catch {
-        // fallback
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2200);
-    } catch {
-      // ignore
-    }
-  };
-
   const currentSearchQs = useMemo(() => {
     const params = new URLSearchParams();
     if (searchQuery.trim()) params.set("q", searchQuery.trim());
@@ -110,328 +112,147 @@ export function StorefrontClient({ vendor, products }: StorefrontClientProps) {
 
   return (
     <>
-      <KovaHeader
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        searchPlaceholder="Search products from this vendor..."
-      />
+      <KovaHeader />
 
-      <main id="main" className="storefront-main">
-        <div className="container" style={{ maxWidth: 960 }}>
-          {/* Reference Image 3 Profile Header Card */}
-          <section
-            className="surface-card"
-            aria-labelledby="storefront-vendor-name"
-            style={{ padding: "clamp(1.15rem, 2.5vw, 1.75rem)" }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "1rem",
-                flexWrap: "wrap",
-              }}
-            >
+      <main id="main" className="ref-storefront">
+        {/* Exact Reference Profile & Stats Header */}
+        <section className="ref-profile-wrap" aria-labelledby="vendor-handle">
+          <div className="container">
+            <div className="ref-profile-header">
               <button
                 type="button"
+                className="ref-profile-trigger"
                 onClick={() => setProfileOpen(true)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.85rem",
-                  background: "transparent",
-                  border: "none",
-                  padding: 0,
-                  cursor: "pointer",
-                  textAlign: "left",
-                }}
-                title="View vendor details"
+                title="View user profile details"
               >
-                <div style={{ position: "relative", width: 58, height: 58, flex: "none" }}>
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      borderRadius: "50%",
-                      overflow: "hidden",
-                      background: "var(--forest)",
-                      color: "#fff",
-                      display: "grid",
-                      placeItems: "center",
-                      fontFamily: "var(--font-display)",
-                      fontWeight: 800,
-                      fontSize: "1.2rem",
-                    }}
-                  >
+                <div className="ref-avatar">
+                  <div className="ref-avatar__circle">
                     {vendor.avatarUrl ? (
-                      <img
-                        src={vendor.avatarUrl}
-                        alt={vendor.fullName}
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                      />
+                      <img src={vendor.avatarUrl} alt={vendor.fullName} />
                     ) : (
                       getInitials(vendor.fullName)
                     )}
                   </div>
                   {vendor.verificationStatus === "verified" && (
-                    <span
-                      style={{
-                        position: "absolute",
-                        bottom: -1,
-                        right: -1,
-                        width: 21,
-                        height: 21,
-                        borderRadius: "50%",
-                        background: "#2563eb",
-                        color: "#fff",
-                        display: "grid",
-                        placeItems: "center",
-                        border: "2px solid #fff",
-                      }}
-                    >
-                      <BadgeCheck size={12} />
+                    <span className="ref-verified-seal">
+                      <VerifiedSeal size={22} />
                     </span>
                   )}
                 </div>
 
                 <div>
-                  <h1
-                    id="storefront-vendor-name"
-                    className="display"
-                    style={{
-                      fontSize: "1.12rem",
-                      color: "var(--ink-strong)",
-                      margin: 0,
-                    }}
-                  >
+                  <h1 id="vendor-handle" className="ref-profile-handle">
                     @{vendor.username}
                   </h1>
-                  <div
-                    style={{
-                      color: "var(--muted)",
-                      fontSize: "0.9rem",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {vendor.fullName}
-                  </div>
+                  <p className="ref-profile-fullname">{vendor.fullName}</p>
                 </div>
               </button>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <div className="ref-profile-actions">
                 <button
                   type="button"
-                  className="btn btn--outline btn--sm"
+                  className="btn btn--outline btn--sm ref-chat-desktop-btn"
                   onClick={() => setChatOpen(true)}
-                  aria-label="Chat with vendor"
                 >
                   <MessageCircle size={15} />
-                  Chat
-                </button>
-                <button
-                  type="button"
-                  className="btn btn--outline btn--sm"
-                  onClick={handleShareStorefront}
-                  aria-label="Share storefront"
-                >
-                  {copied ? <Check size={15} /> : <Share2 size={15} />}
+                  Message
                 </button>
                 <a
                   href={getAppStoreUrl()}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn btn--brand btn--sm"
+                  className="ref-download-btn"
                 >
                   Download app
                 </a>
               </div>
             </div>
 
-            {/* 4-Column Stats Row matching Image 3 */}
-            <dl
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-                gap: "0.5rem",
-                textAlign: "center",
-                margin: "1.35rem 0 0",
-                paddingTop: "1.1rem",
-                borderTop: "1px solid var(--line)",
-              }}
-            >
+            <dl className="ref-stats-row">
               <div>
-                <dd
-                  style={{
-                    margin: 0,
-                    fontFamily: "var(--font-display)",
-                    fontWeight: 800,
-                    fontSize: "1.3rem",
-                    color: "var(--ink-strong)",
-                  }}
-                >
-                  {products.length}
-                </dd>
-                <dt style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
-                  Posts
-                </dt>
+                <dd className="ref-stat-val">{vendor.stats.posts}</dd>
+                <dt className="ref-stat-label">Posts</dt>
               </div>
               <div>
-                <dd
-                  style={{
-                    margin: 0,
-                    fontFamily: "var(--font-display)",
-                    fontWeight: 800,
-                    fontSize: "1.3rem",
-                    color: "var(--ink-strong)",
-                  }}
-                >
+                <dd className="ref-stat-val">
                   {vendor.stats.followers >= 1000
                     ? `${(vendor.stats.followers / 1000).toFixed(0)}k`
                     : vendor.stats.followers}
                 </dd>
-                <dt style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
-                  Followers
-                </dt>
+                <dt className="ref-stat-label">Followers</dt>
               </div>
               <div>
-                <dd
-                  style={{
-                    margin: 0,
-                    fontFamily: "var(--font-display)",
-                    fontWeight: 800,
-                    fontSize: "1.3rem",
-                    color: "var(--ink-strong)",
-                  }}
-                >
-                  {vendor.stats.deals}
-                </dd>
-                <dt style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
-                  Deals
-                </dt>
+                <dd className="ref-stat-val">{vendor.stats.deals}</dd>
+                <dt className="ref-stat-label">Deals</dt>
               </div>
               <div>
-                <dd
-                  style={{
-                    margin: 0,
-                    fontFamily: "var(--font-display)",
-                    fontWeight: 800,
-                    fontSize: "1.3rem",
-                    color: "var(--ink-strong)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 4,
-                  }}
-                >
+                <dd className="ref-stat-val">
                   {vendor.rating.toFixed(1)}
-                  <Star size={16} fill="#f59e0b" color="#f59e0b" />
+                  <Star
+                    size={17}
+                    fill="#FACC15"
+                    color="#FACC15"
+                    aria-hidden="true"
+                  />
                 </dd>
-                <dt style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
-                  Rating
-                </dt>
+                <dt className="ref-stat-label">Rating</dt>
               </div>
             </dl>
-          </section>
+          </div>
+        </section>
 
-          {/* Rounded Pill Search Bar + Filter Toggle matching Image 3 */}
-          <div style={{ marginTop: "1.25rem" }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                background: "var(--paper-warm)",
-                border: "1px solid var(--line-strong)",
-                borderRadius: 999,
-                padding: "0.3rem 0.5rem 0.3rem 1rem",
-                gap: "0.5rem",
-              }}
+        {/* Rounded Pill Search Bar & Listing Grid */}
+        <section className="container ref-search-section">
+          <div className="ref-search-pill">
+            <Search size={19} color="#52525B" aria-hidden="true" />
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search"
+              aria-label="Search products"
+            />
+            <button
+              type="button"
+              onClick={() => setShowFilters((s) => !s)}
+              className={`ref-filter-btn ${
+                showFilters || selectedCategory !== "All"
+                  ? "ref-filter-btn--active"
+                  : ""
+              }`}
+              aria-label="Filter by category"
+              aria-expanded={showFilters}
             >
-              <Search size={18} color="var(--muted)" aria-hidden="true" />
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search"
-                aria-label="Search products from this vendor"
-                style={{
-                  flex: 1,
-                  border: "none",
-                  outline: "none",
-                  background: "transparent",
-                  fontSize: "0.95rem",
-                  color: "var(--ink)",
-                  paddingBlock: "0.45rem",
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowFilters((s) => !s)}
-                aria-label="Filter by category"
-                aria-expanded={showFilters}
-                style={{
-                  background: showFilters ? "var(--brand-soft)" : "transparent",
-                  color: showFilters ? "var(--forest)" : "var(--ink-soft)",
-                  border: "none",
-                  borderRadius: "50%",
-                  width: 36,
-                  height: 36,
-                  display: "grid",
-                  placeItems: "center",
-                  cursor: "pointer",
-                }}
-              >
-                <SlidersHorizontal size={17} />
-              </button>
-            </div>
-
-            {/* Category Filter Pills */}
-            {(showFilters || selectedCategory !== "All") && (
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "0.45rem",
-                  marginTop: "0.75rem",
-                }}
-              >
-                {categories.map((cat) => {
-                  const active = selectedCategory === cat;
-                  return (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => setSelectedCategory(cat)}
-                      style={{
-                        padding: "0.35rem 0.85rem",
-                        borderRadius: 999,
-                        border: active
-                          ? "1px solid var(--brand)"
-                          : "1px solid var(--line-strong)",
-                        background: active ? "var(--brand)" : "var(--paper-warm)",
-                        color: active ? "#fff" : "var(--ink-soft)",
-                        fontSize: "0.8rem",
-                        fontWeight: 700,
-                        cursor: "pointer",
-                      }}
-                    >
-                      {cat}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+              <SlidersHorizontal size={18} />
+            </button>
           </div>
 
-          {/* 2-Column Mobile / Multi-Column Desktop Product Grid matching Image 3 */}
+          {(showFilters || selectedCategory !== "All") && (
+            <div className="ref-category-bar">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`ref-cat-chip ${
+                    selectedCategory === cat ? "ref-cat-chip--active" : ""
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
+
           {products.length === 0 ? (
             <div className="empty-state">
-              <ShoppingBag size={32} style={{ marginInline: "auto" }} />
+              <ShoppingBag size={30} style={{ marginInline: "auto" }} />
               <h3>This vendor hasn&apos;t listed any products yet.</h3>
               <p>Check back soon or message the vendor directly.</p>
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="empty-state">
-              <Search size={32} style={{ marginInline: "auto" }} />
+              <Search size={30} style={{ marginInline: "auto" }} />
               <h3>No products found matching your search.</h3>
               <p>
                 Try another keyword or{" "}
@@ -444,75 +265,65 @@ export function StorefrontClient({ vendor, products }: StorefrontClientProps) {
                   style={{
                     background: "none",
                     border: "none",
-                    color: "var(--brand-dark)",
+                    color: "var(--brand)",
                     fontWeight: 700,
                     cursor: "pointer",
                     textDecoration: "underline",
                   }}
                 >
-                  reset filters
+                  clear filters
                 </button>
                 .
               </p>
             </div>
           ) : (
-            <div className="product-grid" style={{ marginTop: "1.25rem" }}>
+            <div className="ref-listing-grid">
               {filteredProducts.map((product) => (
                 <Link
                   key={product.id}
                   href={`/product/${product.id}${currentSearchQs}`}
-                  className="product-card"
-                  style={{ borderRadius: 16 }}
+                  className="ref-listing-card"
                 >
-                  <div className="product-card__media" style={{ aspectRatio: "1 / 0.92" }}>
+                  <div className="ref-listing-card__media">
                     <img
-                      src={product.images[0] || "/products/desk.svg"}
+                      src={product.images[0] || "/listings/living-room-cozy.jpg"}
                       alt={product.name}
-                      className="product-card__img"
                     />
-                    <span
-                      className={`product-card__status ${
-                        product.effectiveAvailable
-                          ? "product-card__status--available"
-                          : "product-card__status--unavailable"
-                      }`}
-                    >
-                      {product.effectiveAvailable ? "Available" : "Unavailable"}
-                    </span>
+                    {product.isVideo && (
+                      <div className="ref-play-overlay" aria-hidden="true">
+                        <svg width="38" height="38" viewBox="0 0 36 36" fill="none">
+                          <path
+                            d="M11 8.5C11 7.1 12.5 6.2 13.7 6.9L28.5 16.4C29.6 17.1 29.6 18.9 28.5 19.6L13.7 29.1C12.5 29.8 11 28.9 11 27.5V8.5Z"
+                            fill="rgba(255,255,255,0.92)"
+                          />
+                        </svg>
+                      </div>
+                    )}
+                    {!product.effectiveAvailable && (
+                      <span className="ref-sold-tag">Unavailable</span>
+                    )}
                   </div>
 
-                  <div className="product-card__body" style={{ padding: "0.75rem 0.85rem 0.9rem" }}>
-                    <h3 className="product-card__title" style={{ fontSize: "0.94rem" }}>
-                      {product.name}
-                    </h3>
-                    <div
-                      style={{
-                        fontSize: "0.78rem",
-                        color: "var(--muted)",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
+                  <div className="ref-listing-card__meta">
+                    <h2 className="ref-listing-card__title">{product.name}</h2>
+                    <span className="ref-listing-card__loc">
                       {product.location}
-                    </div>
-                    <div
-                      className="product-card__price"
-                      style={{
-                        color: "var(--ink-strong)",
-                        fontSize: "0.98rem",
-                        marginTop: "0.15rem",
-                      }}
-                    >
+                    </span>
+                    <div className="ref-listing-card__price">
                       {formatNaira(product.price)}
-                      {product.pricePeriod ? ` - ${product.pricePeriod}` : ""}
+                      {product.pricePeriod ? (
+                        <span className="ref-listing-card__period">
+                          {" "}
+                          - {product.pricePeriod}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 </Link>
               ))}
             </div>
           )}
-        </div>
+        </section>
       </main>
 
       <KovaFooter />

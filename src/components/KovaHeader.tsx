@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Search, Menu, X, ArrowUpRight, ReceiptText } from "lucide-react";
+import { Menu, X, ReceiptText } from "lucide-react";
 
 interface KovaHeaderProps {
   searchQuery?: string;
@@ -24,11 +24,7 @@ export function getAppStoreUrl(): string {
   return "https://www.kovadml.com/#download";
 }
 
-export function KovaHeader({
-  searchQuery,
-  onSearchChange,
-  searchPlaceholder = "Search products from this vendor...",
-}: KovaHeaderProps) {
+export function KovaHeader(_props: KovaHeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleDownloadClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -46,62 +42,47 @@ export function KovaHeader({
           <img
             src="/brand/kova-logo-main.svg"
             alt="Kova"
-            width={118}
-            height={27}
+            width={110}
+            height={25}
           />
         </Link>
 
-        {typeof onSearchChange === "function" && (
-          <div className="nav__search">
-            <Search size={16} className="nav__search-icon" aria-hidden="true" />
-            <input
-              type="search"
-              className="nav__search-input"
-              placeholder={searchPlaceholder}
-              value={searchQuery ?? ""}
-              onChange={(e) => onSearchChange(e.target.value)}
-              aria-label={searchPlaceholder}
-            />
-          </div>
-        )}
-
         <nav className="nav__links" aria-label="Primary">
+          <Link className="nav__link" href="/">
+            Storefront
+          </Link>
           <Link className="nav__link" href="/store/Freddy">
-            Featured Storefront
+            @Freddy
           </Link>
           <Link
             className="nav__link"
             href="/account/receipts"
-            style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
           >
-            <ReceiptText size={14} />
+            <ReceiptText size={15} />
             My Receipts
-          </Link>
-          <Link className="nav__link" href="/vendor-console">
-            Vendor Sync Console
           </Link>
         </nav>
 
         <div className="nav__right">
           <a
-            className="btn btn--brand btn--sm"
+            className="ref-download-btn nav__desktop-cta"
             href="https://www.kovadml.com/#download"
             target="_blank"
             rel="noopener noreferrer"
             onClick={handleDownloadClick}
           >
-            Download Kova App
-            <ArrowUpRight size={14} aria-hidden="true" />
+            Download app
           </a>
 
           <button
             type="button"
             className="nav__menu-btn"
-            aria-label="Open navigation"
+            aria-label="Open menu"
             aria-expanded={mobileOpen}
             onClick={() => setMobileOpen(true)}
           >
-            <Menu size={18} />
+            <Menu size={19} />
           </button>
         </div>
       </div>
@@ -122,30 +103,18 @@ export function KovaHeader({
               <img
                 src="/brand/kova-logo-main.svg"
                 alt="Kova"
-                width={105}
-                height={24}
+                width={100}
+                height={23}
               />
               <button
                 type="button"
                 className="btn btn--ghost btn--sm"
-                aria-label="Close navigation"
+                aria-label="Close menu"
                 onClick={() => setMobileOpen(false)}
               >
                 <X size={18} />
               </button>
             </div>
-
-            {typeof onSearchChange === "function" && (
-              <div style={{ position: "relative" }}>
-                <input
-                  type="search"
-                  className="form-input"
-                  placeholder={searchPlaceholder}
-                  value={searchQuery ?? ""}
-                  onChange={(e) => onSearchChange(e.target.value)}
-                />
-              </div>
-            )}
 
             <nav className="mobile-drawer__links" aria-label="Mobile">
               <Link
@@ -153,14 +122,14 @@ export function KovaHeader({
                 href="/"
                 onClick={() => setMobileOpen(false)}
               >
-                All Storefronts
+                Storefront
               </Link>
               <Link
                 className="mobile-drawer__link"
                 href="/store/Freddy"
                 onClick={() => setMobileOpen(false)}
               >
-                Featured Storefront (@Freddy)
+                @Freddy Storefront
               </Link>
               <Link
                 className="mobile-drawer__link"
@@ -169,22 +138,15 @@ export function KovaHeader({
               >
                 My Receipts &amp; History
               </Link>
-              <Link
-                className="mobile-drawer__link"
-                href="/vendor-console"
-                onClick={() => setMobileOpen(false)}
-              >
-                Vendor Sync Console
-              </Link>
               <a
-                className="btn btn--brand"
+                className="ref-download-btn"
+                style={{ marginTop: "0.5rem" }}
                 href="https://www.kovadml.com/#download"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={handleDownloadClick}
               >
-                Download Kova App
-                <ArrowUpRight size={14} />
+                Download app
               </a>
             </nav>
           </div>

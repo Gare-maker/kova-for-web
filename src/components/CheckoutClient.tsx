@@ -470,7 +470,7 @@ export function CheckoutClient({
                             textTransform: "uppercase",
                             letterSpacing: "0.08em",
                             color: "var(--muted)",
-                            fontWeight: 800,
+                            fontWeight: 600,
                           }}
                         >
                           Paystack Secure Checkout
@@ -614,7 +614,7 @@ export function CheckoutClient({
                   <div>
                     <div
                       style={{
-                        fontWeight: 800,
+                        fontWeight: 600,
                         color: "var(--ink-strong)",
                         lineHeight: 1.3,
                       }}
@@ -681,7 +681,7 @@ export function CheckoutClient({
                     paddingTop: "1rem",
                   }}
                 >
-                  <span style={{ fontWeight: 800, fontSize: "1rem" }}>
+                  <span style={{ fontWeight: 600, fontSize: "1rem" }}>
                     Total Payable
                   </span>
                   <span

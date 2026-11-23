@@ -137,8 +137,8 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
               <div style={{ flex: 1 }}>
                 <div
                   style={{
-                    fontWeight: 800,
-                    fontSize: "1.05rem",
+                    fontWeight: 600,
+                    fontSize: "1.02rem",
                     color: "var(--ink-strong)",
                   }}
                 >
@@ -234,7 +234,7 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
                 <dd
                   style={{
                     margin: "0.2rem 0 0",
-                    fontWeight: 800,
+                    fontWeight: 600,
                     color: "var(--brand-dark)",
                   }}
                 >

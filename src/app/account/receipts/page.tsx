@@ -236,7 +236,7 @@ export default function AccountReceiptsPage() {
                       }}
                     />
                     <div>
-                      <div style={{ fontWeight: 800, color: "var(--ink-strong)" }}>
+                      <div style={{ fontWeight: 600, color: "var(--ink-strong)" }}>
                         {r.productName} (x{r.quantity})
                       </div>
                       <div style={{ fontSize: "0.84rem", color: "var(--muted)" }}>
