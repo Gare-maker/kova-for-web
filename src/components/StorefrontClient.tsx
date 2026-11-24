@@ -22,7 +22,7 @@ interface StorefrontClientProps {
   basePath?: string;
 }
 
-function VerifiedSeal({ size = 18 }: { size?: number }) {
+function VerifiedSeal({ size = 21 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-label="Verified">
       <path
@@ -50,8 +50,11 @@ export function StorefrontClient({
   const searchParams = useSearchParams();
   const routePath = basePath ?? `/store/${encodeURIComponent(vendor.username)}`;
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const didMountRef = useRef(false);
 
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") ?? "");
+  const [searchQuery, setSearchQuery] = useState(
+    () => searchParams.get("q") ?? ""
+  );
   const [searchActive, setSearchActive] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
@@ -60,28 +63,46 @@ export function StorefrontClient({
     vendor.ratingCount ?? 120
   );
 
-  // Sync URL query silently without Next.js RSC round-trips
+  // Debounced URL query sync preserving Next.js history state so typing is instant and uninterrupted
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const trimmed = searchQuery.trim();
-    const nextUrl = trimmed
-      ? `${routePath}?q=${encodeURIComponent(trimmed)}`
-      : routePath;
-    if (window.location.pathname + window.location.search !== nextUrl) {
-      window.history.replaceState(null, "", nextUrl);
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
     }
+    if (typeof window === "undefined") return;
+    const timer = window.setTimeout(() => {
+      const trimmed = searchQuery.trim();
+      const nextUrl = trimmed
+        ? `${routePath}?q=${encodeURIComponent(trimmed)}`
+        : routePath;
+      if (window.location.pathname + window.location.search !== nextUrl) {
+        window.history.replaceState(window.history.state, "", nextUrl);
+      }
+    }, 260);
+    return () => window.clearTimeout(timer);
   }, [searchQuery, routePath]);
 
+  // Multi-word tokenized search across product title, description, category, location, condition, options, amenities & price
   const filteredProducts = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return products;
-    return products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.location.toLowerCase().includes(q)
-    );
+    const cleaned = searchQuery.trim().toLowerCase();
+    if (!cleaned) return products;
+    const tokens = cleaned.split(/\s+/).filter(Boolean);
+    return products.filter((p) => {
+      const haystack = [
+        p.name,
+        p.description,
+        p.category,
+        p.location,
+        p.condition,
+        String(p.price),
+        p.pricePeriod ?? "",
+        ...(p.options ?? []),
+        ...(p.amenities ?? []),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return tokens.every((tok) => haystack.includes(tok));
+    });
   }, [products, searchQuery]);
 
   const currentSearchQs = useMemo(() => {
@@ -95,17 +116,29 @@ export function StorefrontClient({
     if (searchInputRef.current) {
       searchInputRef.current.blur();
     }
+    if (
+      typeof document !== "undefined" &&
+      document.activeElement instanceof HTMLElement
+    ) {
+      document.activeElement.blur();
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    searchInputRef.current?.blur();
   };
 
   const showCancel = searchActive || searchQuery.length > 0;
+  const trimmedQuery = searchQuery.trim();
 
   return (
     <>
       <KovaHeader />
 
       <main id="main" className="ref-storefront">
-        {/* Clean White Centered Business Profile Section */}
-        <section className="showroom-profile" aria-label="Business profile">
+        {/* Restored Green Profile Section with Integrated Rounded Search Bar */}
+        <section className="showroom-hero-green" aria-label="Business profile">
           <div className="container showroom-profile__inner">
             <button
               type="button"
@@ -123,7 +156,7 @@ export function StorefrontClient({
                 </div>
                 {vendor.verificationStatus === "verified" && (
                   <span className="showroom-avatar__seal">
-                    <VerifiedSeal size={17} />
+                    <VerifiedSeal size={21} />
                   </span>
                 )}
               </div>
@@ -133,46 +166,75 @@ export function StorefrontClient({
                 {vendor.categoryBadge || vendor.role}
               </p>
             </button>
+
+            <form
+              role="search"
+              onSubmit={handleSearchSubmit}
+              className="ref-search-form"
+            >
+              <div className="ref-search-row">
+                <div
+                  className="ref-search-pill"
+                  onClick={() => searchInputRef.current?.focus()}
+                >
+                  <Search size={16} color="#6E6981" aria-hidden="true" />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onFocus={() => setSearchActive(true)}
+                    onBlur={() => {
+                      if (!searchQuery.trim()) {
+                        setSearchActive(false);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        e.preventDefault();
+                        handleCancelSearch();
+                      }
+                    }}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search products or properties..."
+                    aria-label="Search Showroom listings"
+                    autoComplete="off"
+                    enterKeyHint="search"
+                  />
+                </div>
+
+                {showCancel && (
+                  <button
+                    type="button"
+                    className="ref-search-cancel"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={handleCancelSearch}
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </form>
           </div>
         </section>
 
-        {/* Compact Rounded Search Bar & Listing Grid */}
-        <section className="container ref-search-section">
-          <div className="ref-search-row">
-            <div className="ref-search-pill">
-              <Search size={14} color="#787885" aria-hidden="true" />
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={searchQuery}
-                onFocus={() => setSearchActive(true)}
-                onBlur={() => {
-                  if (!searchQuery.trim()) {
-                    setSearchActive(false);
-                  }
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") {
-                    handleCancelSearch();
-                  }
-                }}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search products or properties..."
-                aria-label="Search Showroom listings"
-              />
-            </div>
-
-            {showCancel && (
+        {/* Spacious Product Listing Grid */}
+        <section className="container ref-listings-section">
+          {trimmedQuery && (
+            <div className="ref-search-status" role="status" aria-live="polite">
+              <span>
+                Showing <strong>{filteredProducts.length}</strong>{" "}
+                {filteredProducts.length === 1 ? "result" : "results"} for &ldquo;
+                {trimmedQuery}&rdquo;
+              </span>
               <button
                 type="button"
-                className="ref-search-cancel"
-                onMouseDown={(e) => e.preventDefault()}
+                className="ref-search-status__clear"
                 onClick={handleCancelSearch}
               >
-                Cancel
+                Clear search
               </button>
-            )}
-          </div>
+            </div>
+          )}
 
           {products.length === 0 ? (
             <div className="empty-state">
@@ -183,7 +245,7 @@ export function StorefrontClient({
           ) : filteredProducts.length === 0 ? (
             <div className="empty-state">
               <Search size={26} style={{ marginInline: "auto" }} />
-              <h3>No listings found matching your search.</h3>
+              <h3>No listings found matching &ldquo;{trimmedQuery}&rdquo;.</h3>
               <p>
                 Try another keyword or{" "}
                 <button
@@ -232,9 +294,9 @@ export function StorefrontClient({
                               width: 32,
                               height: 32,
                               borderRadius: "50%",
-                              background: "rgba(20, 20, 26, 0.44)",
+                              background: "rgba(20, 20, 26, 0.46)",
                               backdropFilter: "blur(6px)",
-                              border: "1.5px solid rgba(255,255,255,0.8)",
+                              border: "1.5px solid rgba(255,255,255,0.84)",
                               display: "grid",
                               placeItems: "center",
                             }}
@@ -252,9 +314,6 @@ export function StorefrontClient({
 
                     <div className="ref-listing-card__meta">
                       <h2 className="ref-listing-card__title">{product.name}</h2>
-                      <span className="ref-listing-card__loc">
-                        {product.location}
-                      </span>
                       <div className="ref-listing-card__price">
                         {formatNaira(product.price)}
                         {product.pricePeriod ? (
@@ -264,6 +323,9 @@ export function StorefrontClient({
                           </span>
                         ) : null}
                       </div>
+                      <span className="ref-listing-card__loc">
+                        {product.location}
+                      </span>
                     </div>
                   </Link>
                 );

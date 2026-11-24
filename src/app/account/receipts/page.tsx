@@ -19,6 +19,8 @@ import { KovaHeader } from "@/components/KovaHeader";
 import { KovaFooter } from "@/components/KovaFooter";
 
 export default function AccountReceiptsPage() {
+  const [isHistoryView, setIsHistoryView] = useState(false);
+
   const [user, setUser] = useState<UserAccount | null>(null);
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
@@ -44,7 +46,22 @@ export default function AccountReceiptsPage() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    const syncView = () => {
+      const params = new URLSearchParams(window.location.search);
+      setIsHistoryView(params.get("view") === "history");
+    };
+    const onCustomView = (e: Event) => {
+      const detail = (e as CustomEvent<string>).detail;
+      setIsHistoryView(detail === "history");
+    };
+    syncView();
+    window.addEventListener("popstate", syncView);
+    window.addEventListener("kova:receiptsview", onCustomView);
     loadSession();
+    return () => {
+      window.removeEventListener("popstate", syncView);
+      window.removeEventListener("kova:receiptsview", onCustomView);
+    };
   }, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -87,7 +104,6 @@ export default function AccountReceiptsPage() {
   return (
     <>
       <KovaHeader />
-
       <main id="main" className="storefront-main">
         <div className="container" style={{ maxWidth: 760 }}>
           <div
@@ -97,21 +113,15 @@ export default function AccountReceiptsPage() {
               justifyContent: "space-between",
               flexWrap: "wrap",
               gap: "0.75rem",
-              marginBottom: "1.05rem",
+              marginBottom: "1.1rem",
             }}
           >
-            <div>
-              <h1
-                className="display display--md"
-                style={{ color: "var(--ink-strong)" }}
-              >
-                My Receipts &amp; History
-              </h1>
-              <p style={{ color: "var(--muted)", fontSize: "0.8rem", margin: "0.18rem 0 0" }}>
-                Click any transaction to view your full receipt breakdown and
-                download a PDF copy.
-              </p>
-            </div>
+            <h1
+              className="display display--md"
+              style={{ color: "var(--ink-strong)" }}
+            >
+              {isHistoryView ? "Transaction History" : "My Receipts"}
+            </h1>
             {user && (
               <button
                 type="button"
@@ -125,41 +135,33 @@ export default function AccountReceiptsPage() {
           </div>
 
           {loading ? (
-            <div className="surface-card">Loading your receipts...</div>
+            <div className="surface-card" style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
+              Loading your receipts...
+            </div>
           ) : !user ? (
-            <div className="surface-card" style={{ maxWidth: 500 }}>
+            <div className="auth-card" style={{ maxWidth: 430 }}>
               <div
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: "0.45rem",
+                  gap: "0.32rem",
                   background: "var(--brand-soft)",
                   color: "var(--forest)",
-                  padding: "0.35rem 0.7rem",
+                  padding: "0.2rem 0.54rem",
                   borderRadius: 999,
-                  fontSize: "0.76rem",
+                  fontSize: "0.69rem",
                   fontWeight: 600,
-                  marginBottom: "0.85rem",
+                  marginBottom: "0.6rem",
                 }}
               >
-                <ShieldCheck size={14} />
-                Protected Buyer Account
+                <ShieldCheck size={12} />
+                Buyer Account
               </div>
-              <h2
-                className="display display--sm"
-                style={{ marginBottom: "0.4rem" }}
-              >
-                Sign In to View Your Receipts
+              <h2 className="auth-card__title">
+                Sign In to View {isHistoryView ? "History" : "Receipts"}
               </h2>
-              <p
-                style={{
-                  color: "var(--muted)",
-                  fontSize: "0.8rem",
-                  marginTop: 0,
-                }}
-              >
-                Sign in with your Buyer email and password to access your
-                payment history.
+              <p className="auth-card__desc">
+                Enter your Buyer email and password to access saved payments.
               </p>
 
               {error && (
@@ -167,13 +169,13 @@ export default function AccountReceiptsPage() {
                   style={{
                     background: "var(--danger-soft)",
                     color: "var(--danger)",
-                    padding: "0.6rem 0.75rem",
+                    padding: "0.55rem 0.72rem",
                     borderRadius: 8,
-                    fontSize: "0.78rem",
-                    marginBottom: "0.85rem",
+                    fontSize: "0.76rem",
+                    marginBottom: "0.75rem",
                     display: "flex",
                     alignItems: "center",
-                    gap: "0.4rem",
+                    gap: "0.38rem",
                   }}
                 >
                   <AlertCircle size={14} />
@@ -213,17 +215,17 @@ export default function AccountReceiptsPage() {
                 <button
                   type="submit"
                   className="ref-make-payment-btn"
-                  style={{ marginTop: "0.25rem" }}
+                  style={{ marginTop: "0.7rem" }}
                   disabled={submitting}
                 >
-                  {submitting ? "Signing In..." : "View My Receipts"}
+                  {submitting ? "Signing In..." : "Sign In"}
                 </button>
               </form>
 
               <p
                 style={{
                   textAlign: "center",
-                  fontSize: "0.78rem",
+                  fontSize: "0.76rem",
                   color: "var(--muted)",
                   marginTop: "0.85rem",
                   marginBottom: 0,
@@ -264,7 +266,7 @@ export default function AccountReceiptsPage() {
                     alignItems: "center",
                     justifyContent: "space-between",
                     gap: "0.8rem",
-                    padding: "0.78rem 0.95rem",
+                    padding: "0.8rem 1rem",
                     cursor: "pointer",
                     textAlign: "left",
                     transition: "border-color 0.18s ease",
@@ -283,8 +285,8 @@ export default function AccountReceiptsPage() {
                       src={r.productImage || "/listings/smartphone.jpg"}
                       alt={r.productName}
                       style={{
-                        width: 46,
-                        height: 46,
+                        width: 48,
+                        height: 48,
                         borderRadius: 8,
                         objectFit: "cover",
                         background: "var(--paper-deep)",
@@ -295,7 +297,7 @@ export default function AccountReceiptsPage() {
                       <div
                         style={{
                           fontWeight: 600,
-                          fontSize: "0.84rem",
+                          fontSize: "0.86rem",
                           color: "var(--ink-strong)",
                           whiteSpace: "nowrap",
                           overflow: "hidden",
@@ -343,8 +345,8 @@ export default function AccountReceiptsPage() {
                   >
                     <div
                       style={{
-                        fontWeight: 600,
-                        fontSize: "0.86rem",
+                        fontWeight: 700,
+                        fontSize: "0.88rem",
                         color: "var(--ink-strong)",
                       }}
                     >
@@ -358,8 +360,6 @@ export default function AccountReceiptsPage() {
           )}
         </div>
       </main>
-
-      <KovaFooter />
 
       {/* Detailed Receipt View Modal (On Click) */}
       {selectedReceipt && (
@@ -442,7 +442,6 @@ export default function AccountReceiptsPage() {
               </div>
             </div>
 
-            {/* Itemized Breakdown */}
             <div
               style={{
                 background: "var(--paper-subtle)",
@@ -455,7 +454,7 @@ export default function AccountReceiptsPage() {
               <div
                 style={{
                   fontWeight: 600,
-                  fontSize: "0.84rem",
+                  fontSize: "0.85rem",
                   color: "var(--ink-strong)",
                   marginBottom: "0.35rem",
                 }}
@@ -489,8 +488,8 @@ export default function AccountReceiptsPage() {
                     justifyContent: "space-between",
                     paddingTop: "0.38rem",
                     borderTop: "1px solid var(--line)",
-                    fontWeight: 600,
-                    fontSize: "0.86rem",
+                    fontWeight: 700,
+                    fontSize: "0.88rem",
                     color: "var(--ink-strong)",
                   }}
                 >
@@ -502,7 +501,6 @@ export default function AccountReceiptsPage() {
               </div>
             </div>
 
-            {/* Metadata Grid */}
             <dl
               style={{
                 display: "grid",
@@ -574,6 +572,7 @@ export default function AccountReceiptsPage() {
           </div>
         </div>
       )}
+      <KovaFooter />
     </>
   );
 }

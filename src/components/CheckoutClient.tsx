@@ -262,36 +262,47 @@ export function CheckoutClient({
 
   return (
     <>
-      <KovaHeader />
-
-      <div className="kova-subbar">
-        <div className="container kova-subbar__inner">
-          <button
-            type="button"
-            onClick={handleBack}
-            className="kova-subbar__left"
-            style={{
-              background: "none",
-              border: "none",
-              padding: 0,
-              cursor: "pointer",
-            }}
-          >
-            <ArrowLeft size={15} />
-            {step === "form" ? "Back to Product" : "Back"}
-          </button>
-        </div>
-      </div>
+      <KovaHeader
+        backHref="/"
+        onBack={
+          step === "paystack"
+            ? () => setStep("review")
+            : step === "review"
+            ? () => setStep("form")
+            : undefined
+        }
+      />
 
       <main id="main" className="storefront-main">
         <div className="container">
-          <h1
-            className="display display--md"
-            style={{ color: "var(--ink-strong)", marginBottom: "0.2rem" }}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "0.5rem",
+              marginBottom: "0.2rem",
+            }}
           >
-            Make Payment
-          </h1>
-          <p style={{ color: "var(--muted)", fontSize: "0.82rem", marginTop: 0, marginBottom: "1rem" }}>
+            <h1
+              className="display display--md"
+              style={{ color: "var(--ink-strong)" }}
+            >
+              Make Payment
+            </h1>
+            {step === "form" && (
+              <button
+                type="button"
+                onClick={handleBack}
+                className="btn btn--ghost btn--sm"
+              >
+                <ArrowLeft size={14} />
+                Back to Product
+              </button>
+            )}
+          </div>
+          <p style={{ color: "var(--muted)", fontSize: "0.78rem", marginTop: 0, marginBottom: "1rem" }}>
             {paymentLabel} · Sold by <strong>{vendor.fullName}</strong>
           </p>
 
