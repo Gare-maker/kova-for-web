@@ -77,17 +77,30 @@ export interface CustomerInfo {
 
 export interface UserAccount {
   id: string;
+  firstAndMiddleName: string;
+  surname: string;
   name: string;
+  usernameOrBusiness: string;
   phone: string;
   email: string;
+  role: "Buyer";
+  passwordHash?: string;
+  confirmationEmailSentAt?: string;
   createdAt: string;
 }
+
+export type PaymentCategory =
+  | "product"
+  | "property_inspection"
+  | "property_agent";
 
 export interface Order {
   id: string;
   orderReference: string;
   transactionReference: string;
   userId: string;
+  paymentCategory: PaymentCategory;
+  paymentLabel: string;
   productId: string;
   productName: string;
   productImage: string;
@@ -133,6 +146,7 @@ export interface Receipt {
   productName: string;
   productDescription: string;
   productImage: string;
+  paymentLabel?: string;
   selectedOption?: string;
   quantity: number;
   unitPrice: number;

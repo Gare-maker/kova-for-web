@@ -204,7 +204,7 @@ select {
   display: flex;
 }
 .nav__brand img {
-  width: 112px;
+  width: 92px;
   height: auto;
 }
 .nav__links {
@@ -251,19 +251,23 @@ select {
   }
 }
 
-/* Mobile Menu Drawer */
+/* Mobile Menu Drawer (always rendered outside sticky/blurred header) */
 .mobile-drawer {
   position: fixed;
   inset: 0;
+  width: 100vw;
+  height: 100dvh;
   background: rgba(18, 18, 31, 0.45);
-  z-index: 1200;
+  z-index: 2000;
   display: flex;
   justify-content: flex-end;
 }
 .mobile-drawer__panel {
   width: min(310px, 84vw);
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow-y: auto;
   background: #ffffff;
-  height: 100%;
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
@@ -636,17 +640,20 @@ select {
 
 .ref-detail-hero {
   position: relative;
-  border-radius: 22px;
+  border-radius: 18px;
   overflow: hidden;
-  background: var(--paper-deep);
-  aspect-ratio: 4 / 4.2;
-  max-height: 620px;
+  background: #f5f6f8;
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .ref-detail-hero img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  max-height: 540px;
+  object-fit: contain;
+  display: block;
 }
 .ref-detail-hero__scrim {
   position: absolute;
@@ -851,7 +858,7 @@ select {
   cursor: pointer;
 }
 
-/* Mobile Exact Bottom-Sheet Experience (matches Reference Images 1 & 2) */
+/* Mobile Details Experience (Uncropped Full Media + Always-Expanded Details) */
 @media (max-width: 899px) {
   .ref-detail-shell {
     padding: 0;
@@ -860,37 +867,25 @@ select {
   }
   .ref-detail-hero {
     border-radius: 0;
-    aspect-ratio: auto;
-    height: 62vh;
-    min-height: 360px;
-    max-height: 560px;
-    transition: height 0.3s var(--ease-out);
+    background: #f5f6f8;
+    width: 100%;
   }
-  .ref-detail-hero--expanded {
-    height: 44vh;
-    min-height: 270px;
+  .ref-detail-hero img {
+    width: 100%;
+    height: auto;
+    max-height: 62vh;
+    object-fit: contain;
   }
   .ref-detail-sheet {
     border: none;
-    border-radius: 26px 26px 0 0;
-    margin-top: -26px;
+    border-radius: 0;
+    margin-top: 0;
     position: relative;
-    z-index: 4;
-    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.08);
+    z-index: 2;
+    box-shadow: none;
   }
   .ref-detail-sheet__inner {
-    padding: 0.75rem 1.2rem 1.35rem;
-  }
-  .ref-drag-handle {
-    display: block;
-    width: 56px;
-    height: 4px;
-    border-radius: 999px;
-    background: #d1d5db;
-    margin: 0 auto 1.15rem;
-    border: none;
-    padding: 0;
-    cursor: pointer;
+    padding: 1.15rem 1.1rem 1.75rem;
   }
 }
 
@@ -1183,7 +1178,7 @@ select {
 .kova-cover-banner {
   position: relative;
   width: 100%;
-  min-height: clamp(148px, 22vw, 220px);
+  min-height: clamp(104px, 14vw, 148px);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -1209,14 +1204,14 @@ select {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.1rem;
-  padding-block: 1.25rem;
+  gap: 1rem;
+  padding-block: 0.85rem;
   flex-wrap: wrap;
 }
 .kova-cover-banner__id {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.85rem;
   background: none;
   border: none;
   padding: 0;
@@ -1226,8 +1221,8 @@ select {
 }
 .kova-cover-avatar {
   position: relative;
-  width: clamp(68px, 8vw, 84px);
-  height: clamp(68px, 8vw, 84px);
+  width: clamp(54px, 6.5vw, 66px);
+  height: clamp(54px, 6.5vw, 66px);
   flex: none;
 }
 .kova-cover-avatar__ring {
@@ -1235,12 +1230,12 @@ select {
   height: 100%;
   border-radius: 50%;
   overflow: hidden;
-  border: 2.5px solid rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.9);
   background: var(--forest);
   display: grid;
   place-items: center;
   color: #ffffff;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 600;
 }
 .kova-cover-avatar__ring img {
@@ -1250,14 +1245,14 @@ select {
 }
 .kova-cover-handle {
   margin: 0;
-  font-size: clamp(1.35rem, 2.6vw, 1.95rem);
+  font-size: clamp(1.18rem, 2.1vw, 1.55rem);
   font-weight: 500;
   color: #ffffff;
   line-height: 1.15;
 }
 .kova-cover-subtitle {
-  margin: 0.25rem 0 0;
-  font-size: clamp(0.92rem, 1.3vw, 1.06rem);
+  margin: 0.2rem 0 0;
+  font-size: clamp(0.84rem, 1.1vw, 0.96rem);
   font-weight: 400;
   color: rgba(255, 255, 255, 0.86);
 }

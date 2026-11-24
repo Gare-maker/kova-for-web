@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { findUserAccount, getReceiptsByUserId, readDb } from "@/lib/db";
+import { findUserAccount, getReceiptsByUserId, getUserById } from "@/lib/db";
 import {
   ACCOUNT_COOKIE_NAME,
   getAuthenticatedUserId,
@@ -9,15 +9,16 @@ import {
 export async function GET() {
   const userId = await getAuthenticatedUserId();
   if (!userId) {
-    return NextResponse.json({ user: null, receipts: [] });
+    return NextResponse.json({ authenticated: false, user: null, receipts: [] });
   }
-  const db = readDb();
-  const user = db.users.find((u) => u.id === userId) ?? null;
+  const user = getUserById(userId);
   if (!user) {
-    return NextResponse.json({ user: null, receipts: [] });
+    return NextResponse.json({ authenticated: false, user: null, receipts: [] });
   }
+  const { passwordHash: _ignored, ...safeUser } = user;
+  void _ignored;
   const receipts = getReceiptsByUserId(user.id);
-  return NextResponse.json({ user, receipts });
+  return NextResponse.json({ authenticated: true, user: safeUser, receipts });
 }
 
 export async function POST(req: Request) {
@@ -44,8 +45,10 @@ export async function POST(req: Request) {
       );
     }
 
+    const { passwordHash: _ignored, ...safeUser } = user;
+    void _ignored;
     const receipts = getReceiptsByUserId(user.id);
-    const res = NextResponse.json({ user, receipts });
+    const res = NextResponse.json({ authenticated: true, user: safeUser, receipts });
     res.cookies.set(ACCOUNT_COOKIE_NAME, signUserId(user.id), {
       httpOnly: true,
       sameSite: "lax",
@@ -66,4 +69,3 @@ export async function DELETE() {
   res.cookies.delete(ACCOUNT_COOKIE_NAME);
   return res;
 }
-

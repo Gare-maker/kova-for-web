@@ -100,13 +100,11 @@ export function downloadReceiptPdf(receipt: Receipt): void {
   y += 46;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.text(
-    receipt.selectedOption
-      ? `${receipt.productName} (${receipt.selectedOption})`
-      : receipt.productName,
-    54,
-    y
-  );
+  const itemLabel =
+    receipt.paymentLabel && receipt.paymentLabel !== "Product Payment"
+      ? `${receipt.productName} — ${receipt.paymentLabel}`
+      : receipt.productName;
+  doc.text(itemLabel, 54, y);
   doc.setFont("helvetica", "normal");
   doc.text(String(receipt.quantity), pageW - 185, y);
   doc.text(

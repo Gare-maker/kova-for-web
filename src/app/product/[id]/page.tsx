@@ -3,9 +3,11 @@ import Link from "next/link";
 import { Suspense } from "react";
 import {
   getProductWithVendor,
+  getVendorRatings,
   readDb,
   getEffectiveAvailability,
 } from "@/lib/db";
+import { getAuthenticatedUserId } from "@/lib/session";
 import { formatNaira } from "@/lib/format";
 import { ProductDetailClient } from "@/components/ProductDetailClient";
 import { KovaHeader } from "@/components/KovaHeader";
@@ -65,11 +67,14 @@ export default async function ProductPage({
         <KovaHeader />
         <main id="main" className="storefront-main">
           <div className="container">
-            <div className="empty-state" style={{ maxWidth: 560, marginInline: "auto" }}>
+            <div
+              className="empty-state"
+              style={{ maxWidth: 560, marginInline: "auto" }}
+            >
               <h1 className="display display--sm">Product not found</h1>
               <p>The product you&apos;re looking for could not be found.</p>
               <Link href="/" className="btn btn--brand btn--sm">
-                Browse Kova Storefronts
+                Browse Storefront
               </Link>
             </div>
           </div>
@@ -81,15 +86,25 @@ export default async function ProductPage({
 
   const db = readDb();
   const avail = getEffectiveAvailability(db, result.product);
+  const initialReviews = getVendorRatings(result.vendor.id);
+  const userId = await getAuthenticatedUserId();
 
   return (
-    <Suspense fallback={<div style={{ padding: "3rem", textAlign: "center" }}>Loading product...</div>}>
+    <Suspense
+      fallback={
+        <div style={{ padding: "3rem", textAlign: "center" }}>
+          Loading details...
+        </div>
+      }
+    >
       <ProductDetailClient
         product={result.product}
         vendor={result.vendor}
         effectiveAvailable={avail.available}
         effectiveRemaining={avail.remaining}
         unavailableReason={avail.reason ?? null}
+        initialReviews={initialReviews}
+        isAuthenticated={Boolean(userId)}
       />
     </Suspense>
   );

@@ -142,8 +142,9 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
                     color: "var(--ink-strong)",
                   }}
                 >
-                  {receipt.productName}
-                  {receipt.selectedOption ? ` (${receipt.selectedOption})` : ""}
+                  {receipt.paymentLabel && receipt.paymentLabel !== "Product Payment"
+                    ? `${receipt.productName} — ${receipt.paymentLabel}`
+                    : receipt.productName}
                 </div>
                 <div style={{ fontSize: "0.88rem", color: "var(--muted)" }}>
                   Qty: {receipt.quantity} &times; {formatNaira(receipt.unitPrice)} · Delivery:{" "}

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Search, Star, Share2, Check, ShoppingBag } from "lucide-react";
 import type { Vendor, Product } from "@/lib/types";
 import { formatNaira, getInitials } from "@/lib/format";
@@ -54,7 +54,6 @@ export function StorefrontClient({
   products,
   basePath,
 }: StorefrontClientProps) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const routePath = basePath ?? `/store/${encodeURIComponent(vendor.username)}`;
 
@@ -68,12 +67,17 @@ export function StorefrontClient({
     vendor.ratingCount ?? 120
   );
 
+  // Sync URL query silently via History API (prevents Next.js RSC lag/freezing on mount & clicks)
   useEffect(() => {
-    const params = new URLSearchParams();
-    if (searchQuery.trim()) params.set("q", searchQuery.trim());
-    const qs = params.toString();
-    router.replace(qs ? `${routePath}?${qs}` : routePath, { scroll: false });
-  }, [searchQuery, routePath, router]);
+    if (typeof window === "undefined") return;
+    const trimmed = searchQuery.trim();
+    const nextUrl = trimmed
+      ? `${routePath}?q=${encodeURIComponent(trimmed)}`
+      : routePath;
+    if (window.location.pathname + window.location.search !== nextUrl) {
+      window.history.replaceState(null, "", nextUrl);
+    }
+  }, [searchQuery, routePath]);
 
   const filteredProducts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -265,6 +269,8 @@ export function StorefrontClient({
                       <img
                         src={product.images[0] || "/listings/smartphone.jpg"}
                         alt={product.name}
+                        loading="lazy"
+                        decoding="async"
                       />
                       {!isProp && (
                         <span className="kova-cond-badge">

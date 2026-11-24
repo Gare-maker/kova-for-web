@@ -9,6 +9,7 @@ import {
   Order,
   Receipt,
   UserAccount,
+  PaymentCategory,
   VendorRating,
   VendorNotification,
   ChatConversation,
@@ -188,8 +189,8 @@ function createSeedDatabase(): KovaDatabase {
       pricePeriod: "Per year",
       deliveryFee: 0,
       waybillLabel: "Free waybill",
-      inspectionLabel: "Free",
-      inspectionFee: 0,
+      inspectionLabel: "₦5,000",
+      inspectionFee: 5000,
       cautionFee: 0,
       agentFee: 17000,
       amenities: ["Electricity supply", "Running water", "Wardrobe"],
@@ -236,7 +237,7 @@ function createSeedDatabase(): KovaDatabase {
       pricePeriod: "Per year",
       deliveryFee: 0,
       waybillLabel: "Free waybill",
-      inspectionFee: 0,
+      inspectionFee: 5000,
       cautionFee: 0,
       agentFee: 17000,
       amenities: ["Electricity supply", "Running water", "Wardrobe"],
@@ -355,6 +356,99 @@ export function normalizePhone(phone: string): string {
   return phone.replace(/\s+/g, "").trim();
 }
 
+function hashPassword(password: string, salt?: string): string {
+  const s = salt ?? crypto.randomBytes(16).toString("hex");
+  const hash = crypto.scryptSync(password, s, 32).toString("hex");
+  return `${s}:${hash}`;
+}
+
+function verifyPassword(password: string, stored: string): boolean {
+  const [salt, hash] = stored.split(":");
+  if (!salt || !hash) return false;
+  const candidate = crypto.scryptSync(password, salt, 32).toString("hex");
+  const a = Buffer.from(hash);
+  const b = Buffer.from(candidate);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+export function registerBuyerAccount(params: {
+  firstAndMiddleName: string;
+  surname: string;
+  usernameOrBusiness: string;
+  email: string;
+  phone: string;
+  password: string;
+}): { error?: string; user?: UserAccount } {
+  const db = readDb();
+  const normEmail = params.email.trim().toLowerCase();
+  const normPhone = normalizePhone(params.phone);
+
+  const existing = db.users.find(
+    (u) => u.email.toLowerCase() === normEmail
+  );
+  if (existing && existing.passwordHash) {
+    return {
+      error:
+        "An account with this email already exists. Please sign in instead.",
+    };
+  }
+
+  const now = new Date().toISOString();
+  const fullName = `${params.firstAndMiddleName.trim()} ${params.surname.trim()}`.trim();
+
+  if (existing) {
+    existing.firstAndMiddleName = params.firstAndMiddleName.trim();
+    existing.surname = params.surname.trim();
+    existing.name = fullName;
+    existing.usernameOrBusiness = params.usernameOrBusiness.trim();
+    existing.phone = normPhone;
+    existing.role = "Buyer";
+    existing.passwordHash = hashPassword(params.password);
+    existing.confirmationEmailSentAt = now;
+    writeDb(db);
+    return { user: existing };
+  }
+
+  const user: UserAccount = {
+    id: `usr_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`,
+    firstAndMiddleName: params.firstAndMiddleName.trim(),
+    surname: params.surname.trim(),
+    name: fullName,
+    usernameOrBusiness: params.usernameOrBusiness.trim(),
+    phone: normPhone,
+    email: normEmail,
+    role: "Buyer",
+    passwordHash: hashPassword(params.password),
+    confirmationEmailSentAt: now,
+    createdAt: now,
+  };
+
+  db.users.push(user);
+  writeDb(db);
+  return { user };
+}
+
+export function authenticateBuyer(
+  email: string,
+  password: string
+): { error?: string; user?: UserAccount } {
+  const db = readDb();
+  const normEmail = email.trim().toLowerCase();
+  const user = db.users.find((u) => u.email.toLowerCase() === normEmail);
+  if (!user || !user.passwordHash) {
+    return { error: "Invalid email address or password." };
+  }
+  if (!verifyPassword(password, user.passwordHash)) {
+    return { error: "Invalid email address or password." };
+  }
+  return { user };
+}
+
+export function getUserById(userId: string): UserAccount | null {
+  const db = readDb();
+  return db.users.find((u) => u.id === userId) ?? null;
+}
+
 export function getOrCreateUserAccount(params: {
   name: string;
   phone: string;
@@ -365,14 +459,24 @@ export function getOrCreateUserAccount(params: {
   const normPhone = normalizePhone(params.phone);
 
   let user = db.users.find(
-    (u) => u.email.toLowerCase() === normEmail && normalizePhone(u.phone) === normPhone
+    (u) =>
+      u.email.toLowerCase() === normEmail &&
+      normalizePhone(u.phone) === normPhone
   );
   if (!user) {
+    const parts = params.name.trim().split(/\s+/);
+    const surname = parts.length > 1 ? parts[parts.length - 1] : "";
+    const firstAndMiddleName =
+      parts.length > 1 ? parts.slice(0, -1).join(" ") : params.name.trim();
     user = {
       id: `usr_${crypto.createHash("sha256").update(`${normEmail}|${normPhone}`).digest("hex").slice(0, 16)}`,
+      firstAndMiddleName,
+      surname,
       name: params.name.trim(),
+      usernameOrBusiness: params.name.trim(),
       phone: normPhone,
       email: normEmail,
+      role: "Buyer",
       createdAt: new Date().toISOString(),
     };
     db.users.push(user);
@@ -475,14 +579,21 @@ export function getEffectiveAvailability(
 export function createOrderAndReservation(params: {
   productId: string;
   quantity: number;
+  paymentCategory?: PaymentCategory;
+  authenticatedUserId?: string | null;
   selectedOption?: string;
   customer: CustomerInfo;
 }): { error?: string; order?: Order; reservationId?: string } {
-  const user = getOrCreateUserAccount({
-    name: params.customer.name,
-    phone: params.customer.phone,
-    email: params.customer.email,
-  });
+  const existingAuthUser = params.authenticatedUserId
+    ? getUserById(params.authenticatedUserId)
+    : null;
+  const user =
+    existingAuthUser ??
+    getOrCreateUserAccount({
+      name: params.customer.name,
+      phone: params.customer.phone,
+      email: params.customer.email,
+    });
 
   const db = readDb();
   const product = db.products.find((p) => p.id === params.productId);
@@ -494,18 +605,36 @@ export function createOrderAndReservation(params: {
     return { error: "This vendor storefront is currently unavailable." };
   }
 
-  const qty = Math.max(1, Math.floor(params.quantity));
-  const check = getEffectiveAvailability(db, product);
-  if (!check.available || check.remaining < qty) {
-    return {
-      error:
-        check.reason ||
-        "Sorry, this product is currently unavailable in the requested quantity.",
-    };
+  const paymentCategory: PaymentCategory = params.paymentCategory ?? "product";
+  const qty =
+    paymentCategory === "product" ? Math.max(1, Math.floor(params.quantity)) : 1;
+
+  if (paymentCategory === "product") {
+    const check = getEffectiveAvailability(db, product);
+    if (!check.available || check.remaining < qty) {
+      return {
+        error:
+          check.reason ||
+          "Sorry, this product is currently unavailable in the requested quantity.",
+      };
+    }
   }
 
-  const subtotal = product.price * qty;
-  const deliveryFee = product.deliveryFee;
+  let unitPrice = product.price;
+  let deliveryFee = product.deliveryFee;
+  let paymentLabel = "Product Payment";
+
+  if (paymentCategory === "property_inspection") {
+    unitPrice = product.inspectionFee && product.inspectionFee > 0 ? product.inspectionFee : 10000;
+    deliveryFee = 0;
+    paymentLabel = "Property Inspection Fee";
+  } else if (paymentCategory === "property_agent") {
+    unitPrice = product.agentFee && product.agentFee > 0 ? product.agentFee : 17000;
+    deliveryFee = 0;
+    paymentLabel = "Property Agent Fee";
+  }
+
+  const subtotal = unitPrice * qty;
   const totalPaid = subtotal + deliveryFee;
   const { commissionRate, kovaCommission, vendorBalance } =
     calculateCommission(subtotal);
@@ -521,15 +650,17 @@ export function createOrderAndReservation(params: {
     orderReference,
     transactionReference,
     userId: user.id,
+    paymentCategory,
+    paymentLabel,
     productId: product.id,
     productName: product.name,
-    productImage: product.images[0] ?? "/products/desk.svg",
+    productImage: product.images[0] ?? "/listings/smartphone.jpg",
     selectedOption: params.selectedOption,
     vendorId: vendor.id,
     vendorName: vendor.fullName,
     vendorUsername: vendor.username,
     quantity: qty,
-    unitPrice: product.price,
+    unitPrice,
     deliveryFee,
     subtotal,
     commissionRate,
@@ -546,19 +677,22 @@ export function createOrderAndReservation(params: {
     paidAt: null,
   };
 
-  const reservationId = `res_${crypto.randomUUID()}`;
-  db.reservations.push({
-    id: reservationId,
-    productId: product.id,
-    quantity: qty,
-    orderId,
-    expiresAt: new Date(Date.now() + RESERVATION_TTL_MS).toISOString(),
-    released: false,
-  });
+  let reservationId: string | undefined;
+  if (paymentCategory === "product") {
+    reservationId = `res_${crypto.randomUUID()}`;
+    db.reservations.push({
+      id: reservationId,
+      productId: product.id,
+      quantity: qty,
+      orderId,
+      expiresAt: new Date(Date.now() + RESERVATION_TTL_MS).toISOString(),
+      released: false,
+    });
 
-  if (product.quantity - qty <= 0) {
-    product.availability = "reserved";
-    product.updatedAt = now;
+    if (product.quantity - qty <= 0) {
+      product.availability = "reserved";
+      product.updatedAt = now;
+    }
   }
 
   db.orders.push(order);
@@ -593,7 +727,7 @@ export function markOrderPaidAndGenerateReceipt(
     }
   }
 
-  if (product) {
+  if (product && (!order.paymentCategory || order.paymentCategory === "product")) {
     product.quantity = Math.max(0, product.quantity - order.quantity);
     product.availability = product.quantity > 0 ? "available" : "sold";
     product.updatedAt = now;
@@ -633,6 +767,7 @@ export function markOrderPaidAndGenerateReceipt(
     productName: order.productName,
     productDescription: product?.description ?? "",
     productImage: order.productImage,
+    paymentLabel: order.paymentLabel,
     selectedOption: order.selectedOption,
     quantity: order.quantity,
     unitPrice: order.unitPrice,

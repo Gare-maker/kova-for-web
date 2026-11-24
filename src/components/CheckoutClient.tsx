@@ -11,8 +11,10 @@ import {
   Building2,
   CheckCircle2,
   AlertCircle,
+  Minus,
+  Plus,
 } from "lucide-react";
-import type { Product, Vendor, Order } from "@/lib/types";
+import type { Product, Vendor, Order, PaymentCategory } from "@/lib/types";
 import { formatNaira } from "@/lib/format";
 import { KovaHeader } from "./KovaHeader";
 import { KovaFooter } from "./KovaFooter";
@@ -22,6 +24,7 @@ interface CheckoutClientProps {
   vendor: Vendor;
   effectiveAvailable: boolean;
   effectiveRemaining: number;
+  initialBuyer?: { name: string; phone: string; email: string } | null;
 }
 
 export function CheckoutClient({
@@ -29,16 +32,32 @@ export function CheckoutClient({
   vendor,
   effectiveAvailable,
   effectiveRemaining,
+  initialBuyer,
 }: CheckoutClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const verifyRef = searchParams.get("verify");
-  const selectedOption = searchParams.get("option") ?? product.options?.[0] ?? "";
 
-  const [quantity, setQuantity] = useState(1);
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const initialMode: "product" | "property" =
+    searchParams.get("type") === "property" ? "property" : "product";
+  const initialFee: "inspection" | "agent" =
+    searchParams.get("feeType") === "agent" ? "agent" : "inspection";
+  const initialQty = Math.min(
+    Math.max(1, effectiveRemaining),
+    Math.max(1, Number(searchParams.get("qty")) || 1)
+  );
+
+  const [paymentMode, setPaymentMode] = useState<"product" | "property">(
+    initialMode
+  );
+  const [propertyFeeType, setPropertyFeeType] = useState<"inspection" | "agent">(
+    initialFee
+  );
+  const [quantity, setQuantity] = useState(initialQty);
+
+  const [name, setName] = useState(initialBuyer?.name ?? "");
+  const [phone, setPhone] = useState(initialBuyer?.phone ?? "");
+  const [email, setEmail] = useState(initialBuyer?.email ?? "");
   const [currentLocation, setCurrentLocation] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [deliveryNotes, setDeliveryNotes] = useState("");
@@ -51,6 +70,10 @@ export function CheckoutClient({
   const [paymentChannel, setPaymentChannel] = useState<
     "Paystack (Card)" | "Paystack (Bank Transfer)"
   >("Paystack (Card)");
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, []);
 
   useEffect(() => {
     if (!verifyRef) return;
@@ -85,8 +108,38 @@ export function CheckoutClient({
     };
   }, [verifyRef, router]);
 
-  const subtotal = product.price * quantity;
-  const totalPayable = subtotal + product.deliveryFee;
+  const inspectionAmount =
+    product.inspectionFee && product.inspectionFee > 0
+      ? product.inspectionFee
+      : 10000;
+  const agentAmount =
+    product.agentFee && product.agentFee > 0 ? product.agentFee : 17000;
+
+  const paymentCategory: PaymentCategory =
+    paymentMode === "product"
+      ? "product"
+      : propertyFeeType === "inspection"
+      ? "property_inspection"
+      : "property_agent";
+
+  const activeUnitPrice =
+    paymentMode === "product"
+      ? product.price
+      : propertyFeeType === "inspection"
+      ? inspectionAmount
+      : agentAmount;
+
+  const activeQty = paymentMode === "product" ? quantity : 1;
+  const activeDelivery = paymentMode === "product" ? product.deliveryFee : 0;
+  const subtotal = activeUnitPrice * activeQty;
+  const totalPayable = subtotal + activeDelivery;
+
+  const paymentLabel =
+    paymentMode === "product"
+      ? "Product Payment"
+      : propertyFeeType === "inspection"
+      ? "Property Inspection Fee"
+      : "Property Agent Fee";
 
   const handleContinueToReview = (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,8 +168,8 @@ export function CheckoutClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productId: product.id,
-          quantity,
-          selectedOption: selectedOption || undefined,
+          quantity: activeQty,
+          paymentCategory,
           customer: {
             name: name.trim(),
             phone: phone.trim(),
@@ -128,6 +181,12 @@ export function CheckoutClient({
         }),
       });
       const data = await res.json();
+      if (res.status === 401) {
+        router.push(
+          `/register?next=${encodeURIComponent(`/checkout/${product.id}`)}`
+        );
+        return;
+      }
       if (!res.ok) {
         setError(data.error || "Unable to initialize payment.");
         return;
@@ -178,6 +237,8 @@ export function CheckoutClient({
     }
   };
 
+  const safeMax = Math.max(1, effectiveRemaining);
+
   return (
     <>
       <KovaHeader />
@@ -192,7 +253,7 @@ export function CheckoutClient({
                 alignItems: "center",
                 gap: "0.4rem",
                 fontSize: "0.88rem",
-                fontWeight: 700,
+                fontWeight: 600,
                 color: "var(--muted)",
               }}
             >
@@ -208,25 +269,23 @@ export function CheckoutClient({
             Checkout
           </h1>
           <p style={{ color: "var(--muted)", marginTop: 0, marginBottom: "1.5rem" }}>
-            Complete your purchase from <strong>{vendor.fullName}</strong> without
-            installing the Kova app.
+            {paymentLabel} · Sold by <strong>{vendor.fullName}</strong>
           </p>
 
-          {!effectiveAvailable && step === "form" && (
+          {!effectiveAvailable && paymentMode === "product" && step === "form" ? (
             <div className="empty-state">
-              <AlertCircle size={32} color="var(--danger)" style={{ marginInline: "auto" }} />
+              <AlertCircle
+                size={32}
+                color="var(--danger)"
+                style={{ marginInline: "auto" }}
+              />
               <h3>Sorry, this product is currently unavailable.</h3>
               <p>It may have just been purchased or reserved by another buyer.</p>
-              <Link
-                href="/"
-                className="btn btn--brand btn--sm"
-              >
+              <Link href="/" className="btn btn--brand btn--sm">
                 Browse Other Products
               </Link>
             </div>
-          )}
-
-          {(effectiveAvailable || step !== "form") && (
+          ) : (
             <div className="checkout-grid">
               <div className="surface-card">
                 {error && (
@@ -237,7 +296,7 @@ export function CheckoutClient({
                       padding: "0.85rem 1rem",
                       borderRadius: 10,
                       fontSize: "0.88rem",
-                      fontWeight: 600,
+                      fontWeight: 500,
                       marginBottom: "1.15rem",
                       display: "flex",
                       alignItems: "center",
@@ -255,8 +314,153 @@ export function CheckoutClient({
                       className="display display--sm"
                       style={{ marginBottom: "1rem" }}
                     >
-                      1. Customer &amp; Delivery Information
+                      1. Payment Type &amp; Delivery Information
                     </h2>
+
+                    {/* Switchable Payment Type */}
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "0.55rem",
+                        marginBottom: "1rem",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMode("product")}
+                        className="btn btn--outline btn--sm"
+                        style={{
+                          borderColor:
+                            paymentMode === "product" ? "var(--brand)" : undefined,
+                          background:
+                            paymentMode === "product"
+                              ? "var(--brand-soft)"
+                              : undefined,
+                          color:
+                            paymentMode === "product"
+                              ? "var(--forest)"
+                              : undefined,
+                        }}
+                      >
+                        Product Payment
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMode("property")}
+                        className="btn btn--outline btn--sm"
+                        style={{
+                          borderColor:
+                            paymentMode === "property" ? "var(--brand)" : undefined,
+                          background:
+                            paymentMode === "property"
+                              ? "var(--brand-soft)"
+                              : undefined,
+                          color:
+                            paymentMode === "property"
+                              ? "var(--forest)"
+                              : undefined,
+                        }}
+                      >
+                        Property Payment
+                      </button>
+                    </div>
+
+                    {paymentMode === "product" ? (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          background: "var(--paper-subtle)",
+                          border: "1px solid var(--line)",
+                          borderRadius: 10,
+                          padding: "0.75rem 0.9rem",
+                          marginBottom: "1rem",
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: "0.88rem" }}>
+                            Quantity
+                          </div>
+                          <div style={{ fontSize: "0.78rem", color: "var(--muted)" }}>
+                            {formatNaira(product.price)} &times; {quantity} ={" "}
+                            {formatNaira(subtotal)}
+                          </div>
+                        </div>
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: "0.55rem" }}>
+                          <button
+                            type="button"
+                            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                            disabled={quantity <= 1}
+                            aria-label="Decrease quantity"
+                            className="btn btn--outline btn--sm"
+                            style={{ padding: "0.35rem 0.5rem", minHeight: 32 }}
+                          >
+                            <Minus size={14} />
+                          </button>
+                          <span style={{ minWidth: 22, textAlign: "center", fontWeight: 600 }}>
+                            {quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setQuantity((q) => Math.min(safeMax, q + 1))
+                            }
+                            disabled={quantity >= safeMax}
+                            aria-label="Increase quantity"
+                            className="btn btn--outline btn--sm"
+                            style={{ padding: "0.35rem 0.5rem", minHeight: 32 }}
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: "0.55rem",
+                          marginBottom: "1rem",
+                        }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setPropertyFeeType("inspection")}
+                          className="btn btn--outline btn--sm"
+                          style={{
+                            borderColor:
+                              propertyFeeType === "inspection"
+                                ? "var(--brand)"
+                                : undefined,
+                            background:
+                              propertyFeeType === "inspection"
+                                ? "var(--brand-soft)"
+                                : undefined,
+                          }}
+                        >
+                          Inspection ({formatNaira(inspectionAmount)})
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPropertyFeeType("agent")}
+                          className="btn btn--outline btn--sm"
+                          style={{
+                            borderColor:
+                              propertyFeeType === "agent"
+                                ? "var(--brand)"
+                                : undefined,
+                            background:
+                              propertyFeeType === "agent"
+                                ? "var(--brand-soft)"
+                                : undefined,
+                          }}
+                        >
+                          Agent Fee ({formatNaira(agentAmount)})
+                        </button>
+                      </div>
+                    )}
 
                     <div className="form-group">
                       <label className="form-label" htmlFor="cust-name">
@@ -288,7 +492,7 @@ export function CheckoutClient({
 
                     <div className="form-group">
                       <label className="form-label" htmlFor="cust-email">
-                        Email Address * (links your receipt history)
+                        Email Address *
                       </label>
                       <input
                         id="cust-email"
@@ -308,7 +512,7 @@ export function CheckoutClient({
                       <input
                         id="cust-current-loc"
                         className="form-input"
-                        placeholder="e.g. Auchi Polytechnic Campus, Edo State"
+                        placeholder="e.g. Ikeja, Lagos State"
                         value={currentLocation}
                         onChange={(e) => setCurrentLocation(e.target.value)}
                         required
@@ -331,41 +535,16 @@ export function CheckoutClient({
 
                     <div className="form-group">
                       <label className="form-label" htmlFor="cust-notes">
-                        Delivery Instructions (Optional)
+                        Delivery Notes (Optional)
                       </label>
                       <input
                         id="cust-notes"
                         className="form-input"
-                        placeholder="e.g. Call me at the gate"
+                        placeholder="e.g. Call me upon arrival"
                         value={deliveryNotes}
                         onChange={(e) => setDeliveryNotes(e.target.value)}
                       />
                     </div>
-
-                    {effectiveRemaining > 1 && (
-                      <div className="form-group">
-                        <label className="form-label" htmlFor="cust-qty">
-                          Quantity (Max {effectiveRemaining})
-                        </label>
-                        <input
-                          id="cust-qty"
-                          type="number"
-                          min={1}
-                          max={effectiveRemaining}
-                          className="form-input"
-                          value={quantity}
-                          onChange={(e) =>
-                            setQuantity(
-                              Math.min(
-                                effectiveRemaining,
-                                Math.max(1, Number(e.target.value) || 1)
-                              )
-                            )
-                          }
-                          style={{ maxWidth: 120 }}
-                        />
-                      </div>
-                    )}
 
                     <button
                       type="submit"
@@ -388,7 +567,7 @@ export function CheckoutClient({
 
                     <div
                       style={{
-                        background: "var(--paper)",
+                        background: "var(--paper-subtle)",
                         border: "1px solid var(--line)",
                         borderRadius: 12,
                         padding: "1rem",
@@ -398,6 +577,9 @@ export function CheckoutClient({
                         gap: "0.35rem",
                       }}
                     >
+                      <div>
+                        <strong>Payment Type:</strong> {paymentLabel}
+                      </div>
                       <div>
                         <strong>Full Name:</strong> {name}
                       </div>
@@ -489,7 +671,7 @@ export function CheckoutClient({
                           color: "var(--forest)",
                           padding: "0.3rem 0.65rem",
                           borderRadius: 999,
-                          fontWeight: 700,
+                          fontWeight: 600,
                         }}
                       >
                         Ref: {pendingOrder.transactionReference}
@@ -601,7 +783,7 @@ export function CheckoutClient({
                   }}
                 >
                   <img
-                    src={product.images[0] || "/products/desk.svg"}
+                    src={product.images[0] || "/listings/smartphone.jpg"}
                     alt={product.name}
                     style={{
                       width: 72,
@@ -621,17 +803,23 @@ export function CheckoutClient({
                     >
                       {product.name}
                     </div>
-                    {selectedOption && (
-                      <div style={{ fontSize: "0.8rem", color: "var(--brand-dark)", fontWeight: 700 }}>
-                        Option: {selectedOption}
-                      </div>
-                    )}
+                    <div
+                      style={{
+                        fontSize: "0.8rem",
+                        color: "var(--brand-dark)",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {paymentLabel}
+                    </div>
                     <div style={{ fontSize: "0.84rem", color: "var(--muted)" }}>
                       Sold by {vendor.fullName} (@{vendor.username})
                     </div>
-                    <div style={{ fontSize: "0.84rem", fontWeight: 700 }}>
-                      Qty: {quantity}
-                    </div>
+                    {paymentMode === "product" && (
+                      <div style={{ fontSize: "0.84rem", fontWeight: 600 }}>
+                        Qty: {activeQty}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -652,25 +840,29 @@ export function CheckoutClient({
                     }}
                   >
                     <span style={{ color: "var(--muted)" }}>
-                      Product Price ({quantity}x)
+                      {paymentMode === "product"
+                        ? `Product Price (${activeQty}x)`
+                        : paymentLabel}
                     </span>
                     <strong>{formatNaira(subtotal)}</strong>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <span style={{ color: "var(--muted)" }}>
-                      Delivery Charge
-                    </span>
-                    <strong>
-                      {product.deliveryFee === 0
-                        ? "Free"
-                        : formatNaira(product.deliveryFee)}
-                    </strong>
-                  </div>
+                  {paymentMode === "product" && (
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <span style={{ color: "var(--muted)" }}>
+                        Delivery Charge
+                      </span>
+                      <strong>
+                        {activeDelivery === 0
+                          ? "Free"
+                          : formatNaira(activeDelivery)}
+                      </strong>
+                    </div>
+                  )}
                 </div>
 
                 <div

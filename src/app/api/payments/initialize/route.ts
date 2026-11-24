@@ -1,14 +1,26 @@
 import { NextResponse } from "next/server";
 import { createOrderAndReservation } from "@/lib/db";
+import { getAuthenticatedUserId } from "@/lib/session";
+import type { PaymentCategory } from "@/lib/types";
 
 export async function POST(req: Request) {
   try {
+    const authenticatedUserId = await getAuthenticatedUserId();
+    if (!authenticatedUserId) {
+      return NextResponse.json(
+        { error: "Please create a Buyer account or sign in before paying." },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const productId = String(body.productId ?? "").trim();
     const quantity = Number(body.quantity ?? 1);
-    const selectedOption = body.selectedOption
-      ? String(body.selectedOption).trim()
-      : undefined;
+    const rawCat = String(body.paymentCategory ?? "product");
+    const paymentCategory: PaymentCategory =
+      rawCat === "property_inspection" || rawCat === "property_agent"
+        ? rawCat
+        : "product";
     const name = String(body.customer?.name ?? "").trim();
     const phone = String(body.customer?.phone ?? "").trim();
     const email = String(body.customer?.email ?? "").trim();
@@ -18,7 +30,14 @@ export async function POST(req: Request) {
       ? String(body.customer.deliveryNotes).trim()
       : undefined;
 
-    if (!productId || !name || !phone || !email || !currentLocation || !deliveryAddress) {
+    if (
+      !productId ||
+      !name ||
+      !phone ||
+      !email ||
+      !currentLocation ||
+      !deliveryAddress
+    ) {
       return NextResponse.json(
         {
           error:
@@ -38,7 +57,8 @@ export async function POST(req: Request) {
     const { error, order, reservationId } = createOrderAndReservation({
       productId,
       quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
-      selectedOption,
+      paymentCategory,
+      authenticatedUserId,
       customer: {
         name,
         phone,
@@ -77,6 +97,7 @@ export async function POST(req: Request) {
           metadata: {
             orderId: order.id,
             orderReference: order.orderReference,
+            paymentCategory: order.paymentCategory,
             vendorId: order.vendorId,
             productId: order.productId,
             source: "public_website",

@@ -2,14 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   MessageSquareText,
-  Share2,
-  Heart,
-  Flag,
-  Check,
   Star,
   Plug,
   Droplet,
@@ -24,6 +20,7 @@ import { KovaFooter } from "./KovaFooter";
 import { DownloadChatModal } from "./DownloadChatModal";
 import { RateVendorModal } from "./RateVendorModal";
 import { UserProfileModal } from "./UserProfileModal";
+import { PaymentOptionsModal } from "./PaymentOptionsModal";
 
 interface ProductDetailClientProps {
   product: Product;
@@ -31,6 +28,8 @@ interface ProductDetailClientProps {
   effectiveAvailable: boolean;
   effectiveRemaining: number;
   unavailableReason: string | null;
+  initialReviews: VendorRating[];
+  isAuthenticated: boolean;
 }
 
 function VerifiedSealSmall({ color = "#EAB308" }: { color?: string }) {
@@ -76,154 +75,92 @@ export function ProductDetailClient({
   effectiveAvailable,
   effectiveRemaining,
   unavailableReason,
+  initialReviews,
+  isAuthenticated,
 }: ProductDetailClientProps) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [chatPromptOpen, setChatPromptOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [liveRating, setLiveRating] = useState(vendor.rating);
   const [liveRatingCount, setLiveRatingCount] = useState(
     vendor.ratingCount ?? 120
   );
-  const [reviews, setReviews] = useState<VendorRating[]>([]);
-  const [liked, setLiked] = useState(false);
-  const [reported, setReported] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [showMoreDetails, setShowMoreDetails] = useState(false);
-  const [readMoreDesc, setReadMoreDesc] = useState(false);
-  const [selectedOption, setSelectedOption] = useState(
-    product.options?.[0] ?? ""
-  );
+  const [reviews, setReviews] = useState<VendorRating[]>(initialReviews);
 
+  // Scroll automatically to top on navigation
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch(
-          `/api/vendors/${encodeURIComponent(vendor.username)}/rate`,
-          { cache: "no-store" }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setReviews(data.ratings ?? []);
-        }
-      } catch {
-        // ignore
-      }
-    })();
-  }, [vendor.username, liveRatingCount]);
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [product.id]);
 
-  const qs = searchParams.toString();
-  const backHref = qs ? `/?${qs}` : `/`;
-
-  const checkoutHref = selectedOption
-    ? `/checkout/${product.id}?option=${encodeURIComponent(selectedOption)}`
-    : `/checkout/${product.id}`;
-
-  const handleShareProduct = async () => {
-    const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${product.name} · ${formatNaira(product.price)} on Kova`,
-          text: `Check out ${product.name} from ${vendor.fullName} on Kova`,
-          url,
-        });
-        return;
-      } catch {
-        // fallback
-      }
+  // If user returned from Buyer Registration with ?pay=1 while authenticated, open Payment Options
+  useEffect(() => {
+    if (isAuthenticated && searchParams.get("pay") === "1") {
+      setPaymentModalOpen(true);
     }
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2200);
-    } catch {
-      // ignore
-    }
-  };
+  }, [isAuthenticated, searchParams]);
+
+  const q = searchParams.get("q");
+  const backHref = q ? `/?q=${encodeURIComponent(q)}` : `/`;
 
   const isProperty =
     product.category.toLowerCase().includes("propert") ||
     product.category.toLowerCase().includes("apartment");
 
-  const isLongDesc = product.description.length > 130;
-  const displayedDesc =
-    isLongDesc && !readMoreDesc
-      ? product.description.slice(0, 130).trimEnd() + "..."
-      : product.description;
+  const handlePaymentClick = () => {
+    if (!isAuthenticated) {
+      const next = encodeURIComponent(`/product/${product.id}?pay=1`);
+      router.push(`/register?next=${next}`);
+      return;
+    }
+    setPaymentModalOpen(true);
+  };
+
+  const refreshReviews = async () => {
+    try {
+      const res = await fetch(
+        `/api/vendors/${encodeURIComponent(vendor.username)}/rate`,
+        { cache: "no-store" }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setReviews(data.ratings ?? []);
+      }
+    } catch {
+      // ignore
+    }
+  };
 
   return (
     <>
       <KovaHeader />
 
-      {/* Reference Images 1 & 4 White Sub-bar with Back Arrow + Share, Heart, Report */}
+      {/* Clean Sub-bar (Back navigation only — Like, Share, Flag removed) */}
       <div className="kova-subbar">
         <div className="container kova-subbar__inner">
           <Link href={backHref} className="kova-subbar__left">
             <ArrowLeft size={20} />
             {isProperty ? "Property Details" : "Product Details"}
           </Link>
-          <div className="kova-subbar__actions">
-            <button
-              type="button"
-              className="kova-icon-btn"
-              onClick={handleShareProduct}
-              aria-label="Share"
-              title={copied ? "Link copied!" : "Share"}
-            >
-              {copied ? (
-                <Check size={19} color="var(--brand)" />
-              ) : (
-                <Share2 size={19} />
-              )}
-            </button>
-            <button
-              type="button"
-              className={`kova-icon-btn ${liked ? "kova-icon-btn--active" : ""}`}
-              onClick={() => setLiked((v) => !v)}
-              aria-label={liked ? "Remove from saved" : "Save item"}
-            >
-              <Heart size={19} fill={liked ? "#ef4444" : "none"} />
-            </button>
-            <button
-              type="button"
-              className="kova-icon-btn"
-              onClick={() => setReported(true)}
-              aria-label="Report listing"
-              title={reported ? "Report submitted" : "Report listing"}
-            >
-              <Flag size={18} color={reported ? "#ef4444" : "currentColor"} />
-            </button>
-          </div>
         </div>
       </div>
 
       <main id="main" className="ref-detail-page">
         <div className="ref-detail-shell">
-          {/* Left / Top Hero Media */}
-          <div
-            className={`ref-detail-hero ${
-              showMoreDetails ? "ref-detail-hero--expanded" : ""
-            }`}
-          >
+          {/* Uncropped Full Product Media */}
+          <div className="ref-detail-hero">
             <img
               src={product.images[0] || "/listings/flat-exterior.jpg"}
               alt={product.name}
+              decoding="async"
             />
           </div>
 
-          {/* Right / Bottom White Sheet */}
+          {/* All Details Expanded & Visible by Default */}
           <div className="ref-detail-sheet">
             <div className="ref-detail-sheet__inner">
-              <button
-                type="button"
-                className="ref-drag-handle"
-                onClick={() => setShowMoreDetails((v) => !v)}
-                aria-label={
-                  showMoreDetails ? "Collapse details" : "Expand details"
-                }
-              />
-
               {/* Header Row: Title, Location, Price/Stock + Seller Avatar & Rating */}
               <div className="ref-detail-header-row">
                 <div style={{ minWidth: 0, flex: 1 }}>
@@ -343,11 +280,15 @@ export function ProductDetailClient({
                 </div>
               )}
 
-              {/* Primary Payment CTA + Reference Chat With Agent / Seller CTA */}
+              {/* Primary Payment CTA (Auth-gated -> Payment Options Modal) */}
               {effectiveAvailable ? (
-                <Link href={checkoutHref} className="ref-make-payment-btn">
+                <button
+                  type="button"
+                  onClick={handlePaymentClick}
+                  className="ref-make-payment-btn"
+                >
                   Make Payment
-                </Link>
+                </button>
               ) : (
                 <button
                   type="button"
@@ -367,318 +308,267 @@ export function ProductDetailClient({
                 <MessageSquareText size={18} />
               </button>
 
-              {/* Expandable Details Area */}
-              {showMoreDetails && (
-                <>
-                  {/* 3-Column Fee Row (Properties: Image 1) OR Delivery/Condition Row (Products) */}
-                  {isProperty ? (
-                    <div className="kova-three-fees">
-                      <div>
-                        <div className="ref-fee-label">Inspection</div>
-                        <div className="ref-fee-val">
-                          {product.inspectionFee === 0
-                            ? "Free"
-                            : formatNaira(product.inspectionFee ?? 10000)}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="ref-fee-label">Caution fee</div>
-                        <div className="ref-fee-val">
-                          {formatNaira(product.cautionFee ?? 0)}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="ref-fee-label">Agent fee</div>
-                        <div className="ref-fee-val">
-                          {formatNaira(product.agentFee ?? 17000)}
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="kova-three-fees">
-                      <div>
-                        <div className="ref-fee-label">Condition</div>
-                        <div className="ref-fee-val">{product.condition}</div>
-                      </div>
-                      <div>
-                        <div className="ref-fee-label">Delivery</div>
-                        <div className="ref-fee-val">
-                          {product.deliveryFee === 0
-                            ? "Free"
-                            : formatNaira(product.deliveryFee)}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="ref-fee-label">Status</div>
-                        <div className="ref-fee-val">
-                          {effectiveAvailable ? "Available" : "Sold Out"}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Options / Variations Selector */}
-                  {product.options && product.options.length > 0 && (
-                    <div
-                      style={{
-                        paddingBottom: "1rem",
-                        borderBottom: "1px solid var(--line)",
-                      }}
-                    >
-                      <div className="ref-fee-label">Available Options</div>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: "0.45rem",
-                        }}
-                      >
-                        {product.options.map((opt) => (
-                          <button
-                            key={opt}
-                            type="button"
-                            onClick={() => setSelectedOption(opt)}
-                            className={`ref-cat-chip ${
-                              selectedOption === opt
-                                ? "ref-cat-chip--active"
-                                : ""
-                            }`}
-                          >
-                            {opt}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Description Section */}
-                  <div className="ref-desc-block">
-                    <h2 className="ref-desc-heading">Description</h2>
-                    <p className="ref-desc-text">
-                      {displayedDesc}{" "}
-                      {isLongDesc && (
-                        <button
-                          type="button"
-                          className="ref-read-more-btn"
-                          onClick={() => setReadMoreDesc((r) => !r)}
-                        >
-                          {readMoreDesc ? "Show Less" : "Read More..."}
-                        </button>
+              {/* 3-Column Fee / Info Row */}
+              {isProperty ? (
+                <div className="kova-three-fees">
+                  <div>
+                    <div className="ref-fee-label">Inspection</div>
+                    <div className="ref-fee-val">
+                      {formatNaira(
+                        product.inspectionFee && product.inspectionFee > 0
+                          ? product.inspectionFee
+                          : 10000
                       )}
-                    </p>
-                  </div>
-
-                  {/* Amenities Section (matching Image 1) */}
-                  {product.amenities && product.amenities.length > 0 && (
-                    <div
-                      style={{
-                        marginTop: "1.25rem",
-                        paddingTop: "1.25rem",
-                        borderTop: "6px solid #f5f6f8",
-                      }}
-                    >
-                      <h2 className="ref-desc-heading">Amenities</h2>
-                      <div className="kova-amenities-list">
-                        {product.amenities.map((item) => (
-                          <div key={item} className="kova-amenity-row">
-                            <AmenityIcon label={item} />
-                            <span>{item}</span>
-                          </div>
-                        ))}
-                      </div>
                     </div>
-                  )}
+                  </div>
+                  <div>
+                    <div className="ref-fee-label">Caution fee</div>
+                    <div className="ref-fee-val">
+                      {formatNaira(product.cautionFee ?? 0)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="ref-fee-label">Agent fee</div>
+                    <div className="ref-fee-val">
+                      {formatNaira(product.agentFee ?? 17000)}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="kova-three-fees">
+                  <div>
+                    <div className="ref-fee-label">Condition</div>
+                    <div className="ref-fee-val">{product.condition}</div>
+                  </div>
+                  <div>
+                    <div className="ref-fee-label">Delivery</div>
+                    <div className="ref-fee-val">
+                      {product.deliveryFee === 0
+                        ? "Free"
+                        : formatNaira(product.deliveryFee)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="ref-fee-label">Status</div>
+                    <div className="ref-fee-val">
+                      {effectiveAvailable ? "Available" : "Sold Out"}
+                    </div>
+                  </div>
+                </div>
+              )}
 
-                  {/* Seller Spotlight Card (matching Image 4) */}
-                  <div
+              {/* Full Description (always expanded) */}
+              <div className="ref-desc-block">
+                <h2 className="ref-desc-heading">Description</h2>
+                <p className="ref-desc-text">{product.description}</p>
+              </div>
+
+              {/* Amenities Section */}
+              {product.amenities && product.amenities.length > 0 && (
+                <div
+                  style={{
+                    marginTop: "1.25rem",
+                    paddingTop: "1.25rem",
+                    borderTop: "6px solid #f5f6f8",
+                  }}
+                >
+                  <h2 className="ref-desc-heading">Amenities</h2>
+                  <div className="kova-amenities-list">
+                    {product.amenities.map((item) => (
+                      <div key={item} className="kova-amenity-row">
+                        <AmenityIcon label={item} />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Seller Profile Spotlight */}
+              <div
+                style={{
+                  marginTop: "1.25rem",
+                  paddingTop: "0.35rem",
+                  borderTop: "6px solid #f5f6f8",
+                }}
+              >
+                <div className="kova-seller-spotlight">
+                  <button
+                    type="button"
+                    onClick={() => setProfileOpen(true)}
+                    className="kova-seller-spotlight__left"
                     style={{
-                      marginTop: "1.25rem",
-                      paddingTop: "0.35rem",
-                      borderTop: "6px solid #f5f6f8",
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      cursor: "pointer",
                     }}
                   >
-                    <div className="kova-seller-spotlight">
+                    <div className="kova-seller-spotlight__avatar">
+                      {vendor.avatarUrl ? (
+                        <img src={vendor.avatarUrl} alt={vendor.fullName} />
+                      ) : (
+                        getInitials(vendor.fullName)
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        fontWeight: 600,
+                        fontSize: "0.96rem",
+                        color: "var(--ink-strong)",
+                      }}
+                    >
+                      @{vendor.username}
+                    </div>
+                    <span className="kova-role-badge">
+                      {vendor.categoryBadge || vendor.role}
+                    </span>
+                  </button>
+
+                  <div className="kova-seller-spotlight__stats">
+                    <div className="kova-spotlight-stat">
+                      <div className="kova-spotlight-stat__val">
+                        {vendor.stats.deals}
+                      </div>
+                      <div className="kova-spotlight-stat__label">Deals</div>
+                    </div>
+                    <div className="kova-spotlight-stat">
                       <button
                         type="button"
-                        onClick={() => setProfileOpen(true)}
-                        className="kova-seller-spotlight__left"
+                        onClick={() => setRateOpen(true)}
                         style={{
                           background: "none",
                           border: "none",
                           padding: 0,
                           cursor: "pointer",
+                          textAlign: "left",
                         }}
                       >
-                        <div className="kova-seller-spotlight__avatar">
-                          {vendor.avatarUrl ? (
-                            <img src={vendor.avatarUrl} alt={vendor.fullName} />
-                          ) : (
-                            getInitials(vendor.fullName)
-                          )}
+                        <div className="kova-spotlight-stat__val">
+                          {liveRating.toFixed(1)}
+                          <Star size={15} fill="#FACC15" color="#FACC15" />
                         </div>
-                        <div
-                          style={{
-                            fontWeight: 600,
-                            fontSize: "0.96rem",
-                            color: "var(--ink-strong)",
-                          }}
-                        >
-                          @{vendor.username}
-                        </div>
-                        <span className="kova-role-badge">
-                          {vendor.categoryBadge || vendor.role}
-                        </span>
+                        <div className="kova-spotlight-stat__label">Rating</div>
                       </button>
-
-                      <div className="kova-seller-spotlight__stats">
-                        <div className="kova-spotlight-stat">
-                          <div className="kova-spotlight-stat__val">
-                            {vendor.stats.deals}
-                          </div>
-                          <div className="kova-spotlight-stat__label">Deals</div>
-                        </div>
-                        <div className="kova-spotlight-stat">
-                          <button
-                            type="button"
-                            onClick={() => setRateOpen(true)}
-                            style={{
-                              background: "none",
-                              border: "none",
-                              padding: 0,
-                              cursor: "pointer",
-                              textAlign: "left",
-                            }}
-                          >
-                            <div className="kova-spotlight-stat__val">
-                              {liveRating.toFixed(1)}
-                              <Star size={15} fill="#FACC15" color="#FACC15" />
-                            </div>
-                            <div className="kova-spotlight-stat__label">
-                              Rating
-                            </div>
-                          </button>
-                        </div>
-                        <div className="kova-spotlight-stat">
-                          <div className="kova-spotlight-stat__val">
-                            {vendor.stats.posts}
-                          </div>
-                          <div className="kova-spotlight-stat__label">Posts</div>
-                        </div>
+                    </div>
+                    <div className="kova-spotlight-stat">
+                      <div className="kova-spotlight-stat__val">
+                        {vendor.stats.posts}
                       </div>
+                      <div className="kova-spotlight-stat__label">Posts</div>
                     </div>
                   </div>
+                </div>
+              </div>
 
-                  {/* Product Reviews Section (matching Image 4 bottom) */}
-                  <div
+              {/* Reviews Section */}
+              <div
+                style={{
+                  marginTop: "0.75rem",
+                  paddingTop: "1.25rem",
+                  borderTop: "6px solid #f5f6f8",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "0.75rem",
+                    marginBottom: "0.85rem",
+                  }}
+                >
+                  <h2 className="ref-desc-heading" style={{ margin: 0 }}>
+                    {product.name} Reviews
+                  </h2>
+                  <button
+                    type="button"
+                    className="btn btn--outline btn--sm"
+                    style={{ fontWeight: 500 }}
+                    onClick={() => setRateOpen(true)}
+                  >
+                    <Star size={14} fill="#FACC15" color="#FACC15" />
+                    Rate &amp; Review
+                  </button>
+                </div>
+
+                {reviews.length === 0 ? (
+                  <p
                     style={{
-                      marginTop: "0.75rem",
-                      paddingTop: "1.25rem",
-                      borderTop: "6px solid #f5f6f8",
+                      color: "var(--muted)",
+                      fontSize: "0.88rem",
+                      margin: 0,
                     }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: "0.75rem",
-                        marginBottom: "0.85rem",
-                      }}
-                    >
-                      <h2 className="ref-desc-heading" style={{ margin: 0 }}>
-                        {product.name} Reviews
-                      </h2>
-                      <button
-                        type="button"
-                        className="btn btn--outline btn--sm"
-                        style={{ fontWeight: 500 }}
-                        onClick={() => setRateOpen(true)}
-                      >
-                        <Star size={14} fill="#FACC15" color="#FACC15" />
-                        Rate &amp; Review
-                      </button>
-                    </div>
-
-                    {reviews.length === 0 ? (
-                      <p
+                    No reviews yet. Be the first to rate this user.
+                  </p>
+                ) : (
+                  <div style={{ display: "grid", gap: "0.65rem" }}>
+                    {reviews.slice(0, 3).map((r) => (
+                      <div
+                        key={r.id}
                         style={{
-                          color: "var(--muted)",
+                          background: "var(--paper-subtle)",
+                          borderRadius: 10,
+                          padding: "0.75rem 0.9rem",
                           fontSize: "0.88rem",
-                          margin: 0,
                         }}
                       >
-                        No reviews yet. Be the first to rate this user.
-                      </p>
-                    ) : (
-                      <div style={{ display: "grid", gap: "0.65rem" }}>
-                        {reviews.slice(0, 3).map((r) => (
-                          <div
-                            key={r.id}
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <span
                             style={{
-                              background: "var(--paper-subtle)",
-                              borderRadius: 10,
-                              padding: "0.75rem 0.9rem",
-                              fontSize: "0.88rem",
+                              fontWeight: 600,
+                              color: "var(--ink-strong)",
                             }}
                           >
-                            <div
-                              style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                              }}
-                            >
-                              <span
-                                style={{
-                                  fontWeight: 600,
-                                  color: "var(--ink-strong)",
-                                }}
-                              >
-                                {r.reviewerName}
-                              </span>
-                              <span
-                                style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: 3,
-                                }}
-                              >
-                                {r.stars}
-                                <Star size={12} fill="#FACC15" color="#FACC15" />
-                              </span>
-                            </div>
-                            {r.comment && (
-                              <p
-                                style={{
-                                  margin: "0.3rem 0 0",
-                                  color: "var(--muted)",
-                                  lineHeight: 1.45,
-                                }}
-                              >
-                                {r.comment}
-                              </p>
-                            )}
-                          </div>
-                        ))}
+                            {r.reviewerName}
+                          </span>
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 3,
+                            }}
+                          >
+                            {r.stars}
+                            <Star size={12} fill="#FACC15" color="#FACC15" />
+                          </span>
+                        </div>
+                        {r.comment && (
+                          <p
+                            style={{
+                              margin: "0.3rem 0 0",
+                              color: "var(--muted)",
+                              lineHeight: 1.45,
+                            }}
+                          >
+                            {r.comment}
+                          </p>
+                        )}
                       </div>
-                    )}
+                    ))}
                   </div>
-                </>
-              )}
+                )}
+              </div>
             </div>
-
-            <button
-              type="button"
-              className="ref-view-more-bar"
-              onClick={() => setShowMoreDetails((v) => !v)}
-            >
-              {showMoreDetails ? "Show Less Details" : "View More Details"}
-            </button>
           </div>
         </div>
       </main>
 
       <KovaFooter />
+
+      <PaymentOptionsModal
+        open={paymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+        product={product}
+        maxQuantity={effectiveRemaining}
+      />
 
       <UserProfileModal
         open={profileOpen}
@@ -706,6 +596,7 @@ export function ProductDetailClient({
         onRated={(nextRating, nextCount) => {
           setLiveRating(nextRating);
           setLiveRatingCount(nextCount);
+          refreshReviews();
         }}
       />
     </>
