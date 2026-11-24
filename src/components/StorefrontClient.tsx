@@ -7,12 +7,14 @@ import {
   Search,
   SlidersHorizontal,
   Star,
-  MessageCircle,
+  Share2,
+  Bell,
+  Check,
   ShoppingBag,
 } from "lucide-react";
 import type { Vendor, Product } from "@/lib/types";
 import { formatNaira, getInitials } from "@/lib/format";
-import { KovaHeader, getAppStoreUrl } from "./KovaHeader";
+import { KovaHeader } from "./KovaHeader";
 import { KovaFooter } from "./KovaFooter";
 import { DownloadChatModal } from "./DownloadChatModal";
 import { RateVendorModal } from "./RateVendorModal";
@@ -29,18 +31,12 @@ interface StorefrontClientProps {
   basePath?: string;
 }
 
-function VerifiedSeal({ size = 21 }: { size?: number }) {
+function VerifiedSeal({ size = 22, color = "#1D9BF0" }: { size?: number; color?: string }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-label="Verified"
-    >
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-label="Verified">
       <path
         d="M12 1.75l2.37 1.72 2.9-.31 1.18 2.68 2.68 1.18-.31 2.9L22.25 12l-1.72 2.37.31 2.9-2.68 1.18-1.18 2.68-2.9-.31L12 22.25l-2.37-1.72-2.9.31-1.18-2.68-2.68-1.18.31-2.9L1.75 12l1.72-2.37-.31-2.9 2.68-1.18 1.18-2.68 2.9.31L12 1.75z"
-        fill="#1D9BF0"
+        fill={color}
         stroke="#FFFFFF"
         strokeWidth="1.5"
       />
@@ -69,6 +65,9 @@ export function StorefrontClient({
     searchParams.get("category") ?? "All"
   );
   const [showFilters, setShowFilters] = useState(false);
+  const [following, setFollowing] = useState(true);
+  const [followerCount, setFollowerCount] = useState(vendor.stats.followers);
+  const [copied, setCopied] = useState(false);
   const [chatPromptOpen, setChatPromptOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
@@ -116,19 +115,125 @@ export function StorefrontClient({
     return qs ? `?${qs}` : "";
   }, [searchQuery, selectedCategory]);
 
+  const handleToggleFollow = () => {
+    setFollowing((prev) => {
+      setFollowerCount((c) => (prev ? Math.max(0, c - 1) : c + 1));
+      return !prev;
+    });
+  };
+
+  const handleShareShowroom = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `@${vendor.username} Showroom · Kova`,
+          text: `Explore ${vendor.fullName}'s Showroom on Kova`,
+          url,
+        });
+        return;
+      } catch {
+        // fallback
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // ignore
+    }
+  };
+
+  const formattedFollowers =
+    followerCount >= 1000
+      ? `${(followerCount / 1000).toFixed(followerCount % 1000 === 0 ? 0 : 1)}k`
+      : String(followerCount);
+
   return (
     <>
       <KovaHeader />
 
       <main id="main" className="ref-storefront">
-        <section className="ref-profile-wrap" aria-labelledby="vendor-handle">
+        {/* Showroom Sub-bar matching Reference Images 2 & 5 */}
+        <div className="kova-subbar">
+          <div className="container kova-subbar__inner">
+            <span className="kova-subbar__left">Showroom</span>
+            <div className="kova-subbar__actions">
+              <button
+                type="button"
+                className="kova-icon-btn"
+                onClick={handleShareShowroom}
+                aria-label="Share showroom"
+                title={copied ? "Link copied!" : "Share showroom"}
+              >
+                {copied ? <Check size={19} color="var(--brand)" /> : <Share2 size={19} />}
+              </button>
+              <button
+                type="button"
+                className="kova-icon-btn"
+                onClick={() => setChatPromptOpen(true)}
+                aria-label="Notifications and messages"
+                title="Download Kova app for instant alerts & chat"
+              >
+                <Bell size={19} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Green Cover Banner matching Reference Image 3 */}
+        <section className="kova-cover-banner" aria-label="Vendor cover banner">
+          {vendor.coverImage && (
+            <img
+              src={vendor.coverImage}
+              alt=""
+              className="kova-cover-banner__bg"
+              aria-hidden="true"
+            />
+          )}
+          <div className="kova-cover-banner__tint" aria-hidden="true" />
+          <div className="container kova-cover-banner__content">
+            <button
+              type="button"
+              className="kova-cover-banner__id"
+              onClick={() => setProfileOpen(true)}
+              title="Open user profile details"
+            >
+              <div className="kova-cover-avatar">
+                <div className="kova-cover-avatar__ring">
+                  {vendor.avatarUrl ? (
+                    <img src={vendor.avatarUrl} alt={vendor.fullName} />
+                  ) : (
+                    getInitials(vendor.fullName)
+                  )}
+                </div>
+                {vendor.verificationStatus === "verified" && (
+                  <span className="ref-verified-seal">
+                    <VerifiedSeal size={24} color="#1D9BF0" />
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <h1 className="kova-cover-handle">@{vendor.username}</h1>
+                <p className="kova-cover-subtitle">
+                  {vendor.categoryBadge || vendor.role}
+                </p>
+              </div>
+            </button>
+          </div>
+        </section>
+
+        {/* Showroom Profile Identity, Stats & Action Pills matching Reference Image 2 */}
+        <section className="ref-profile-wrap" aria-label="Vendor profile summary">
           <div className="container">
             <div className="ref-profile-header">
               <button
                 type="button"
                 className="ref-profile-trigger"
                 onClick={() => setProfileOpen(true)}
-                title="View user profile details"
+                title="View full user details"
               >
                 <div className="ref-avatar">
                   <div className="ref-avatar__circle">
@@ -140,38 +245,24 @@ export function StorefrontClient({
                   </div>
                   {vendor.verificationStatus === "verified" && (
                     <span className="ref-verified-seal">
-                      <VerifiedSeal size={22} />
+                      <VerifiedSeal size={20} color="#EAB308" />
                     </span>
                   )}
                 </div>
 
                 <div>
-                  <h1 id="vendor-handle" className="ref-profile-handle">
-                    @{vendor.username}
-                  </h1>
+                  <div className="ref-profile-handle">@{vendor.username}</div>
                   <p className="ref-profile-fullname">{vendor.fullName}</p>
                 </div>
               </button>
 
-              <div className="ref-profile-actions">
-                <button
-                  type="button"
-                  className="btn btn--outline btn--sm ref-chat-desktop-btn"
-                  style={{ fontWeight: 500 }}
-                  onClick={() => setChatPromptOpen(true)}
-                >
-                  <MessageCircle size={15} />
-                  Message
-                </button>
-                <a
-                  href={getAppStoreUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ref-download-btn"
-                >
-                  Download app
-                </a>
-              </div>
+              <button
+                type="button"
+                className="kova-role-badge"
+                onClick={() => setProfileOpen(true)}
+              >
+                {vendor.categoryBadge || "Agent"}
+              </button>
             </div>
 
             <dl className="ref-stats-row">
@@ -180,11 +271,7 @@ export function StorefrontClient({
                 <dt className="ref-stat-label">Posts</dt>
               </div>
               <div>
-                <dd className="ref-stat-val">
-                  {vendor.stats.followers >= 1000
-                    ? `${(vendor.stats.followers / 1000).toFixed(0)}k`
-                    : vendor.stats.followers}
-                </dd>
+                <dd className="ref-stat-val">{formattedFollowers}</dd>
                 <dt className="ref-stat-label">Followers</dt>
               </div>
               <div>
@@ -202,12 +289,12 @@ export function StorefrontClient({
                     cursor: "pointer",
                     width: "100%",
                   }}
-                  title="Tap to rate this user"
+                  title="Click to rate this user"
                 >
                   <dd className="ref-stat-val">
                     {liveRating.toFixed(1)}
                     <Star
-                      size={17}
+                      size={16}
                       fill="#FACC15"
                       color="#FACC15"
                       aria-hidden="true"
@@ -217,18 +304,41 @@ export function StorefrontClient({
                 </button>
               </div>
             </dl>
+
+            {/* Two Side-by-Side Showroom Action Pills (Reviews & Follow/Following) */}
+            <div className="kova-showroom-actions">
+              <button
+                type="button"
+                className="kova-pill-action"
+                onClick={() => setRateOpen(true)}
+              >
+                Reviews
+              </button>
+              <button
+                type="button"
+                className={`kova-pill-action ${
+                  following ? "" : "kova-pill-action--solid"
+                }`}
+                onClick={handleToggleFollow}
+              >
+                {following ? "Following" : "Follow"}
+              </button>
+            </div>
           </div>
         </section>
 
+        <div className="kova-section-divider" aria-hidden="true" />
+
+        {/* Search & Category Browsing + Listing Grid matching Images 2 & 5 */}
         <section className="container ref-search-section">
-          <div className="ref-search-pill">
-            <Search size={19} color="#52525B" aria-hidden="true" />
+          <div className="ref-search-pill" style={{ borderRadius: 12 }}>
+            <Search size={19} color="#71717A" aria-hidden="true" />
             <input
               type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search"
-              aria-label="Search products"
+              placeholder="Search product name or property type"
+              aria-label="Search product name or property type"
             />
             <button
               type="button"
@@ -245,22 +355,21 @@ export function StorefrontClient({
             </button>
           </div>
 
-          {(showFilters || selectedCategory !== "All") && (
-            <div className="ref-category-bar">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`ref-cat-chip ${
-                    selectedCategory === cat ? "ref-cat-chip--active" : ""
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Category Pills always accessible for browsing categories */}
+          <div className="ref-category-bar">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setSelectedCategory(cat)}
+                className={`ref-cat-chip ${
+                  selectedCategory === cat ? "ref-cat-chip--active" : ""
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
 
           {products.length === 0 ? (
             <div className="empty-state">
@@ -296,49 +405,67 @@ export function StorefrontClient({
             </div>
           ) : (
             <div className="ref-listing-grid">
-              {filteredProducts.map((product) => (
-                <Link
-                  key={product.id}
-                  href={`/product/${product.id}${currentSearchQs}`}
-                  className="ref-listing-card"
-                >
-                  <div className="ref-listing-card__media">
-                    <img
-                      src={product.images[0] || "/listings/living-room-cozy.jpg"}
-                      alt={product.name}
-                    />
-                    {product.isVideo && (
-                      <div className="ref-play-overlay" aria-hidden="true">
-                        <svg width="38" height="38" viewBox="0 0 36 36" fill="none">
-                          <path
-                            d="M11 8.5C11 7.1 12.5 6.2 13.7 6.9L28.5 16.4C29.6 17.1 29.6 18.9 28.5 19.6L13.7 29.1C12.5 29.8 11 28.9 11 27.5V8.5Z"
-                            fill="rgba(255,255,255,0.92)"
-                          />
-                        </svg>
-                      </div>
-                    )}
-                    {!product.effectiveAvailable && (
-                      <span className="ref-sold-tag">Unavailable</span>
-                    )}
-                  </div>
-
-                  <div className="ref-listing-card__meta">
-                    <h2 className="ref-listing-card__title">{product.name}</h2>
-                    <span className="ref-listing-card__loc">
-                      {product.location}
-                    </span>
-                    <div className="ref-listing-card__price">
-                      {formatNaira(product.price)}
-                      {product.pricePeriod ? (
-                        <span className="ref-listing-card__period">
-                          {" "}
-                          - {product.pricePeriod}
+              {filteredProducts.map((product) => {
+                const isProp = product.category.toLowerCase() === "properties";
+                return (
+                  <Link
+                    key={product.id}
+                    href={`/product/${product.id}${currentSearchQs}`}
+                    className="ref-listing-card"
+                  >
+                    <div className="ref-listing-card__media">
+                      <img
+                        src={product.images[0] || "/listings/smartphone.jpg"}
+                        alt={product.name}
+                      />
+                      {!isProp && (
+                        <span className="kova-cond-badge">
+                          {product.condition}
                         </span>
-                      ) : null}
+                      )}
+                      {product.isVideo && (
+                        <div className="ref-play-overlay" aria-hidden="true">
+                          <div
+                            style={{
+                              width: 44,
+                              height: 44,
+                              borderRadius: "50%",
+                              background: "rgba(20, 20, 26, 0.45)",
+                              backdropFilter: "blur(6px)",
+                              border: "1.5px solid rgba(255,255,255,0.8)",
+                              display: "grid",
+                              placeItems: "center",
+                            }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                      {!product.effectiveAvailable && (
+                        <span className="ref-sold-tag">Unavailable</span>
+                      )}
                     </div>
-                  </div>
-                </Link>
-              ))}
+
+                    <div className="ref-listing-card__meta">
+                      <h2 className="ref-listing-card__title">{product.name}</h2>
+                      <span className="ref-listing-card__loc">
+                        {product.location}
+                      </span>
+                      <div className="ref-listing-card__price">
+                        {formatNaira(product.price)}
+                        {product.pricePeriod ? (
+                          <span className="ref-listing-card__period">
+                            {" "}
+                            / {product.pricePeriod.replace(/^Per\s+/i, "")}
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           )}
         </section>

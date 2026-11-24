@@ -13,7 +13,9 @@ export interface Vendor {
   username: string;
   fullName: string;
   role: string;
+  categoryBadge?: string;
   avatarUrl: string | null;
+  coverImage?: string | null;
   location: string;
   bio: string;
   verificationStatus: VerificationStatus;
@@ -38,9 +40,12 @@ export interface Product {
   deliveryFee: number;
   waybillLabel?: string;
   inspectionLabel?: string;
+  inspectionFee?: number;
+  cautionFee?: number;
   agentFee?: number;
+  amenities?: string[];
   options?: string[];
-  condition: "New" | "Like New" | "Used - Good" | "Refurbished";
+  condition: "New" | "Fairly Used" | "Like New" | "Used - Good" | "Refurbished";
   category: string;
   location: string;
   images: string[];
