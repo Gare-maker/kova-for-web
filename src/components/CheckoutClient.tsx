@@ -277,7 +277,7 @@ export function CheckoutClient({
               cursor: "pointer",
             }}
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={15} />
             {step === "form" ? "Back to Product" : "Back"}
           </button>
         </div>
@@ -316,17 +316,17 @@ export function CheckoutClient({
                     style={{
                       background: "var(--danger-soft)",
                       color: "var(--danger)",
-                      padding: "0.85rem 1rem",
-                      borderRadius: 10,
-                      fontSize: "0.88rem",
+                      padding: "0.6rem 0.75rem",
+                      borderRadius: 8,
+                      fontSize: "0.78rem",
                       fontWeight: 500,
-                      marginBottom: "1.15rem",
+                      marginBottom: "0.85rem",
                       display: "flex",
                       alignItems: "center",
-                      gap: "0.5rem",
+                      gap: "0.4rem",
                     }}
                   >
-                    <AlertCircle size={16} />
+                    <AlertCircle size={14} />
                     {error}
                   </div>
                 )}
@@ -592,12 +592,12 @@ export function CheckoutClient({
                       style={{
                         background: "var(--paper-subtle)",
                         border: "1px solid var(--line)",
-                        borderRadius: 12,
-                        padding: "1rem",
-                        marginBottom: "1.25rem",
-                        fontSize: "0.92rem",
+                        borderRadius: 10,
+                        padding: "0.8rem",
+                        marginBottom: "0.95rem",
+                        fontSize: "0.8rem",
                         display: "grid",
-                        gap: "0.35rem",
+                        gap: "0.3rem",
                       }}
                     >
                       <div>
@@ -799,9 +799,9 @@ export function CheckoutClient({
                 <div
                   style={{
                     display: "flex",
-                    gap: "0.9rem",
+                    gap: "0.75rem",
                     alignItems: "center",
-                    paddingBottom: "1rem",
+                    paddingBottom: "0.8rem",
                     borderBottom: "1px solid var(--line)",
                   }}
                 >
@@ -809,9 +809,9 @@ export function CheckoutClient({
                     src={product.images[0] || "/listings/smartphone.jpg"}
                     alt={product.name}
                     style={{
-                      width: 72,
-                      height: 72,
-                      borderRadius: 10,
+                      width: 56,
+                      height: 56,
+                      borderRadius: 9,
                       objectFit: "cover",
                       background: "var(--paper-deep)",
                     }}
@@ -820,6 +820,7 @@ export function CheckoutClient({
                     <div
                       style={{
                         fontWeight: 600,
+                        fontSize: "0.84rem",
                         color: "var(--ink-strong)",
                         lineHeight: 1.3,
                       }}
@@ -828,18 +829,18 @@ export function CheckoutClient({
                     </div>
                     <div
                       style={{
-                        fontSize: "0.8rem",
+                        fontSize: "0.74rem",
                         color: "var(--brand-dark)",
                         fontWeight: 600,
                       }}
                     >
                       {paymentLabel}
                     </div>
-                    <div style={{ fontSize: "0.84rem", color: "var(--muted)" }}>
+                    <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>
                       Sold by {vendor.fullName} (@{vendor.username})
                     </div>
                     {paymentMode === "product" && (
-                      <div style={{ fontSize: "0.84rem", fontWeight: 600 }}>
+                      <div style={{ fontSize: "0.75rem", fontWeight: 600 }}>
                         Qty: {activeQty}
                       </div>
                     )}
@@ -850,10 +851,10 @@ export function CheckoutClient({
                   style={{
                     display: "flex",
                     flexDirection: "column",
-                    gap: "0.6rem",
-                    paddingBlock: "1rem",
+                    gap: "0.45rem",
+                    paddingBlock: "0.8rem",
                     borderBottom: "1px solid var(--line)",
-                    fontSize: "0.94rem",
+                    fontSize: "0.82rem",
                   }}
                 >
                   <div
@@ -876,10 +877,10 @@ export function CheckoutClient({
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    paddingTop: "1rem",
+                    paddingTop: "0.8rem",
                   }}
                 >
-                  <span style={{ fontWeight: 600, fontSize: "1rem" }}>
+                  <span style={{ fontWeight: 600, fontSize: "0.86rem" }}>
                     Total Payable
                   </span>
                   <span
@@ -894,14 +895,14 @@ export function CheckoutClient({
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "0.45rem",
-                    fontSize: "0.78rem",
+                    gap: "0.4rem",
+                    fontSize: "0.74rem",
                     color: "var(--muted)",
-                    marginTop: "1.1rem",
+                    marginTop: "0.85rem",
                     marginBottom: 0,
                   }}
                 >
-                  <ShieldCheck size={15} color="var(--brand)" />
+                  <ShieldCheck size={14} color="var(--brand)" />
                   Server-verified Paystack payment with instant PDF receipt.
                 </p>
               </aside>

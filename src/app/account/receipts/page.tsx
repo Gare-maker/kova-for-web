@@ -154,7 +154,7 @@ export default function AccountReceiptsPage() {
               <p
                 style={{
                   color: "var(--muted)",
-                  fontSize: "0.9rem",
+                  fontSize: "0.8rem",
                   marginTop: 0,
                 }}
               >
@@ -167,16 +167,16 @@ export default function AccountReceiptsPage() {
                   style={{
                     background: "var(--danger-soft)",
                     color: "var(--danger)",
-                    padding: "0.75rem 0.9rem",
+                    padding: "0.6rem 0.75rem",
                     borderRadius: 8,
-                    fontSize: "0.86rem",
-                    marginBottom: "1rem",
+                    fontSize: "0.78rem",
+                    marginBottom: "0.85rem",
                     display: "flex",
                     alignItems: "center",
-                    gap: "0.45rem",
+                    gap: "0.4rem",
                   }}
                 >
-                  <AlertCircle size={16} />
+                  <AlertCircle size={14} />
                   {error}
                 </div>
               )}
@@ -223,9 +223,9 @@ export default function AccountReceiptsPage() {
               <p
                 style={{
                   textAlign: "center",
-                  fontSize: "0.86rem",
+                  fontSize: "0.78rem",
                   color: "var(--muted)",
-                  marginTop: "1rem",
+                  marginTop: "0.85rem",
                   marginBottom: 0,
                 }}
               >
@@ -240,7 +240,7 @@ export default function AccountReceiptsPage() {
             </div>
           ) : receipts.length === 0 ? (
             <div className="empty-state">
-              <ReceiptText size={32} style={{ marginInline: "auto" }} />
+              <ReceiptText size={26} style={{ marginInline: "auto" }} />
               <h3>No completed transactions yet</h3>
               <p>
                 Once you complete a verified Paystack payment, your receipt will
@@ -251,7 +251,7 @@ export default function AccountReceiptsPage() {
               </Link>
             </div>
           ) : (
-            <div style={{ display: "grid", gap: "0.85rem" }}>
+            <div style={{ display: "grid", gap: "0.65rem" }}>
               {receipts.map((r) => (
                 <button
                   key={r.id}
@@ -263,8 +263,8 @@ export default function AccountReceiptsPage() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    gap: "1rem",
-                    padding: "1.05rem 1.25rem",
+                    gap: "0.8rem",
+                    padding: "0.78rem 0.95rem",
                     cursor: "pointer",
                     textAlign: "left",
                     transition: "border-color 0.18s ease",
@@ -274,7 +274,7 @@ export default function AccountReceiptsPage() {
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "0.9rem",
+                      gap: "0.75rem",
                       minWidth: 0,
                       flex: 1,
                     }}
@@ -283,9 +283,9 @@ export default function AccountReceiptsPage() {
                       src={r.productImage || "/listings/smartphone.jpg"}
                       alt={r.productName}
                       style={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: 10,
+                        width: 46,
+                        height: 46,
+                        borderRadius: 8,
                         objectFit: "cover",
                         background: "var(--paper-deep)",
                         flex: "none",
@@ -295,6 +295,7 @@ export default function AccountReceiptsPage() {
                       <div
                         style={{
                           fontWeight: 600,
+                          fontSize: "0.84rem",
                           color: "var(--ink-strong)",
                           whiteSpace: "nowrap",
                           overflow: "hidden",
@@ -305,9 +306,9 @@ export default function AccountReceiptsPage() {
                       </div>
                       <div
                         style={{
-                          fontSize: "0.82rem",
+                          fontSize: "0.74rem",
                           color: "var(--muted)",
-                          marginTop: "0.15rem",
+                          marginTop: "0.1rem",
                         }}
                       >
                         {formatDateTime(r.paidAt)}
@@ -316,17 +317,17 @@ export default function AccountReceiptsPage() {
                         style={{
                           display: "inline-flex",
                           alignItems: "center",
-                          gap: 4,
-                          marginTop: "0.3rem",
+                          gap: 3,
+                          marginTop: "0.24rem",
                           background: "var(--brand-soft)",
                           color: "var(--brand-dark)",
-                          fontSize: "0.74rem",
+                          fontSize: "0.68rem",
                           fontWeight: 600,
-                          padding: "0.14rem 0.5rem",
+                          padding: "0.1rem 0.45rem",
                           borderRadius: 999,
                         }}
                       >
-                        <CheckCircle2 size={12} />
+                        <CheckCircle2 size={11} />
                         {r.paymentStatus} · Completed
                       </span>
                     </div>
@@ -336,20 +337,20 @@ export default function AccountReceiptsPage() {
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "0.65rem",
+                      gap: "0.45rem",
                       flex: "none",
                     }}
                   >
                     <div
                       style={{
                         fontWeight: 600,
-                        fontSize: "1.02rem",
+                        fontSize: "0.86rem",
                         color: "var(--ink-strong)",
                       }}
                     >
                       {formatNaira(r.totalPaid)}
                     </div>
-                    <ChevronRight size={18} color="var(--muted)" />
+                    <ChevronRight size={15} color="var(--muted)" />
                   </div>
                 </button>
               ))}
@@ -378,7 +379,7 @@ export default function AccountReceiptsPage() {
             className="surface-card"
             onClick={(e) => e.stopPropagation()}
             style={{
-              width: "min(540px, 100%)",
+              width: "min(460px, 100%)",
               maxHeight: "90vh",
               overflowY: "auto",
               position: "relative",
@@ -390,34 +391,34 @@ export default function AccountReceiptsPage() {
               aria-label="Close receipt details"
               style={{
                 position: "absolute",
-                top: "1rem",
-                right: "1rem",
+                top: "0.75rem",
+                right: "0.75rem",
                 background: "var(--paper-deep)",
                 border: "none",
                 borderRadius: "50%",
-                width: 34,
-                height: 34,
+                width: 28,
+                height: 28,
                 display: "grid",
                 placeItems: "center",
                 cursor: "pointer",
                 color: "var(--ink-strong)",
               }}
             >
-              <X size={17} />
+              <X size={15} />
             </button>
 
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "0.65rem",
-                marginBottom: "1rem",
+                gap: "0.55rem",
+                marginBottom: "0.85rem",
               }}
             >
               <div
                 style={{
-                  width: 40,
-                  height: 40,
+                  width: 34,
+                  height: 34,
                   borderRadius: "50%",
                   background: "var(--brand-soft)",
                   color: "var(--brand)",
@@ -425,7 +426,7 @@ export default function AccountReceiptsPage() {
                   placeItems: "center",
                 }}
               >
-                <CheckCircle2 size={22} />
+                <CheckCircle2 size={18} />
               </div>
               <div>
                 <h2
@@ -434,7 +435,7 @@ export default function AccountReceiptsPage() {
                 >
                   Payment Receipt
                 </h2>
-                <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
+                <div style={{ fontSize: "0.74rem", color: "var(--muted)" }}>
                   {selectedReceipt.receiptNumber} ·{" "}
                   {selectedReceipt.paymentStatus}
                 </div>
@@ -446,16 +447,17 @@ export default function AccountReceiptsPage() {
               style={{
                 background: "var(--paper-subtle)",
                 border: "1px solid var(--line)",
-                borderRadius: 12,
-                padding: "0.95rem",
-                marginBottom: "1rem",
+                borderRadius: 10,
+                padding: "0.8rem",
+                marginBottom: "0.85rem",
               }}
             >
               <div
                 style={{
                   fontWeight: 600,
+                  fontSize: "0.84rem",
                   color: "var(--ink-strong)",
-                  marginBottom: "0.45rem",
+                  marginBottom: "0.35rem",
                 }}
               >
                 {getReceiptItemTitle(selectedReceipt)}
@@ -463,8 +465,8 @@ export default function AccountReceiptsPage() {
               <div
                 style={{
                   display: "grid",
-                  gap: "0.35rem",
-                  fontSize: "0.88rem",
+                  gap: "0.28rem",
+                  fontSize: "0.8rem",
                   color: "var(--ink-soft)",
                 }}
               >
@@ -485,10 +487,10 @@ export default function AccountReceiptsPage() {
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    paddingTop: "0.45rem",
+                    paddingTop: "0.38rem",
                     borderTop: "1px solid var(--line)",
                     fontWeight: 600,
-                    fontSize: "0.98rem",
+                    fontSize: "0.86rem",
                     color: "var(--ink-strong)",
                   }}
                 >
@@ -505,56 +507,56 @@ export default function AccountReceiptsPage() {
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                gap: "0.85rem",
-                fontSize: "0.86rem",
-                margin: "0 0 1.25rem",
+                gap: "0.65rem",
+                fontSize: "0.78rem",
+                margin: "0 0 1rem",
               }}
             >
               <div>
-                <dt style={{ color: "var(--muted)", fontSize: "0.76rem" }}>
+                <dt style={{ color: "var(--muted)", fontSize: "0.7rem" }}>
                   Transaction Reference
                 </dt>
-                <dd style={{ margin: "0.15rem 0 0", fontWeight: 600 }}>
+                <dd style={{ margin: "0.12rem 0 0", fontWeight: 600 }}>
                   {selectedReceipt.transactionReference}
                 </dd>
               </div>
               <div>
-                <dt style={{ color: "var(--muted)", fontSize: "0.76rem" }}>
+                <dt style={{ color: "var(--muted)", fontSize: "0.7rem" }}>
                   Payment Method
                 </dt>
-                <dd style={{ margin: "0.15rem 0 0", fontWeight: 600 }}>
+                <dd style={{ margin: "0.12rem 0 0", fontWeight: 600 }}>
                   {selectedReceipt.paymentMethod}
                 </dd>
               </div>
               <div>
-                <dt style={{ color: "var(--muted)", fontSize: "0.76rem" }}>
+                <dt style={{ color: "var(--muted)", fontSize: "0.7rem" }}>
                   Buyer Details
                 </dt>
-                <dd style={{ margin: "0.15rem 0 0", fontWeight: 600 }}>
+                <dd style={{ margin: "0.12rem 0 0", fontWeight: 600 }}>
                   {selectedReceipt.customerName} · {selectedReceipt.customerPhone}
                 </dd>
               </div>
               <div>
-                <dt style={{ color: "var(--muted)", fontSize: "0.74rem" }}>
+                <dt style={{ color: "var(--muted)", fontSize: "0.7rem" }}>
                   Seller / Showroom
                 </dt>
-                <dd style={{ margin: "0.15rem 0 0", fontWeight: 600 }}>
+                <dd style={{ margin: "0.12rem 0 0", fontWeight: 600 }}>
                   {selectedReceipt.vendorName} (@{selectedReceipt.vendorUsername})
                 </dd>
               </div>
               <div>
-                <dt style={{ color: "var(--muted)", fontSize: "0.76rem" }}>
+                <dt style={{ color: "var(--muted)", fontSize: "0.7rem" }}>
                   Delivery Address
                 </dt>
-                <dd style={{ margin: "0.15rem 0 0", fontWeight: 600 }}>
+                <dd style={{ margin: "0.12rem 0 0", fontWeight: 600 }}>
                   {selectedReceipt.deliveryAddress}
                 </dd>
               </div>
               <div>
-                <dt style={{ color: "var(--muted)", fontSize: "0.76rem" }}>
+                <dt style={{ color: "var(--muted)", fontSize: "0.7rem" }}>
                   Date &amp; Timestamp
                 </dt>
-                <dd style={{ margin: "0.15rem 0 0", fontWeight: 600 }}>
+                <dd style={{ margin: "0.12rem 0 0", fontWeight: 600 }}>
                   {formatDateTime(selectedReceipt.paidAt)}
                 </dd>
               </div>
@@ -563,10 +565,10 @@ export default function AccountReceiptsPage() {
             <button
               type="button"
               className="ref-make-payment-btn"
-              style={{ marginTop: 0, gap: "0.5rem" }}
+              style={{ marginTop: 0, gap: "0.4rem" }}
               onClick={() => downloadReceiptPdf(selectedReceipt)}
             >
-              <Download size={17} />
+              <Download size={14} />
               Download Receipt (PDF)
             </button>
           </div>

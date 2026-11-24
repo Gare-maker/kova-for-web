@@ -123,7 +123,7 @@ export function StorefrontClient({
                 </div>
                 {vendor.verificationStatus === "verified" && (
                   <span className="showroom-avatar__seal">
-                    <VerifiedSeal size={19} />
+                    <VerifiedSeal size={17} />
                   </span>
                 )}
               </div>
@@ -140,7 +140,7 @@ export function StorefrontClient({
         <section className="container ref-search-section">
           <div className="ref-search-row">
             <div className="ref-search-pill">
-              <Search size={15} color="#787885" aria-hidden="true" />
+              <Search size={14} color="#787885" aria-hidden="true" />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -229,17 +229,17 @@ export function StorefrontClient({
                         <div className="ref-play-overlay" aria-hidden="true">
                           <div
                             style={{
-                              width: 36,
-                              height: 36,
+                              width: 32,
+                              height: 32,
                               borderRadius: "50%",
-                              background: "rgba(20, 20, 26, 0.45)",
+                              background: "rgba(20, 20, 26, 0.44)",
                               backdropFilter: "blur(6px)",
                               border: "1.5px solid rgba(255,255,255,0.8)",
                               display: "grid",
                               placeItems: "center",
                             }}
                           >
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="#fff">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="#fff">
                               <path d="M8 5v14l11-7z" />
                             </svg>
                           </div>

@@ -26,6 +26,7 @@ export interface Vendor {
     posts: number;
     followers: number;
     deals: number;
+    views: number;
   };
   memberSince: string;
 }

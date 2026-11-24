@@ -133,34 +133,34 @@ export function UserProfileModal({
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-            gap: "0.4rem",
+            gap: "0.35rem",
             textAlign: "center",
-            padding: "0.65rem 0.4rem",
+            padding: "0.6rem 0.35rem",
             background: "var(--paper-subtle)",
             borderRadius: 10,
             border: "1px solid var(--line)",
-            marginBlock: "0.85rem",
+            marginBlock: "0.8rem",
           }}
         >
           <div>
-            <dd style={{ margin: 0, fontWeight: 600, fontSize: "0.94rem" }}>
+            <dd style={{ margin: 0, fontWeight: 600, fontSize: "0.86rem" }}>
+              {(vendor.stats.views ?? 4800) >= 1000
+                ? `${((vendor.stats.views ?? 4800) / 1000).toFixed(1)}k`
+                : vendor.stats.views ?? 4800}
+            </dd>
+            <dt style={{ fontSize: "0.68rem", color: "var(--muted)" }}>Views</dt>
+          </div>
+          <div>
+            <dd style={{ margin: 0, fontWeight: 600, fontSize: "0.86rem" }}>
               {listingsCount ?? vendor.stats.posts}
             </dd>
-            <dt style={{ fontSize: "0.7rem", color: "var(--muted)" }}>Posts</dt>
+            <dt style={{ fontSize: "0.68rem", color: "var(--muted)" }}>Posts</dt>
           </div>
           <div>
-            <dd style={{ margin: 0, fontWeight: 600, fontSize: "0.94rem" }}>
-              {vendor.stats.followers >= 1000
-                ? `${(vendor.stats.followers / 1000).toFixed(0)}k`
-                : vendor.stats.followers}
-            </dd>
-            <dt style={{ fontSize: "0.7rem", color: "var(--muted)" }}>Followers</dt>
-          </div>
-          <div>
-            <dd style={{ margin: 0, fontWeight: 600, fontSize: "0.94rem" }}>
+            <dd style={{ margin: 0, fontWeight: 600, fontSize: "0.86rem" }}>
               {vendor.stats.deals}
             </dd>
-            <dt style={{ fontSize: "0.7rem", color: "var(--muted)" }}>Deals</dt>
+            <dt style={{ fontSize: "0.68rem", color: "var(--muted)" }}>Deals</dt>
           </div>
           <div>
             <button
@@ -184,7 +184,7 @@ export function UserProfileModal({
                 style={{
                   margin: 0,
                   fontWeight: 600,
-                  fontSize: "0.94rem",
+                  fontSize: "0.86rem",
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 2,
@@ -192,10 +192,10 @@ export function UserProfileModal({
                 }}
               >
                 {displayRating.toFixed(1)}
-                <Star size={12} fill="#FACC15" color="#FACC15" />
+                <Star size={11} fill="#FACC15" color="#FACC15" />
               </dd>
-              <dt style={{ fontSize: "0.7rem", color: "var(--brand)" }}>
-                Rate
+              <dt style={{ fontSize: "0.68rem", color: "var(--brand)" }}>
+                Rating
               </dt>
             </button>
           </div>

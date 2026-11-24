@@ -53,18 +53,26 @@ function VerifiedSealSmall({ color = "#1D9BF0" }: { color?: string }) {
 function AmenityIcon({ label }: { label: string }) {
   const lower = label.toLowerCase();
   if (lower.includes("electric") || lower.includes("power")) {
-    return <Plug size={15} strokeWidth={1.7} color="#52525B" />;
+    return <Plug size={14} strokeWidth={1.7} color="#52525B" />;
   }
   if (lower.includes("water")) {
-    return <Droplet size={15} strokeWidth={1.7} color="#52525B" />;
+    return <Droplet size={14} strokeWidth={1.7} color="#52525B" />;
   }
   if (lower.includes("wardrobe")) {
-    return <DoorClosed size={15} strokeWidth={1.7} color="#52525B" />;
+    return <DoorClosed size={14} strokeWidth={1.7} color="#52525B" />;
   }
   if (lower.includes("security")) {
-    return <ShieldCheck size={15} strokeWidth={1.7} color="#52525B" />;
+    return <ShieldCheck size={14} strokeWidth={1.7} color="#52525B" />;
   }
-  return <Sparkles size={15} strokeWidth={1.7} color="#52525B" />;
+  return <Sparkles size={14} strokeWidth={1.7} color="#52525B" />;
+}
+
+function formatCompactCount(count: number): string {
+  if (count >= 1000) {
+    const k = count / 1000;
+    return `${k % 1 === 0 ? k.toFixed(0) : k.toFixed(1)}k`;
+  }
+  return String(count);
 }
 
 export function ProductDetailClient({
@@ -120,6 +128,8 @@ export function ProductDetailClient({
     product.category.toLowerCase().includes("propert") ||
     product.category.toLowerCase().includes("apartment");
 
+  const viewCount = vendor.stats.views ?? 4800;
+
   const handlePaymentClick = () => {
     if (!isAuthenticated) {
       const next = encodeURIComponent(`/product/${product.id}?pay=1`);
@@ -148,7 +158,7 @@ export function ProductDetailClient({
     <>
       <KovaHeader />
 
-      {/* Compact Sub-bar */}
+      {/* Minimal Sub-bar */}
       <div className="kova-subbar">
         <div className="container kova-subbar__inner">
           <Link
@@ -157,7 +167,7 @@ export function ProductDetailClient({
             onClick={handleBack}
             className="kova-subbar__left"
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft size={15} />
             Back to Showroom
           </Link>
         </div>
@@ -177,94 +187,44 @@ export function ProductDetailClient({
           {/* Clean, Compact, Scannable Product Details */}
           <div className="ref-detail-sheet">
             <div className="ref-detail-sheet__inner">
-              <div className="ref-detail-header-row">
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <h1 className="ref-detail-title">{product.name}</h1>
-                  <span className="ref-detail-loc">{product.location}</span>
+              <div>
+                <h1 className="ref-detail-title">{product.name}</h1>
+                <span className="ref-detail-loc">{product.location}</span>
 
-                  <div className="ref-detail-price">
-                    <span>
-                      {formatNaira(product.price)}
-                      {product.pricePeriod ? (
-                        <span
-                          style={{
-                            color: "var(--muted)",
-                            fontWeight: 400,
-                            fontSize: "0.84rem",
-                          }}
-                        >
-                          {" "}
-                          - {product.pricePeriod}
-                        </span>
-                      ) : null}
-                    </span>
-
-                    {!isProperty && effectiveAvailable && (
-                      <span className="kova-stock-pill">
-                        {effectiveRemaining} in stock
+                <div className="ref-detail-price">
+                  <span>
+                    {formatNaira(product.price)}
+                    {product.pricePeriod ? (
+                      <span
+                        style={{
+                          color: "var(--muted)",
+                          fontWeight: 400,
+                          fontSize: "0.78rem",
+                        }}
+                      >
+                        {" "}
+                        - {product.pricePeriod}
                       </span>
-                    )}
-                  </div>
-                </div>
+                    ) : null}
+                  </span>
 
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: "0.2rem",
-                    flex: "none",
-                  }}
-                >
-                  <button
-                    type="button"
-                    className="ref-seller-badge-btn"
-                    onClick={() => setProfileOpen(true)}
-                    title={`View ${vendor.fullName}'s profile`}
-                  >
-                    <div className="ref-avatar--sm">
-                      <div className="ref-avatar__circle">
-                        {vendor.avatarUrl ? (
-                          <img src={vendor.avatarUrl} alt={vendor.fullName} />
-                        ) : (
-                          getInitials(vendor.fullName)
-                        )}
-                      </div>
-                      {vendor.verificationStatus === "verified" && (
-                        <span className="ref-verified-seal">
-                          <VerifiedSealSmall />
-                        </span>
-                      )}
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setRateOpen(true)}
-                    className="ref-seller-rating"
-                    style={{
-                      background: "none",
-                      border: "none",
-                      padding: 0,
-                      cursor: "pointer",
-                    }}
-                    title="Click to rate seller"
-                  >
-                    {liveRating.toFixed(1)}
-                    <Star size={12} fill="#FACC15" color="#FACC15" />
-                  </button>
+                  {!isProperty && effectiveAvailable && (
+                    <span className="kova-stock-pill">
+                      {effectiveRemaining} in stock
+                    </span>
+                  )}
                 </div>
               </div>
 
               {!effectiveAvailable && (
                 <div
                   style={{
-                    marginTop: "0.7rem",
-                    padding: "0.6rem 0.75rem",
+                    marginTop: "0.65rem",
+                    padding: "0.55rem 0.7rem",
                     borderRadius: 8,
                     background: "var(--danger-soft)",
                     color: "var(--danger)",
-                    fontSize: "0.8rem",
+                    fontSize: "0.76rem",
                     fontWeight: 500,
                   }}
                 >
@@ -341,8 +301,8 @@ export function ProductDetailClient({
               {product.amenities && product.amenities.length > 0 && (
                 <div
                   style={{
-                    marginTop: "0.9rem",
-                    paddingTop: "0.85rem",
+                    marginTop: "0.85rem",
+                    paddingTop: "0.8rem",
                     borderTop: "1px solid var(--line)",
                   }}
                 >
@@ -358,89 +318,79 @@ export function ProductDetailClient({
                 </div>
               )}
 
-              {/* Compact Seller Row */}
-              <div
-                style={{
-                  marginTop: "0.9rem",
-                  borderTop: "1px solid var(--line)",
-                }}
+              {/* Restored Centered Seller Profile Information with Views & Rating */}
+              <section
+                className="detail-profile-card"
+                aria-label="Seller profile information"
               >
-                <div className="kova-seller-spotlight">
-                  <button
-                    type="button"
-                    onClick={() => setProfileOpen(true)}
-                    className="kova-seller-spotlight__left"
-                    style={{
-                      background: "none",
-                      border: "none",
-                      padding: 0,
-                      cursor: "pointer",
-                    }}
-                  >
-                    <div className="kova-seller-spotlight__avatar">
+                <button
+                  type="button"
+                  onClick={() => setProfileOpen(true)}
+                  className="detail-profile-trigger"
+                  title={`View ${vendor.fullName}'s profile`}
+                >
+                  <div className="detail-profile-avatar">
+                    <div className="detail-profile-avatar__ring">
                       {vendor.avatarUrl ? (
                         <img src={vendor.avatarUrl} alt={vendor.fullName} />
                       ) : (
                         getInitials(vendor.fullName)
                       )}
                     </div>
-                    <div>
-                      <div
-                        style={{
-                          fontWeight: 600,
-                          fontSize: "0.86rem",
-                          color: "var(--ink-strong)",
-                        }}
-                      >
-                        @{vendor.username}
-                      </div>
-                      <span
-                        className="kova-role-badge"
-                        style={{ marginTop: "0.2rem" }}
-                      >
-                        {vendor.categoryBadge || vendor.role}
+                    {vendor.verificationStatus === "verified" && (
+                      <span className="showroom-avatar__seal">
+                        <VerifiedSealSmall />
                       </span>
-                    </div>
-                  </button>
-
-                  <div className="kova-seller-spotlight__stats">
-                    <div className="kova-spotlight-stat">
-                      <div className="kova-spotlight-stat__val">
-                        {vendor.stats.deals}
-                      </div>
-                      <div className="kova-spotlight-stat__label">Deals</div>
-                    </div>
-                    <div className="kova-spotlight-stat">
-                      <button
-                        type="button"
-                        onClick={() => setRateOpen(true)}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          padding: 0,
-                          cursor: "pointer",
-                        }}
-                      >
-                        <div className="kova-spotlight-stat__val">
-                          {liveRating.toFixed(1)}
-                          <Star size={12} fill="#FACC15" color="#FACC15" />
-                        </div>
-                        <div className="kova-spotlight-stat__label">Rating</div>
-                      </button>
-                    </div>
-                    <div className="kova-spotlight-stat">
-                      <div className="kova-spotlight-stat__val">
-                        {vendor.stats.posts}
-                      </div>
-                      <div className="kova-spotlight-stat__label">Posts</div>
-                    </div>
+                    )}
                   </div>
-                </div>
-              </div>
+
+                  <div className="detail-profile-name">@{vendor.username}</div>
+                  <div className="detail-profile-sub">{vendor.fullName}</div>
+                  <span className="kova-role-badge">
+                    {vendor.categoryBadge || vendor.role}
+                  </span>
+                </button>
+
+                <dl className="detail-profile-stats">
+                  <div>
+                    <dd className="detail-profile-stat__val">
+                      {formatCompactCount(viewCount)}
+                    </dd>
+                    <dt className="detail-profile-stat__label">Views</dt>
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setRateOpen(true)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        padding: 0,
+                        cursor: "pointer",
+                        width: "100%",
+                      }}
+                      title="Rate this seller"
+                    >
+                      <dd className="detail-profile-stat__val">
+                        {liveRating.toFixed(1)}
+                        <Star size={11} fill="#FACC15" color="#FACC15" />
+                      </dd>
+                      <dt className="detail-profile-stat__label">Rating</dt>
+                    </button>
+                  </div>
+                  <div>
+                    <dd className="detail-profile-stat__val">
+                      {vendor.stats.deals}
+                    </dd>
+                    <dt className="detail-profile-stat__label">Deals</dt>
+                  </div>
+                </dl>
+              </section>
 
               {/* Compact Reviews Section */}
               <div
                 style={{
+                  marginTop: "0.9rem",
                   paddingTop: "0.85rem",
                   borderTop: "1px solid var(--line)",
                 }}
@@ -451,7 +401,7 @@ export function ProductDetailClient({
                     alignItems: "center",
                     justifyContent: "space-between",
                     gap: "0.5rem",
-                    marginBottom: "0.6rem",
+                    marginBottom: "0.55rem",
                   }}
                 >
                   <h2 className="ref-desc-heading" style={{ margin: 0 }}>
@@ -462,7 +412,7 @@ export function ProductDetailClient({
                     className="btn btn--outline btn--sm"
                     onClick={() => setRateOpen(true)}
                   >
-                    <Star size={12} fill="#FACC15" color="#FACC15" />
+                    <Star size={11} fill="#FACC15" color="#FACC15" />
                     Rate
                   </button>
                 </div>
@@ -471,22 +421,22 @@ export function ProductDetailClient({
                   <p
                     style={{
                       color: "var(--muted)",
-                      fontSize: "0.8rem",
+                      fontSize: "0.76rem",
                       margin: 0,
                     }}
                   >
                     No reviews yet. Be the first to rate this seller.
                   </p>
                 ) : (
-                  <div style={{ display: "grid", gap: "0.45rem" }}>
+                  <div style={{ display: "grid", gap: "0.4rem" }}>
                     {reviews.slice(0, 3).map((r) => (
                       <div
                         key={r.id}
                         style={{
                           background: "var(--paper-subtle)",
                           borderRadius: 8,
-                          padding: "0.55rem 0.7rem",
-                          fontSize: "0.8rem",
+                          padding: "0.5rem 0.65rem",
+                          fontSize: "0.76rem",
                         }}
                       >
                         <div
@@ -509,16 +459,17 @@ export function ProductDetailClient({
                               display: "inline-flex",
                               alignItems: "center",
                               gap: 2,
+                              color: "var(--ink-soft)",
                             }}
                           >
                             {r.stars}
-                            <Star size={11} fill="#FACC15" color="#FACC15" />
+                            <Star size={10} fill="#FACC15" color="#FACC15" />
                           </span>
                         </div>
                         {r.comment && (
                           <p
                             style={{
-                              margin: "0.2rem 0 0",
+                              margin: "0.18rem 0 0",
                               color: "var(--muted)",
                               lineHeight: 1.4,
                             }}

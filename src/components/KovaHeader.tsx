@@ -49,20 +49,6 @@ export function KovaHeader(_props: KovaHeaderProps) {
     <>
       <header className="site-header">
         <div className="container nav">
-          <Link
-            className="powered-brand"
-            href="/"
-            aria-label="Powered by Kova Showroom"
-          >
-            <span>Powered by</span>
-            <img
-              src="/brand/kova-logo-main.svg"
-              alt="Kova"
-              width={62}
-              height={15}
-            />
-          </Link>
-
           <nav className="nav__links" aria-label="Primary">
             <Link
               className={`nav__link ${pathname === "/" ? "nav__link--active" : ""}`}
@@ -78,7 +64,7 @@ export function KovaHeader(_props: KovaHeaderProps) {
               }`}
               href="/account/receipts"
             >
-              <ReceiptText size={14} />
+              <ReceiptText size={13} />
               My Receipts
             </Link>
             <Link
@@ -87,7 +73,7 @@ export function KovaHeader(_props: KovaHeaderProps) {
               }`}
               href="/register"
             >
-              <UserCheck size={14} />
+              <UserCheck size={13} />
               Buyer Account
             </Link>
           </nav>
@@ -102,8 +88,7 @@ export function KovaHeader(_props: KovaHeaderProps) {
               aria-controls="kova-nav-dropdown"
               onClick={() => setMenuOpen((prev) => !prev)}
             >
-              {menuOpen ? <X size={15} /> : <Menu size={15} />}
-              <span>Menu</span>
+              {menuOpen ? <X size={16} /> : <Menu size={16} />}
             </button>
           </div>
         </div>
@@ -130,7 +115,7 @@ export function KovaHeader(_props: KovaHeaderProps) {
               href="/"
               onClick={() => setMenuOpen(false)}
             >
-              <Store size={15} />
+              <Store size={14} />
               Showroom
             </Link>
             <Link
@@ -142,7 +127,7 @@ export function KovaHeader(_props: KovaHeaderProps) {
               href="/account/receipts"
               onClick={() => setMenuOpen(false)}
             >
-              <ReceiptText size={15} />
+              <ReceiptText size={14} />
               My Receipts
             </Link>
             <Link
@@ -154,7 +139,7 @@ export function KovaHeader(_props: KovaHeaderProps) {
               href="/register"
               onClick={() => setMenuOpen(false)}
             >
-              <UserCheck size={15} />
+              <UserCheck size={14} />
               Buyer Account
             </Link>
           </nav>

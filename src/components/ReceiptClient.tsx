@@ -118,8 +118,8 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "1rem",
-                paddingBlock: "1.25rem",
+                gap: "0.8rem",
+                paddingBlock: "0.95rem",
                 borderBottom: "1px solid var(--line)",
               }}
             >
@@ -127,9 +127,9 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
                 src={receipt.productImage || "/products/desk.svg"}
                 alt={receipt.productName}
                 style={{
-                  width: 72,
-                  height: 72,
-                  borderRadius: 12,
+                  width: 56,
+                  height: 56,
+                  borderRadius: 10,
                   objectFit: "cover",
                   background: "var(--paper-deep)",
                 }}
@@ -138,7 +138,7 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
                 <div
                   style={{
                     fontWeight: 600,
-                    fontSize: "1.02rem",
+                    fontSize: "0.88rem",
                     color: "var(--ink-strong)",
                   }}
                 >
@@ -146,10 +146,10 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
                     ? `${receipt.productName} — ${receipt.paymentLabel}`
                     : receipt.productName}
                 </div>
-                <div style={{ fontSize: "0.88rem", color: "var(--muted)" }}>
+                <div style={{ fontSize: "0.78rem", color: "var(--muted)" }}>
                   Qty: {receipt.quantity} &times; {formatNaira(receipt.unitPrice)}
                 </div>
-                <div style={{ fontSize: "0.86rem", color: "var(--muted)" }}>
+                <div style={{ fontSize: "0.76rem", color: "var(--muted)" }}>
                   Vendor: {receipt.vendorName} (@{receipt.vendorUsername})
                 </div>
               </div>
@@ -164,74 +164,75 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
             <dl
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                gap: "1rem",
-                marginBlock: "1.25rem",
+                gridTemplateColumns: "repeat(auto-fit, minmax(195px, 1fr))",
+                gap: "0.75rem",
+                marginBlock: "1rem",
+                fontSize: "0.8rem",
               }}
             >
               <div>
-                <dt style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, textTransform: "uppercase" }}>
+                <dt style={{ fontSize: "0.68rem", color: "var(--muted)", fontWeight: 600, textTransform: "uppercase" }}>
                   Receipt Number
                 </dt>
-                <dd style={{ margin: "0.2rem 0 0", fontWeight: 700 }}>
+                <dd style={{ margin: "0.15rem 0 0", fontWeight: 600 }}>
                   {receipt.receiptNumber}
                 </dd>
               </div>
               <div>
-                <dt style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, textTransform: "uppercase" }}>
+                <dt style={{ fontSize: "0.68rem", color: "var(--muted)", fontWeight: 600, textTransform: "uppercase" }}>
                   Transaction Reference
                 </dt>
-                <dd style={{ margin: "0.2rem 0 0", fontWeight: 700 }}>
+                <dd style={{ margin: "0.15rem 0 0", fontWeight: 600 }}>
                   {receipt.transactionReference}
                 </dd>
               </div>
               <div>
-                <dt style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, textTransform: "uppercase" }}>
+                <dt style={{ fontSize: "0.68rem", color: "var(--muted)", fontWeight: 600, textTransform: "uppercase" }}>
                   Customer Name
                 </dt>
-                <dd style={{ margin: "0.2rem 0 0", fontWeight: 700 }}>
+                <dd style={{ margin: "0.15rem 0 0", fontWeight: 600 }}>
                   {receipt.customerName}
                 </dd>
               </div>
               <div>
-                <dt style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, textTransform: "uppercase" }}>
+                <dt style={{ fontSize: "0.68rem", color: "var(--muted)", fontWeight: 600, textTransform: "uppercase" }}>
                   Phone Number
                 </dt>
-                <dd style={{ margin: "0.2rem 0 0", fontWeight: 700 }}>
+                <dd style={{ margin: "0.15rem 0 0", fontWeight: 600 }}>
                   {receipt.customerPhone}
                 </dd>
               </div>
               <div>
-                <dt style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, textTransform: "uppercase" }}>
+                <dt style={{ fontSize: "0.68rem", color: "var(--muted)", fontWeight: 600, textTransform: "uppercase" }}>
                   Current Location
                 </dt>
-                <dd style={{ margin: "0.2rem 0 0", fontWeight: 700 }}>
+                <dd style={{ margin: "0.15rem 0 0", fontWeight: 600 }}>
                   {receipt.currentLocation || "—"}
                 </dd>
               </div>
               <div>
-                <dt style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, textTransform: "uppercase" }}>
+                <dt style={{ fontSize: "0.68rem", color: "var(--muted)", fontWeight: 600, textTransform: "uppercase" }}>
                   Delivery Address
                 </dt>
-                <dd style={{ margin: "0.2rem 0 0", fontWeight: 700 }}>
+                <dd style={{ margin: "0.15rem 0 0", fontWeight: 600 }}>
                   {receipt.deliveryAddress}
                 </dd>
               </div>
               <div>
-                <dt style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, textTransform: "uppercase" }}>
+                <dt style={{ fontSize: "0.68rem", color: "var(--muted)", fontWeight: 600, textTransform: "uppercase" }}>
                   Payment Date &amp; Time
                 </dt>
-                <dd style={{ margin: "0.2rem 0 0", fontWeight: 700 }}>
+                <dd style={{ margin: "0.15rem 0 0", fontWeight: 600 }}>
                   {formatDateTime(receipt.paidAt)}
                 </dd>
               </div>
               <div>
-                <dt style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, textTransform: "uppercase" }}>
+                <dt style={{ fontSize: "0.68rem", color: "var(--muted)", fontWeight: 600, textTransform: "uppercase" }}>
                   Payment Status
                 </dt>
                 <dd
                   style={{
-                    margin: "0.2rem 0 0",
+                    margin: "0.15rem 0 0",
                     fontWeight: 600,
                     color: "var(--brand-dark)",
                   }}
@@ -247,8 +248,8 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
                 alignItems: "center",
                 justifyContent: "space-between",
                 flexWrap: "wrap",
-                gap: "0.75rem",
-                paddingTop: "1rem",
+                gap: "0.65rem",
+                paddingTop: "0.85rem",
                 borderTop: "1px solid var(--line)",
               }}
             >
@@ -256,12 +257,12 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: "0.4rem",
-                  fontSize: "0.82rem",
+                  gap: "0.38rem",
+                  fontSize: "0.75rem",
                   color: "var(--muted)",
                 }}
               >
-                <ShieldCheck size={15} color="var(--brand)" />
+                <ShieldCheck size={14} color="var(--brand)" />
                 This receipt is saved to your Kova account history for future
                 re-downloads.
               </span>
@@ -269,7 +270,7 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
                 href="/"
                 className="btn btn--outline btn--sm"
               >
-                <Store size={14} />
+                <Store size={13} />
                 Back to Showroom
               </Link>
             </div>

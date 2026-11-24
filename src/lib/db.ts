@@ -50,6 +50,7 @@ function createSeedDatabase(): KovaDatabase {
         posts: 67,
         followers: 2000,
         deals: 500,
+        views: 4800,
       },
       memberSince: "2024",
     },
@@ -302,6 +303,11 @@ function ensureDbFile(): KovaDatabase {
     const parsed = JSON.parse(raw) as KovaDatabase;
     if (!Array.isArray(parsed.users)) parsed.users = [];
     if (!Array.isArray(parsed.ratings)) parsed.ratings = [];
+    for (const v of parsed.vendors ?? []) {
+      if (v.stats && typeof v.stats.views !== "number") {
+        v.stats.views = 4800;
+      }
+    }
     globalForDb.__kovaMemoryDb = parsed;
     return parsed;
   } catch {

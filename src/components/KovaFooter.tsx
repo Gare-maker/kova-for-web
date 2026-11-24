@@ -3,25 +3,26 @@ import React from "react";
 export function KovaFooter() {
   return (
     <footer className="site-footer">
-      <div className="container footer-minimal">
-        <div className="footer-minimal__brand" aria-label="Powered by Kova">
+      <div className="container footer-bar">
+        <div className="footer-powered-pill" aria-label="Powered by Kova">
           <span>Powered by</span>
           <img
             src="/brand/kova-logo-main.svg"
             alt="Kova"
-            width={58}
-            height={14}
+            width={48}
+            height={12}
             loading="lazy"
           />
         </div>
-        <p className="footer-minimal__tagline">Buy, Sell, Lease, Discover</p>
-        <p className="footer-minimal__desc">
-          Student-focused marketplace and discovery platform for Nigerian
-          universities.
-        </p>
-        <p className="footer-minimal__copy">
-          &copy; Kova Digital Market Limited. All rights reserved.
-        </p>
+
+        <a
+          href="https://www.kovadml.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="footer-market-link"
+        >
+          See Kova Digital Market
+        </a>
       </div>
     </footer>
   );
