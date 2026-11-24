@@ -481,19 +481,6 @@ export default function AccountReceiptsPage() {
                     )}
                   </span>
                 </div>
-                {(!selectedReceipt.paymentLabel ||
-                  selectedReceipt.paymentLabel === "Product Payment") && (
-                  <div
-                    style={{ display: "flex", justifyContent: "space-between" }}
-                  >
-                    <span>Delivery Charge</span>
-                    <span>
-                      {selectedReceipt.deliveryFee === 0
-                        ? "Free"
-                        : formatNaira(selectedReceipt.deliveryFee)}
-                    </span>
-                  </div>
-                )}
                 <div
                   style={{
                     display: "flex",

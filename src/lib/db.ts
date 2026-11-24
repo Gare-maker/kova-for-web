@@ -84,8 +84,8 @@ function createSeedDatabase(): KovaDatabase {
       description:
         "Ultra-crisp 65-inch 4K UHD Smart TV with HDR10 support, built-in streaming apps, slim bezel frame, and rich stereo sound. Lightly used for 3 months in spotless condition with original remote and power cable.",
       price: 378000,
-      deliveryFee: 5000,
-      waybillLabel: "₦5,000 delivery",
+      deliveryFee: 0,
+      waybillLabel: "Available",
       options: ['65" TV Only', '65" TV + Wall Mount'],
       condition: "Fairly Used",
       category: "Electronics",
@@ -621,16 +621,14 @@ export function createOrderAndReservation(params: {
   }
 
   let unitPrice = product.price;
-  let deliveryFee = product.deliveryFee;
+  const deliveryFee = 0;
   let paymentLabel = "Product Payment";
 
   if (paymentCategory === "property_inspection") {
     unitPrice = product.inspectionFee && product.inspectionFee > 0 ? product.inspectionFee : 10000;
-    deliveryFee = 0;
     paymentLabel = "Property Inspection Fee";
   } else if (paymentCategory === "property_agent") {
     unitPrice = product.agentFee && product.agentFee > 0 ? product.agentFee : 17000;
-    deliveryFee = 0;
     paymentLabel = "Property Agent Fee";
   }
 

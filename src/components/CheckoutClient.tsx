@@ -130,9 +130,8 @@ export function CheckoutClient({
       : agentAmount;
 
   const activeQty = paymentMode === "product" ? quantity : 1;
-  const activeDelivery = paymentMode === "product" ? product.deliveryFee : 0;
   const subtotal = activeUnitPrice * activeQty;
-  const totalPayable = subtotal + activeDelivery;
+  const totalPayable = subtotal;
 
   const paymentLabel =
     paymentMode === "product"
@@ -860,23 +859,6 @@ export function CheckoutClient({
                     </span>
                     <strong>{formatNaira(subtotal)}</strong>
                   </div>
-                  {paymentMode === "product" && (
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <span style={{ color: "var(--muted)" }}>
-                        Delivery Charge
-                      </span>
-                      <strong>
-                        {activeDelivery === 0
-                          ? "Free"
-                          : formatNaira(activeDelivery)}
-                      </strong>
-                    </div>
-                  )}
                 </div>
 
                 <div

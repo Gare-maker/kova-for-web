@@ -127,17 +127,6 @@ export function downloadReceiptPdf(receipt: Receipt): void {
   y += 22;
   doc.setFontSize(10);
   doc.setTextColor(61, 58, 77);
-  doc.text("Delivery Charge", 54, y);
-  doc.text(
-    receipt.deliveryFee === 0
-      ? "Free"
-      : `NGN ${receipt.deliveryFee.toLocaleString("en-NG")}`,
-    pageW - 54,
-    y,
-    { align: "right" }
-  );
-
-  y += 18;
   doc.text("Payment Method", 54, y);
   doc.text(receipt.paymentMethod, pageW - 54, y, { align: "right" });
 

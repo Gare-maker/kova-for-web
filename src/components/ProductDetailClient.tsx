@@ -341,12 +341,8 @@ export function ProductDetailClient({
                     <div className="ref-fee-val">{product.condition}</div>
                   </div>
                   <div>
-                    <div className="ref-fee-label">Delivery</div>
-                    <div className="ref-fee-val">
-                      {product.deliveryFee === 0
-                        ? "Free"
-                        : formatNaira(product.deliveryFee)}
-                    </div>
+                    <div className="ref-fee-label">Category</div>
+                    <div className="ref-fee-val">{product.category}</div>
                   </div>
                   <div>
                     <div className="ref-fee-label">Status</div>

@@ -147,10 +147,7 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
                     : receipt.productName}
                 </div>
                 <div style={{ fontSize: "0.88rem", color: "var(--muted)" }}>
-                  Qty: {receipt.quantity} &times; {formatNaira(receipt.unitPrice)} · Delivery:{" "}
-                  {receipt.deliveryFee === 0
-                    ? "Free"
-                    : formatNaira(receipt.deliveryFee)}
+                  Qty: {receipt.quantity} &times; {formatNaira(receipt.unitPrice)}
                 </div>
                 <div style={{ fontSize: "0.86rem", color: "var(--muted)" }}>
                   Vendor: {receipt.vendorName} (@{receipt.vendorUsername})

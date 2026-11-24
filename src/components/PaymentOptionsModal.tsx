@@ -51,7 +51,7 @@ export function PaymentOptionsModal({
     product.agentFee && product.agentFee > 0 ? product.agentFee : 17000;
 
   const productSubtotal = product.price * quantity;
-  const productTotal = productSubtotal + product.deliveryFee;
+  const productTotal = productSubtotal;
   const propertyTotal =
     propertyFeeType === "inspection" ? inspectionAmount : agentAmount;
 
@@ -315,14 +315,6 @@ export function PaymentOptionsModal({
                   Subtotal ({quantity} &times; {formatNaira(product.price)})
                 </span>
                 <span>{formatNaira(productSubtotal)}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--muted)" }}>Delivery</span>
-                <span>
-                  {product.deliveryFee === 0
-                    ? "Free"
-                    : formatNaira(product.deliveryFee)}
-                </span>
               </div>
               <div
                 style={{
