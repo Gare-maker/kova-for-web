@@ -89,7 +89,7 @@ export function ProductDetailClient({
   const [liked, setLiked] = useState(false);
   const [reported, setReported] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [showMoreDetails, setShowMoreDetails] = useState(true);
+  const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [readMoreDesc, setReadMoreDesc] = useState(false);
   const [selectedOption, setSelectedOption] = useState(
     product.options?.[0] ?? ""

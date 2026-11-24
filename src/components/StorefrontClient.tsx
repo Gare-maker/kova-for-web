@@ -3,15 +3,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Search,
-  SlidersHorizontal,
-  Star,
-  Share2,
-  Bell,
-  Check,
-  ShoppingBag,
-} from "lucide-react";
+import { Search, Star, Share2, Check, ShoppingBag } from "lucide-react";
 import type { Vendor, Product } from "@/lib/types";
 import { formatNaira, getInitials } from "@/lib/format";
 import { KovaHeader } from "./KovaHeader";
@@ -31,7 +23,13 @@ interface StorefrontClientProps {
   basePath?: string;
 }
 
-function VerifiedSeal({ size = 22, color = "#1D9BF0" }: { size?: number; color?: string }) {
+function VerifiedSeal({
+  size = 24,
+  color = "#1D9BF0",
+}: {
+  size?: number;
+  color?: string;
+}) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-label="Verified">
       <path
@@ -61,12 +59,6 @@ export function StorefrontClient({
   const routePath = basePath ?? `/store/${encodeURIComponent(vendor.username)}`;
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") ?? "");
-  const [selectedCategory, setSelectedCategory] = useState(
-    searchParams.get("category") ?? "All"
-  );
-  const [showFilters, setShowFilters] = useState(false);
-  const [following, setFollowing] = useState(true);
-  const [followerCount, setFollowerCount] = useState(vendor.stats.followers);
   const [copied, setCopied] = useState(false);
   const [chatPromptOpen, setChatPromptOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -76,59 +68,37 @@ export function StorefrontClient({
     vendor.ratingCount ?? 120
   );
 
-  const categories = useMemo(() => {
-    const set = new Set<string>(["All"]);
-    for (const p of products) {
-      if (p.category) set.add(p.category);
-    }
-    return Array.from(set);
-  }, [products]);
-
   useEffect(() => {
     const params = new URLSearchParams();
     if (searchQuery.trim()) params.set("q", searchQuery.trim());
-    if (selectedCategory !== "All") params.set("category", selectedCategory);
     const qs = params.toString();
     router.replace(qs ? `${routePath}?${qs}` : routePath, { scroll: false });
-  }, [searchQuery, selectedCategory, routePath, router]);
+  }, [searchQuery, routePath, router]);
 
   const filteredProducts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return products.filter((p) => {
-      const matchesCat =
-        selectedCategory === "All" || p.category === selectedCategory;
-      const matchesSearch =
-        !q ||
+    if (!q) return products;
+    return products.filter(
+      (p) =>
         p.name.toLowerCase().includes(q) ||
         p.description.toLowerCase().includes(q) ||
         p.category.toLowerCase().includes(q) ||
-        p.location.toLowerCase().includes(q);
-      return matchesCat && matchesSearch;
-    });
-  }, [products, searchQuery, selectedCategory]);
+        p.location.toLowerCase().includes(q)
+    );
+  }, [products, searchQuery]);
 
   const currentSearchQs = useMemo(() => {
-    const params = new URLSearchParams();
-    if (searchQuery.trim()) params.set("q", searchQuery.trim());
-    if (selectedCategory !== "All") params.set("category", selectedCategory);
-    const qs = params.toString();
-    return qs ? `?${qs}` : "";
-  }, [searchQuery, selectedCategory]);
+    const q = searchQuery.trim();
+    return q ? `?q=${encodeURIComponent(q)}` : "";
+  }, [searchQuery]);
 
-  const handleToggleFollow = () => {
-    setFollowing((prev) => {
-      setFollowerCount((c) => (prev ? Math.max(0, c - 1) : c + 1));
-      return !prev;
-    });
-  };
-
-  const handleShareShowroom = async () => {
+  const handleShareStorefront = async () => {
     const url = window.location.href;
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `@${vendor.username} Showroom · Kova`,
-          text: `Explore ${vendor.fullName}'s Showroom on Kova`,
+          title: `@${vendor.username} · Kova`,
+          text: `Explore ${vendor.fullName}'s listings on Kova`,
           url,
         });
         return;
@@ -145,45 +115,13 @@ export function StorefrontClient({
     }
   };
 
-  const formattedFollowers =
-    followerCount >= 1000
-      ? `${(followerCount / 1000).toFixed(followerCount % 1000 === 0 ? 0 : 1)}k`
-      : String(followerCount);
-
   return (
     <>
       <KovaHeader />
 
       <main id="main" className="ref-storefront">
-        {/* Showroom Sub-bar matching Reference Images 2 & 5 */}
-        <div className="kova-subbar">
-          <div className="container kova-subbar__inner">
-            <span className="kova-subbar__left">Showroom</span>
-            <div className="kova-subbar__actions">
-              <button
-                type="button"
-                className="kova-icon-btn"
-                onClick={handleShareShowroom}
-                aria-label="Share showroom"
-                title={copied ? "Link copied!" : "Share showroom"}
-              >
-                {copied ? <Check size={19} color="var(--brand)" /> : <Share2 size={19} />}
-              </button>
-              <button
-                type="button"
-                className="kova-icon-btn"
-                onClick={() => setChatPromptOpen(true)}
-                aria-label="Notifications and messages"
-                title="Download Kova app for instant alerts & chat"
-              >
-                <Bell size={19} />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Green Cover Banner matching Reference Image 3 */}
-        <section className="kova-cover-banner" aria-label="Vendor cover banner">
+        {/* Green Cover Banner Profile Header */}
+        <section className="kova-cover-banner" aria-label="Vendor profile">
           {vendor.coverImage && (
             <img
               src={vendor.coverImage}
@@ -222,114 +160,56 @@ export function StorefrontClient({
                 </p>
               </div>
             </button>
-          </div>
-        </section>
 
-        {/* Showroom Profile Identity, Stats & Action Pills matching Reference Image 2 */}
-        <section className="ref-profile-wrap" aria-label="Vendor profile summary">
-          <div className="container">
-            <div className="ref-profile-header">
+            <div style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
               <button
                 type="button"
-                className="ref-profile-trigger"
-                onClick={() => setProfileOpen(true)}
-                title="View full user details"
-              >
-                <div className="ref-avatar">
-                  <div className="ref-avatar__circle">
-                    {vendor.avatarUrl ? (
-                      <img src={vendor.avatarUrl} alt={vendor.fullName} />
-                    ) : (
-                      getInitials(vendor.fullName)
-                    )}
-                  </div>
-                  {vendor.verificationStatus === "verified" && (
-                    <span className="ref-verified-seal">
-                      <VerifiedSeal size={20} color="#EAB308" />
-                    </span>
-                  )}
-                </div>
-
-                <div>
-                  <div className="ref-profile-handle">@{vendor.username}</div>
-                  <p className="ref-profile-fullname">{vendor.fullName}</p>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                className="kova-role-badge"
-                onClick={() => setProfileOpen(true)}
-              >
-                {vendor.categoryBadge || "Agent"}
-              </button>
-            </div>
-
-            <dl className="ref-stats-row">
-              <div>
-                <dd className="ref-stat-val">{vendor.stats.posts}</dd>
-                <dt className="ref-stat-label">Posts</dt>
-              </div>
-              <div>
-                <dd className="ref-stat-val">{formattedFollowers}</dd>
-                <dt className="ref-stat-label">Followers</dt>
-              </div>
-              <div>
-                <dd className="ref-stat-val">{vendor.stats.deals}</dd>
-                <dt className="ref-stat-label">Deals</dt>
-              </div>
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setRateOpen(true)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    padding: 0,
-                    cursor: "pointer",
-                    width: "100%",
-                  }}
-                  title="Click to rate this user"
-                >
-                  <dd className="ref-stat-val">
-                    {liveRating.toFixed(1)}
-                    <Star
-                      size={16}
-                      fill="#FACC15"
-                      color="#FACC15"
-                      aria-hidden="true"
-                    />
-                  </dd>
-                  <dt className="ref-stat-label">Rating</dt>
-                </button>
-              </div>
-            </dl>
-
-            {/* Two Side-by-Side Showroom Action Pills (Reviews & Follow/Following) */}
-            <div className="kova-showroom-actions">
-              <button
-                type="button"
-                className="kova-pill-action"
                 onClick={() => setRateOpen(true)}
+                style={{
+                  background: "rgba(255, 255, 255, 0.16)",
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                  color: "#ffffff",
+                  borderRadius: 999,
+                  padding: "0.42rem 0.85rem",
+                  fontSize: "0.86rem",
+                  fontWeight: 500,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.35rem",
+                  cursor: "pointer",
+                  backdropFilter: "blur(6px)",
+                }}
+                title="Rate this user"
               >
-                Reviews
+                <Star size={14} fill="#FACC15" color="#FACC15" />
+                {liveRating.toFixed(1)} · Rate
               </button>
+
               <button
                 type="button"
-                className={`kova-pill-action ${
-                  following ? "" : "kova-pill-action--solid"
-                }`}
-                onClick={handleToggleFollow}
+                onClick={handleShareStorefront}
+                aria-label="Share storefront"
+                title={copied ? "Link copied!" : "Share storefront"}
+                style={{
+                  background: "rgba(255, 255, 255, 0.16)",
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                  color: "#ffffff",
+                  borderRadius: "50%",
+                  width: 36,
+                  height: 36,
+                  display: "grid",
+                  placeItems: "center",
+                  cursor: "pointer",
+                  backdropFilter: "blur(6px)",
+                }}
               >
-                {following ? "Following" : "Follow"}
+                {copied ? <Check size={16} /> : <Share2 size={16} />}
               </button>
             </div>
           </div>
         </section>
 
-        <div className="kova-section-divider" aria-hidden="true" />
-
-        {/* Search & Category Browsing + Listing Grid matching Images 2 & 5 */}
+        {/* Clean Search Bar & Product Listing Grid */}
         <section className="container ref-search-section">
           <div className="ref-search-pill" style={{ borderRadius: 12 }}>
             <Search size={19} color="#71717A" aria-hidden="true" />
@@ -340,35 +220,6 @@ export function StorefrontClient({
               placeholder="Search product name or property type"
               aria-label="Search product name or property type"
             />
-            <button
-              type="button"
-              onClick={() => setShowFilters((s) => !s)}
-              className={`ref-filter-btn ${
-                showFilters || selectedCategory !== "All"
-                  ? "ref-filter-btn--active"
-                  : ""
-              }`}
-              aria-label="Filter by category"
-              aria-expanded={showFilters}
-            >
-              <SlidersHorizontal size={18} />
-            </button>
-          </div>
-
-          {/* Category Pills always accessible for browsing categories */}
-          <div className="ref-category-bar">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSelectedCategory(cat)}
-                className={`ref-cat-chip ${
-                  selectedCategory === cat ? "ref-cat-chip--active" : ""
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
           </div>
 
           {products.length === 0 ? (
@@ -385,10 +236,7 @@ export function StorefrontClient({
                 Try another keyword or{" "}
                 <button
                   type="button"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSelectedCategory("All");
-                  }}
+                  onClick={() => setSearchQuery("")}
                   style={{
                     background: "none",
                     border: "none",
@@ -398,7 +246,7 @@ export function StorefrontClient({
                     textDecoration: "underline",
                   }}
                 >
-                  clear filters
+                  clear search
                 </button>
                 .
               </p>
