@@ -239,34 +239,48 @@ export function CheckoutClient({
 
   const safeMax = Math.max(1, effectiveRemaining);
 
+  const handleBack = () => {
+    if (step === "paystack") {
+      setStep("review");
+      return;
+    }
+    if (step === "review") {
+      setStep("form");
+      return;
+    }
+    router.push(`/product/${product.id}`);
+  };
+
   return (
     <>
       <KovaHeader />
 
+      <div className="kova-subbar">
+        <div className="container kova-subbar__inner">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="kova-subbar__left"
+            style={{
+              background: "none",
+              border: "none",
+              padding: 0,
+              cursor: "pointer",
+            }}
+          >
+            <ArrowLeft size={20} />
+            {step === "form" ? "Back to Product" : "Back"}
+          </button>
+        </div>
+      </div>
+
       <main id="main" className="storefront-main">
         <div className="container">
-          <div style={{ marginBottom: "1.25rem" }}>
-            <Link
-              href={`/product/${product.id}`}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.4rem",
-                fontSize: "0.88rem",
-                fontWeight: 600,
-                color: "var(--muted)",
-              }}
-            >
-              <ArrowLeft size={15} />
-              Back to Product
-            </Link>
-          </div>
-
           <h1
             className="display display--md"
             style={{ color: "var(--ink-strong)", marginBottom: "0.35rem" }}
           >
-            Checkout
+            Make Payment
           </h1>
           <p style={{ color: "var(--muted)", marginTop: 0, marginBottom: "1.5rem" }}>
             {paymentLabel} · Sold by <strong>{vendor.fullName}</strong>

@@ -1206,27 +1206,30 @@ select {
   position: relative;
   z-index: 2;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 1.35rem;
+  justify-content: center;
+  text-align: center;
+  gap: 0.9rem;
   padding-block: clamp(1.75rem, 3.6vw, 2.6rem);
-  flex-wrap: wrap;
 }
 .kova-cover-banner__id {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: clamp(1rem, 2.2vw, 1.5rem);
+  justify-content: center;
+  gap: 0.65rem;
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
-  text-align: left;
+  text-align: center;
   color: #ffffff;
 }
 .kova-cover-avatar {
   position: relative;
-  width: clamp(82px, 10vw, 108px);
-  height: clamp(82px, 10vw, 108px);
+  width: clamp(62px, 7.2vw, 78px);
+  height: clamp(62px, 7.2vw, 78px);
   flex: none;
 }
 .kova-cover-avatar__ring {
@@ -1234,13 +1237,13 @@ select {
   height: 100%;
   border-radius: 50%;
   overflow: hidden;
-  border: 3px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
+  border: 2.5px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14);
   background: var(--forest);
   display: grid;
   place-items: center;
   color: #ffffff;
-  font-size: 1.65rem;
+  font-size: 1.35rem;
   font-weight: 600;
 }
 .kova-cover-avatar__ring img {
@@ -1250,16 +1253,16 @@ select {
 }
 .kova-cover-handle {
   margin: 0;
-  font-size: clamp(1.48rem, 2.9vw, 2.2rem);
+  font-size: clamp(1.22rem, 2.1vw, 1.65rem);
   font-weight: 600;
   color: #ffffff;
-  line-height: 1.15;
+  line-height: 1.18;
 }
 .kova-cover-subtitle {
-  margin: 0.35rem 0 0;
-  font-size: clamp(0.98rem, 1.45vw, 1.18rem);
+  margin: 0.22rem 0 0;
+  font-size: clamp(0.86rem, 1.15vw, 0.98rem);
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.92);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .kova-subbar {

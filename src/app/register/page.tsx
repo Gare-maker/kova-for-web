@@ -2,7 +2,13 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ShieldCheck, CheckCircle2, AlertCircle, UserCheck } from "lucide-react";
+import {
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
+  UserCheck,
+  ArrowLeft,
+} from "lucide-react";
 import { KovaHeader } from "@/components/KovaHeader";
 import { KovaFooter } from "@/components/KovaFooter";
 
@@ -106,10 +112,39 @@ function RegisterFormInner() {
     }
   };
 
+  const handleBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+      return;
+    }
+    const cleanNext = nextUrl.replace(/\?pay=1$/, "");
+    router.push(cleanNext.startsWith("/product/") ? cleanNext : "/");
+  };
+
   return (
-    <main id="main" className="storefront-main">
-      <div className="container" style={{ maxWidth: 540 }}>
-        <div className="surface-card">
+    <>
+      <div className="kova-subbar">
+        <div className="container kova-subbar__inner">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="kova-subbar__left"
+            style={{
+              background: "none",
+              border: "none",
+              padding: 0,
+              cursor: "pointer",
+            }}
+          >
+            <ArrowLeft size={20} />
+            Back
+          </button>
+        </div>
+      </div>
+
+      <main id="main" className="storefront-main">
+        <div className="container" style={{ maxWidth: 540 }}>
+          <div className="surface-card">
           <div
             style={{
               display: "inline-flex",
@@ -414,6 +449,7 @@ function RegisterFormInner() {
         </div>
       </div>
     </main>
+    </>
   );
 }
 

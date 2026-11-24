@@ -2,7 +2,15 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { X, ShoppingBag, Home, Minus, Plus, CheckCircle2 } from "lucide-react";
+import {
+  X,
+  ArrowLeft,
+  ShoppingBag,
+  Home,
+  Minus,
+  Plus,
+  CheckCircle2,
+} from "lucide-react";
 import type { Product } from "@/lib/types";
 import { formatNaira } from "@/lib/format";
 
@@ -79,27 +87,53 @@ export function PaymentOptionsModal({
           position: "relative",
         }}
       >
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close payment options"
+        <div
           style={{
-            position: "absolute",
-            top: "1rem",
-            right: "1rem",
-            background: "var(--paper-deep)",
-            border: "none",
-            borderRadius: "50%",
-            width: 34,
-            height: 34,
-            display: "grid",
-            placeItems: "center",
-            cursor: "pointer",
-            color: "var(--ink-strong)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "0.85rem",
           }}
         >
-          <X size={17} />
-        </button>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              background: "none",
+              border: "none",
+              padding: 0,
+              cursor: "pointer",
+              color: "var(--ink-strong)",
+              fontSize: "0.9rem",
+              fontWeight: 600,
+            }}
+          >
+            <ArrowLeft size={18} />
+            Back
+          </button>
+
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close payment options"
+            style={{
+              background: "var(--paper-deep)",
+              border: "none",
+              borderRadius: "50%",
+              width: 32,
+              height: 32,
+              display: "grid",
+              placeItems: "center",
+              cursor: "pointer",
+              color: "var(--ink-strong)",
+            }}
+          >
+            <X size={16} />
+          </button>
+        </div>
 
         <h2
           className="display display--sm"

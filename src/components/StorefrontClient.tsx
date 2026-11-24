@@ -153,9 +153,9 @@ export function StorefrontClient({
                 {vendor.verificationStatus === "verified" && (
                   <span
                     className="ref-verified-seal"
-                    style={{ width: 28, height: 28, bottom: 0, right: 0 }}
+                    style={{ width: 22, height: 22, bottom: -1, right: -1 }}
                   >
-                    <VerifiedSeal size={28} color="#1D9BF0" />
+                    <VerifiedSeal size={22} color="#1D9BF0" />
                   </span>
                 )}
               </div>
