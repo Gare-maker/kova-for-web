@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
 import { registerBuyerAccount } from "@/lib/db";
-import { ACCOUNT_COOKIE_NAME, signUserId } from "@/lib/session";
 
-async function dispatchConfirmationEmail(params: {
+async function dispatchVerificationEmail(params: {
   email: string;
   name: string;
   usernameOrBusiness: string;
-}): Promise<boolean> {
+  verifyUrl: string;
+}): Promise<{ sent: boolean; provider: "resend" | "local" }> {
   const resendKey = process.env.RESEND_API_KEY;
   if (resendKey) {
     try {
-      await fetch("https://api.resend.com/emails", {
+      const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${resendKey}`,
@@ -19,16 +19,16 @@ async function dispatchConfirmationEmail(params: {
         body: JSON.stringify({
           from: process.env.KOVA_EMAIL_FROM || "Kova <onboarding@kovadml.com>",
           to: [params.email],
-          subject: "Welcome to Kova — Buyer Account Confirmed",
-          html: `<p>Hi ${params.name},</p><p>Your Kova Buyer account (<strong>${params.usernameOrBusiness}</strong>) has been created successfully. You can now complete payments and access your PDF receipts anytime.</p>`,
+          subject: "Verify your Kova Buyer account",
+          html: `<p>Hi ${params.name},</p><p>Welcome to Kova Showroom! Please verify your email address for <strong>${params.usernameOrBusiness}</strong> to finish creating your Buyer account:</p><p><a href="${params.verifyUrl}" style="display:inline-block;padding:10px 18px;background:#2C9B43;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:600;">Verify Email Address</a></p><p>This verification link expires in 24 hours.</p>`,
         }),
       });
-      return true;
+      return { sent: res.ok, provider: "resend" };
     } catch {
-      return false;
+      return { sent: false, provider: "resend" };
     }
   }
-  return true;
+  return { sent: true, provider: "local" };
 }
 
 export async function POST(req: Request) {
@@ -41,6 +41,10 @@ export async function POST(req: Request) {
     const phone = String(body.phone ?? "").trim();
     const password = String(body.password ?? "");
     const confirmPassword = String(body.confirmPassword ?? "");
+    const nextPath =
+      typeof body.next === "string" && body.next.startsWith("/")
+        ? body.next
+        : "/";
 
     if (
       !firstAndMiddleName ||
@@ -98,36 +102,41 @@ export async function POST(req: Request) {
       password,
     });
 
-    if (result.error || !result.user) {
+    if (result.error || !result.user || !result.verificationToken) {
       return NextResponse.json(
         { error: result.error ?? "Unable to create Buyer account." },
         { status: 409 }
       );
     }
 
-    const emailSent = await dispatchConfirmationEmail({
+    const origin =
+      req.headers.get("origin") ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      "http://localhost:3000";
+    const verifyRelative = `/verify-email?token=${encodeURIComponent(
+      result.verificationToken
+    )}&next=${encodeURIComponent(nextPath)}`;
+    const verifyUrl = `${origin}${verifyRelative}`;
+
+    const mail = await dispatchVerificationEmail({
       email: result.user.email,
       name: result.user.name,
       usernameOrBusiness: result.user.usernameOrBusiness,
+      verifyUrl,
     });
 
-    const { passwordHash: _ignored, ...safeUser } = result.user;
-    void _ignored;
+    const { passwordHash: _p, verificationToken: _t, ...safeUser } = result.user;
+    void _p;
+    void _t;
 
-    const res = NextResponse.json({
+    return NextResponse.json({
+      requiresVerification: true,
       user: safeUser,
-      confirmationEmailSent: emailSent,
-      message: `Buyer account created! A confirmation email has been sent to ${safeUser.email}.`,
+      verificationEmailSent: mail.sent,
+      verificationPreviewUrl:
+        mail.provider === "local" ? verifyRelative : null,
+      message: `Verification email sent to ${safeUser.email}. Please check your inbox and click the link to verify your Buyer account.`,
     });
-
-    res.cookies.set(ACCOUNT_COOKIE_NAME, signUserId(result.user.id), {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30,
-    });
-
-    return res;
   } catch {
     return NextResponse.json(
       { error: "Invalid registration request." },
@@ -135,4 +144,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

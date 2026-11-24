@@ -28,8 +28,8 @@ export default function HomePage() {
   return (
     <Suspense
       fallback={
-        <div style={{ padding: "3rem", textAlign: "center" }}>
-          Loading storefront...
+        <div style={{ padding: "2.5rem", textAlign: "center", fontSize: "0.84rem" }}>
+          Loading Showroom...
         </div>
       }
     >

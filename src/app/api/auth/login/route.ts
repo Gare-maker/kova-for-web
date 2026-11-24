@@ -16,6 +16,18 @@ export async function POST(req: Request) {
     }
 
     const result = authenticateBuyer(email, password);
+    if (result.needsVerification) {
+      return NextResponse.json(
+        {
+          error:
+            result.error ??
+            "Please verify your email address before signing in.",
+          needsVerification: true,
+        },
+        { status: 403 }
+      );
+    }
+
     if (result.error || !result.user) {
       return NextResponse.json(
         { error: result.error ?? "Invalid email or password." },
@@ -23,8 +35,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const { passwordHash: _ignored, ...safeUser } = result.user;
-    void _ignored;
+    const { passwordHash: _p, verificationToken: _t, ...safeUser } = result.user;
+    void _p;
+    void _t;
 
     const res = NextResponse.json({ user: safeUser });
     res.cookies.set(ACCOUNT_COOKIE_NAME, signUserId(result.user.id), {
@@ -41,4 +54,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

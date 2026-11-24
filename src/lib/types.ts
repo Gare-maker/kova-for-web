@@ -85,6 +85,9 @@ export interface UserAccount {
   email: string;
   role: "Buyer";
   passwordHash?: string;
+  emailVerified?: boolean;
+  verificationToken?: string | null;
+  verificationExpiresAt?: string | null;
   confirmationEmailSentAt?: string;
   createdAt: string;
 }

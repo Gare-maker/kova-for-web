@@ -14,7 +14,7 @@ export async function GET(
   const vendor = getVendorByUsername(username);
   if (!vendor) {
     return NextResponse.json(
-      { error: "Storefront not found." },
+      { error: "Showroom not found." },
       { status: 404 }
     );
   }

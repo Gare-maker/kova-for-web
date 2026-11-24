@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { X, MapPin, Calendar, Star, BadgeCheck, MessageCircle, Store } from "lucide-react";
+import { X, MapPin, Calendar, Star, BadgeCheck, Store } from "lucide-react";
 import type { Vendor } from "@/lib/types";
 import { getInitials } from "@/lib/format";
 import { VerificationBadge } from "./VerificationBadge";
@@ -13,7 +13,6 @@ interface UserProfileModalProps {
   vendor: Vendor;
   rating?: number;
   listingsCount?: number;
-  onStartChat?: () => void;
   onRateUser?: () => void;
 }
 
@@ -23,7 +22,6 @@ export function UserProfileModal({
   vendor,
   rating,
   listingsCount,
-  onStartChat,
   onRateUser,
 }: UserProfileModalProps) {
   if (!open) return null;
@@ -43,7 +41,7 @@ export function UserProfileModal({
         className="surface-card"
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: "min(480px, 100%)",
+          width: "min(410px, 100%)",
           maxHeight: "90vh",
           overflowY: "auto",
           position: "relative",
@@ -55,24 +53,24 @@ export function UserProfileModal({
           aria-label="Close profile details"
           style={{
             position: "absolute",
-            top: "1rem",
-            right: "1rem",
+            top: "0.75rem",
+            right: "0.75rem",
             background: "var(--paper-deep)",
             border: "none",
             borderRadius: "50%",
-            width: 34,
-            height: 34,
+            width: 28,
+            height: 28,
             display: "grid",
             placeItems: "center",
             cursor: "pointer",
             color: "var(--ink-strong)",
           }}
         >
-          <X size={17} />
+          <X size={15} />
         </button>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <div style={{ position: "relative", width: 72, height: 72, flex: "none" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <div style={{ position: "relative", width: 54, height: 54, flex: "none" }}>
             <div
               style={{
                 width: "100%",
@@ -84,7 +82,7 @@ export function UserProfileModal({
                 display: "grid",
                 placeItems: "center",
                 fontWeight: 600,
-                fontSize: "1.3rem",
+                fontSize: "1.05rem",
               }}
             >
               {vendor.avatarUrl ? (
@@ -101,10 +99,10 @@ export function UserProfileModal({
               <span
                 style={{
                   position: "absolute",
-                  bottom: 0,
-                  right: 0,
-                  width: 24,
-                  height: 24,
+                  bottom: -1,
+                  right: -1,
+                  width: 19,
+                  height: 19,
                   borderRadius: "50%",
                   background: "#1d9bf0",
                   color: "#fff",
@@ -113,7 +111,7 @@ export function UserProfileModal({
                   border: "2px solid #fff",
                 }}
               >
-                <BadgeCheck size={14} />
+                <BadgeCheck size={11} />
               </span>
             )}
           </div>
@@ -122,10 +120,10 @@ export function UserProfileModal({
             <h2 className="display display--sm" style={{ color: "var(--ink-strong)" }}>
               @{vendor.username}
             </h2>
-            <div style={{ color: "var(--muted)", fontWeight: 500, fontSize: "0.94rem" }}>
-              {vendor.fullName} · {vendor.role}
+            <div style={{ color: "var(--muted)", fontWeight: 500, fontSize: "0.8rem" }}>
+              {vendor.fullName} · {vendor.categoryBadge || vendor.role}
             </div>
-            <div style={{ marginTop: "0.4rem" }}>
+            <div style={{ marginTop: "0.28rem" }}>
               <VerificationBadge status={vendor.verificationStatus} />
             </div>
           </div>
@@ -135,34 +133,34 @@ export function UserProfileModal({
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-            gap: "0.5rem",
+            gap: "0.4rem",
             textAlign: "center",
-            padding: "0.9rem 0.5rem",
+            padding: "0.65rem 0.4rem",
             background: "var(--paper-subtle)",
-            borderRadius: 12,
+            borderRadius: 10,
             border: "1px solid var(--line)",
-            marginBlock: "1.25rem",
+            marginBlock: "0.85rem",
           }}
         >
           <div>
-            <dd style={{ margin: 0, fontWeight: 600, fontSize: "1.1rem" }}>
+            <dd style={{ margin: 0, fontWeight: 600, fontSize: "0.94rem" }}>
               {listingsCount ?? vendor.stats.posts}
             </dd>
-            <dt style={{ fontSize: "0.78rem", color: "var(--muted)" }}>Posts</dt>
+            <dt style={{ fontSize: "0.7rem", color: "var(--muted)" }}>Posts</dt>
           </div>
           <div>
-            <dd style={{ margin: 0, fontWeight: 600, fontSize: "1.1rem" }}>
+            <dd style={{ margin: 0, fontWeight: 600, fontSize: "0.94rem" }}>
               {vendor.stats.followers >= 1000
                 ? `${(vendor.stats.followers / 1000).toFixed(0)}k`
                 : vendor.stats.followers}
             </dd>
-            <dt style={{ fontSize: "0.78rem", color: "var(--muted)" }}>Followers</dt>
+            <dt style={{ fontSize: "0.7rem", color: "var(--muted)" }}>Followers</dt>
           </div>
           <div>
-            <dd style={{ margin: 0, fontWeight: 600, fontSize: "1.1rem" }}>
+            <dd style={{ margin: 0, fontWeight: 600, fontSize: "0.94rem" }}>
               {vendor.stats.deals}
             </dd>
-            <dt style={{ fontSize: "0.78rem", color: "var(--muted)" }}>Deals</dt>
+            <dt style={{ fontSize: "0.7rem", color: "var(--muted)" }}>Deals</dt>
           </div>
           <div>
             <button
@@ -180,30 +178,30 @@ export function UserProfileModal({
                 cursor: onRateUser ? "pointer" : "default",
                 width: "100%",
               }}
-              title="Rate this user"
+              title="Rate this business"
             >
               <dd
                 style={{
                   margin: 0,
                   fontWeight: 600,
-                  fontSize: "1.1rem",
+                  fontSize: "0.94rem",
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 3,
+                  gap: 2,
                   color: "var(--ink-strong)",
                 }}
               >
                 {displayRating.toFixed(1)}
-                <Star size={14} fill="#FACC15" color="#FACC15" />
+                <Star size={12} fill="#FACC15" color="#FACC15" />
               </dd>
-              <dt style={{ fontSize: "0.78rem", color: "var(--brand)" }}>
+              <dt style={{ fontSize: "0.7rem", color: "var(--brand)" }}>
                 Rate
               </dt>
             </button>
           </div>
         </dl>
 
-        <p style={{ color: "var(--ink-soft)", fontSize: "0.93rem", margin: "0 0 1rem" }}>
+        <p style={{ color: "var(--ink-soft)", fontSize: "0.82rem", margin: "0 0 0.75rem" }}>
           {vendor.bio}
         </p>
 
@@ -211,59 +209,45 @@ export function UserProfileModal({
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: "0.45rem",
-            fontSize: "0.86rem",
+            gap: "0.3rem",
+            fontSize: "0.78rem",
             color: "var(--muted)",
-            marginBottom: "1.25rem",
+            marginBottom: "0.95rem",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "0.45rem" }}>
-            <MapPin size={15} />
+          <div style={{ display: "flex", alignItems: "center", gap: "0.38rem" }}>
+            <MapPin size={13} />
             <span>{vendor.location}</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.45rem" }}>
-            <Calendar size={15} />
+          <div style={{ display: "flex", alignItems: "center", gap: "0.38rem" }}>
+            <Calendar size={13} />
             <span>Kova Member since {vendor.memberSince}</span>
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
-          {onStartChat && (
-            <button
-              type="button"
-              className="btn btn--brand btn--sm"
-              style={{ flex: 1, fontWeight: 500 }}
-              onClick={() => {
-                onClose();
-                onStartChat();
-              }}
-            >
-              <MessageCircle size={15} />
-              Message
-            </button>
-          )}
+        <div style={{ display: "flex", gap: "0.5rem" }}>
           {onRateUser && (
             <button
               type="button"
               className="btn btn--outline btn--sm"
-              style={{ flex: 1, fontWeight: 500 }}
+              style={{ flex: 1 }}
               onClick={() => {
                 onClose();
                 onRateUser();
               }}
             >
-              <Star size={15} fill="#FACC15" color="#FACC15" />
+              <Star size={13} fill="#FACC15" color="#FACC15" />
               Rate User
             </button>
           )}
           <Link
             href="/"
-            className="btn btn--outline btn--sm"
-            style={{ width: "100%", fontWeight: 500 }}
+            className="btn btn--brand btn--sm"
+            style={{ flex: 1 }}
             onClick={onClose}
           >
-            <Store size={15} />
-            View Storefront
+            <Store size={13} />
+            View Showroom
           </Link>
         </div>
       </div>

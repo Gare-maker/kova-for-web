@@ -35,7 +35,7 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
       <KovaHeader />
 
       <main id="main" className="storefront-main">
-        <div className="container" style={{ maxWidth: 780 }}>
+        <div className="container" style={{ maxWidth: 680 }}>
           <div className="surface-card">
             <div
               style={{
@@ -43,23 +43,23 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
                 flexDirection: "column",
                 alignItems: "center",
                 textAlign: "center",
-                paddingBottom: "1.5rem",
+                paddingBottom: "1.05rem",
                 borderBottom: "1px solid var(--line)",
               }}
             >
               <div
                 style={{
-                  width: 56,
-                  height: 56,
+                  width: 44,
+                  height: 44,
                   borderRadius: "50%",
                   background: "var(--brand-soft)",
                   color: "var(--brand)",
                   display: "grid",
                   placeItems: "center",
-                  marginBottom: "0.75rem",
+                  marginBottom: "0.55rem",
                 }}
               >
-                <CheckCircle2 size={30} />
+                <CheckCircle2 size={24} />
               </div>
               <h1
                 className="display display--md"
@@ -67,7 +67,7 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
               >
                 Payment Successful!
               </h1>
-              <p style={{ color: "var(--muted)", margin: "0.35rem 0 0" }}>
+              <p style={{ color: "var(--muted)", fontSize: "0.82rem", margin: "0.25rem 0 0" }}>
                 Your payment has been received successfully.
               </p>
 
@@ -75,40 +75,40 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
                 style={{
                   display: "flex",
                   flexWrap: "wrap",
-                  gap: "0.75rem",
-                  marginTop: "1.25rem",
+                  gap: "0.5rem",
+                  marginTop: "0.95rem",
                   justifyContent: "center",
                 }}
               >
                 <button
                   type="button"
-                  className="btn btn--brand"
+                  className="btn btn--brand btn--sm"
                   onClick={() => downloadReceiptPdf(receipt)}
                 >
-                  <Download size={16} />
+                  <Download size={14} />
                   Download Receipt
                 </button>
 
                 <button
                   type="button"
-                  className="btn btn--outline"
+                  className="btn btn--outline btn--sm"
                   onClick={handleCopyLink}
                 >
                   {copied ? (
                     <>
-                      <Check size={16} />
+                      <Check size={14} />
                       Receipt Link Copied
                     </>
                   ) : (
                     <>
-                      <Copy size={16} />
+                      <Copy size={14} />
                       Copy Receipt Link
                     </>
                   )}
                 </button>
 
-                <Link href="/account/receipts" className="btn btn--outline">
-                  <ReceiptText size={16} />
+                <Link href="/account/receipts" className="btn btn--outline btn--sm">
+                  <ReceiptText size={14} />
                   Receipt History
                 </Link>
               </div>
@@ -269,8 +269,8 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
                 href="/"
                 className="btn btn--outline btn--sm"
               >
-                <Store size={15} />
-                Back to Storefront
+                <Store size={14} />
+                Back to Showroom
               </Link>
             </div>
           </div>

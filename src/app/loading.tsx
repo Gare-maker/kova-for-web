@@ -7,18 +7,26 @@ export default function RootLoading() {
       <main className="ref-storefront">
         <div
           style={{
-            height: 185,
-            background: "linear-gradient(125deg, rgba(44,155,67,0.82), rgba(28,128,52,0.78))",
+            padding: "1.2rem 0 1.05rem",
+            borderBottom: "1px solid #eceef2",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "0.45rem",
           }}
-        />
-        <div className="container" style={{ paddingTop: "1.5rem" }}>
-          <div style={{ height: 50, maxWidth: 680, margin: "0 auto", borderRadius: 12, background: "#f3f4f6" }} />
+        >
+          <div style={{ width: 64, height: 64, borderRadius: "50%", background: "#f1f2f5" }} />
+          <div style={{ width: 120, height: 14, borderRadius: 6, background: "#f1f2f5" }} />
+          <div style={{ width: 96, height: 11, borderRadius: 6, background: "#f1f2f5" }} />
+        </div>
+        <div className="container" style={{ paddingTop: "1rem" }}>
+          <div style={{ height: 40, maxWidth: 560, margin: "0 auto", borderRadius: 12, background: "#f3f4f6" }} />
           <div className="ref-listing-grid">
             {[1, 2, 3, 4].map((n) => (
               <div key={n}>
-                <div style={{ aspectRatio: "1 / 1.06", borderRadius: 16, background: "#f3f4f6" }} />
-                <div style={{ height: 14, width: "75%", marginTop: 10, borderRadius: 6, background: "#f3f4f6" }} />
-                <div style={{ height: 12, width: "55%", marginTop: 6, borderRadius: 6, background: "#f3f4f6" }} />
+                <div style={{ aspectRatio: "1 / 1.02", borderRadius: 12, background: "#f3f4f6" }} />
+                <div style={{ height: 12, width: "75%", marginTop: 8, borderRadius: 5, background: "#f3f4f6" }} />
+                <div style={{ height: 10, width: "55%", marginTop: 5, borderRadius: 5, background: "#f3f4f6" }} />
               </div>
             ))}
           </div>
@@ -27,4 +35,3 @@ export default function RootLoading() {
     </>
   );
 }
-

@@ -287,11 +287,11 @@ export function CheckoutClient({
         <div className="container">
           <h1
             className="display display--md"
-            style={{ color: "var(--ink-strong)", marginBottom: "0.35rem" }}
+            style={{ color: "var(--ink-strong)", marginBottom: "0.2rem" }}
           >
             Make Payment
           </h1>
-          <p style={{ color: "var(--muted)", marginTop: 0, marginBottom: "1.5rem" }}>
+          <p style={{ color: "var(--muted)", fontSize: "0.82rem", marginTop: 0, marginBottom: "1rem" }}>
             {paymentLabel} · Sold by <strong>{vendor.fullName}</strong>
           </p>
 

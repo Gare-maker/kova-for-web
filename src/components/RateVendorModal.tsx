@@ -106,7 +106,7 @@ export function RateVendorModal({
         className="surface-card"
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: "min(460px, 100%)",
+          width: "min(410px, 100%)",
           maxHeight: "90vh",
           overflowY: "auto",
           position: "relative",
@@ -118,36 +118,30 @@ export function RateVendorModal({
           aria-label="Close rating modal"
           style={{
             position: "absolute",
-            top: "0.95rem",
-            right: "0.95rem",
+            top: "0.75rem",
+            right: "0.75rem",
             background: "var(--paper-deep)",
             border: "none",
             borderRadius: "50%",
-            width: 34,
-            height: 34,
+            width: 28,
+            height: 28,
             display: "grid",
             placeItems: "center",
             cursor: "pointer",
             color: "var(--ink-strong)",
           }}
         >
-          <X size={17} />
+          <X size={15} />
         </button>
 
         <h2
           className="display display--sm"
-          style={{ color: "var(--ink-strong)", marginBottom: "0.25rem" }}
+          style={{ color: "var(--ink-strong)", marginBottom: "0.2rem" }}
         >
           Rate @{vendor.username}
         </h2>
-        <p
-          style={{
-            color: "var(--muted)",
-            fontSize: "0.9rem",
-            margin: "0 0 1rem",
-          }}
-        >
-          {vendor.fullName} · Current average:{" "}
+        <p style={{ color: "var(--muted)", fontSize: "0.8rem", margin: "0 0 0.85rem" }}>
+          {vendor.fullName} · Average:{" "}
           <strong style={{ color: "var(--ink-strong)", fontWeight: 600 }}>
             {currentRating.toFixed(1)} ★
           </strong>{" "}
@@ -159,20 +153,21 @@ export function RateVendorModal({
             style={{
               background: "var(--brand-soft)",
               color: "var(--forest)",
-              borderRadius: 12,
-              padding: "1rem",
+              borderRadius: 10,
+              padding: "0.85rem",
               textAlign: "center",
-              marginBottom: "1rem",
+              marginBottom: "0.85rem",
+              fontSize: "0.82rem",
             }}
           >
             <CheckCircle2
-              size={28}
+              size={24}
               color="var(--brand)"
-              style={{ margin: "0 auto 0.45rem" }}
+              style={{ margin: "0 auto 0.35rem" }}
             />
             <div style={{ fontWeight: 600 }}>Thank you for your rating!</div>
-            <div style={{ fontSize: "0.86rem", marginTop: "0.2rem" }}>
-              Your feedback helps keep Kova safe and trustworthy.
+            <div style={{ fontSize: "0.78rem", marginTop: "0.15rem" }}>
+              Your feedback helps keep Kova Showrooms trustworthy.
             </div>
           </div>
         ) : (
@@ -181,8 +176,8 @@ export function RateVendorModal({
               style={{
                 display: "flex",
                 justifyContent: "center",
-                gap: "0.45rem",
-                marginBottom: "1rem",
+                gap: "0.35rem",
+                marginBottom: "0.8rem",
               }}
             >
               {[1, 2, 3, 4, 5].map((value) => (
@@ -196,14 +191,14 @@ export function RateVendorModal({
                   style={{
                     background: "none",
                     border: "none",
-                    padding: "0.25rem",
+                    padding: "0.2rem",
                     cursor: "pointer",
-                    transform: activeStars >= value ? "scale(1.1)" : "scale(1)",
-                    transition: "transform 0.15s ease",
+                    transform: activeStars >= value ? "scale(1.08)" : "scale(1)",
+                    transition: "transform 0.14s ease",
                   }}
                 >
                   <Star
-                    size={32}
+                    size={26}
                     fill={activeStars >= value ? "#FACC15" : "none"}
                     color={activeStars >= value ? "#FACC15" : "#D1D5DB"}
                   />
@@ -216,10 +211,10 @@ export function RateVendorModal({
                 style={{
                   background: "var(--danger-soft)",
                   color: "var(--danger)",
-                  padding: "0.65rem 0.85rem",
+                  padding: "0.55rem 0.75rem",
                   borderRadius: 8,
-                  fontSize: "0.85rem",
-                  marginBottom: "0.85rem",
+                  fontSize: "0.78rem",
+                  marginBottom: "0.7rem",
                 }}
               >
                 {error}
@@ -246,8 +241,8 @@ export function RateVendorModal({
               <textarea
                 id="rate-comment"
                 className="form-input"
-                rows={3}
-                placeholder="Share your experience with this user..."
+                rows={2}
+                placeholder="Share your experience..."
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 style={{ resize: "vertical" }}
@@ -257,7 +252,7 @@ export function RateVendorModal({
             <button
               type="submit"
               className="ref-make-payment-btn"
-              style={{ marginTop: "0.25rem" }}
+              style={{ marginTop: "0.2rem" }}
               disabled={submitting}
             >
               {submitting ? "Submitting..." : "Submit Rating"}
@@ -268,30 +263,30 @@ export function RateVendorModal({
         {recentRatings.length > 0 && (
           <div
             style={{
-              marginTop: "1.25rem",
-              paddingTop: "1rem",
+              marginTop: "0.95rem",
+              paddingTop: "0.8rem",
               borderTop: "1px solid var(--line)",
             }}
           >
             <div
               style={{
-                fontSize: "0.84rem",
+                fontSize: "0.78rem",
                 fontWeight: 600,
                 color: "var(--ink-strong)",
-                marginBottom: "0.65rem",
+                marginBottom: "0.5rem",
               }}
             >
               Recent Ratings
             </div>
-            <div style={{ display: "grid", gap: "0.6rem" }}>
-              {recentRatings.slice(0, 4).map((r) => (
+            <div style={{ display: "grid", gap: "0.45rem" }}>
+              {recentRatings.slice(0, 3).map((r) => (
                 <div
                   key={r.id}
                   style={{
                     background: "var(--paper-subtle)",
-                    borderRadius: 10,
-                    padding: "0.65rem 0.8rem",
-                    fontSize: "0.86rem",
+                    borderRadius: 8,
+                    padding: "0.5rem 0.65rem",
+                    fontSize: "0.78rem",
                   }}
                 >
                   <div
@@ -313,15 +308,15 @@ export function RateVendorModal({
                       }}
                     >
                       {r.stars}
-                      <Star size={12} fill="#FACC15" color="#FACC15" />
+                      <Star size={11} fill="#FACC15" color="#FACC15" />
                     </span>
                   </div>
                   {r.comment && (
                     <p
                       style={{
-                        margin: "0.3rem 0 0",
+                        margin: "0.2rem 0 0",
                         color: "var(--muted)",
-                        lineHeight: 1.45,
+                        lineHeight: 1.4,
                       }}
                     >
                       {r.comment}
@@ -336,4 +331,3 @@ export function RateVendorModal({
     </div>
   );
 }
-

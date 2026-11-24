@@ -1,14 +1,13 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Search, Star, Share2, Check, ShoppingBag } from "lucide-react";
+import { Search, ShoppingBag } from "lucide-react";
 import type { Vendor, Product } from "@/lib/types";
 import { formatNaira, getInitials } from "@/lib/format";
 import { KovaHeader } from "./KovaHeader";
 import { KovaFooter } from "./KovaFooter";
-import { DownloadChatModal } from "./DownloadChatModal";
 import { RateVendorModal } from "./RateVendorModal";
 import { UserProfileModal } from "./UserProfileModal";
 
@@ -23,18 +22,12 @@ interface StorefrontClientProps {
   basePath?: string;
 }
 
-function VerifiedSeal({
-  size = 24,
-  color = "#1D9BF0",
-}: {
-  size?: number;
-  color?: string;
-}) {
+function VerifiedSeal({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-label="Verified">
       <path
         d="M12 1.75l2.37 1.72 2.9-.31 1.18 2.68 2.68 1.18-.31 2.9L22.25 12l-1.72 2.37.31 2.9-2.68 1.18-1.18 2.68-2.9-.31L12 22.25l-2.37-1.72-2.9.31-1.18-2.68-2.68-1.18.31-2.9L1.75 12l1.72-2.37-.31-2.9 2.68-1.18 1.18-2.68 2.9.31L12 1.75z"
-        fill={color}
+        fill="#1D9BF0"
         stroke="#FFFFFF"
         strokeWidth="1.5"
       />
@@ -56,10 +49,10 @@ export function StorefrontClient({
 }: StorefrontClientProps) {
   const searchParams = useSearchParams();
   const routePath = basePath ?? `/store/${encodeURIComponent(vendor.username)}`;
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") ?? "");
-  const [copied, setCopied] = useState(false);
-  const [chatPromptOpen, setChatPromptOpen] = useState(false);
+  const [searchActive, setSearchActive] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
   const [liveRating, setLiveRating] = useState(vendor.rating);
@@ -67,7 +60,7 @@ export function StorefrontClient({
     vendor.ratingCount ?? 120
   );
 
-  // Sync URL query silently via History API (prevents Next.js RSC lag/freezing on mount & clicks)
+  // Sync URL query silently without Next.js RSC round-trips
   useEffect(() => {
     if (typeof window === "undefined") return;
     const trimmed = searchQuery.trim();
@@ -96,54 +89,32 @@ export function StorefrontClient({
     return q ? `?q=${encodeURIComponent(q)}` : "";
   }, [searchQuery]);
 
-  const handleShareStorefront = async () => {
-    const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `@${vendor.username} · Kova`,
-          text: `Explore ${vendor.fullName}'s listings on Kova`,
-          url,
-        });
-        return;
-      } catch {
-        // fallback
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // ignore
+  const handleCancelSearch = () => {
+    setSearchQuery("");
+    setSearchActive(false);
+    if (searchInputRef.current) {
+      searchInputRef.current.blur();
     }
   };
+
+  const showCancel = searchActive || searchQuery.length > 0;
 
   return (
     <>
       <KovaHeader />
 
       <main id="main" className="ref-storefront">
-        {/* Green Cover Banner Profile Header */}
-        <section className="kova-cover-banner" aria-label="Vendor profile">
-          {vendor.coverImage && (
-            <img
-              src={vendor.coverImage}
-              alt=""
-              className="kova-cover-banner__bg"
-              aria-hidden="true"
-            />
-          )}
-          <div className="kova-cover-banner__tint" aria-hidden="true" />
-          <div className="container kova-cover-banner__content">
+        {/* Clean White Centered Business Profile Section */}
+        <section className="showroom-profile" aria-label="Business profile">
+          <div className="container showroom-profile__inner">
             <button
               type="button"
-              className="kova-cover-banner__id"
+              className="showroom-profile__trigger"
               onClick={() => setProfileOpen(true)}
-              title="Open user profile details"
+              title="View business profile details"
             >
-              <div className="kova-cover-avatar">
-                <div className="kova-cover-avatar__ring">
+              <div className="showroom-avatar">
+                <div className="showroom-avatar__ring">
                   {vendor.avatarUrl ? (
                     <img src={vendor.avatarUrl} alt={vendor.fullName} />
                   ) : (
@@ -151,99 +122,73 @@ export function StorefrontClient({
                   )}
                 </div>
                 {vendor.verificationStatus === "verified" && (
-                  <span
-                    className="ref-verified-seal"
-                    style={{ width: 22, height: 22, bottom: -1, right: -1 }}
-                  >
-                    <VerifiedSeal size={22} color="#1D9BF0" />
+                  <span className="showroom-avatar__seal">
+                    <VerifiedSeal size={19} />
                   </span>
                 )}
               </div>
 
-              <div>
-                <h1 className="kova-cover-handle">@{vendor.username}</h1>
-                <p className="kova-cover-subtitle">
-                  {vendor.categoryBadge || vendor.role}
-                </p>
-              </div>
+              <h1 className="showroom-profile__name">@{vendor.username}</h1>
+              <p className="showroom-profile__category">
+                {vendor.categoryBadge || vendor.role}
+              </p>
             </button>
-
-            <div style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
-              <button
-                type="button"
-                onClick={() => setRateOpen(true)}
-                style={{
-                  background: "rgba(255, 255, 255, 0.16)",
-                  border: "1px solid rgba(255, 255, 255, 0.3)",
-                  color: "#ffffff",
-                  borderRadius: 999,
-                  padding: "0.42rem 0.85rem",
-                  fontSize: "0.86rem",
-                  fontWeight: 500,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.35rem",
-                  cursor: "pointer",
-                  backdropFilter: "blur(6px)",
-                }}
-                title="Rate this user"
-              >
-                <Star size={14} fill="#FACC15" color="#FACC15" />
-                {liveRating.toFixed(1)} · Rate
-              </button>
-
-              <button
-                type="button"
-                onClick={handleShareStorefront}
-                aria-label="Share storefront"
-                title={copied ? "Link copied!" : "Share storefront"}
-                style={{
-                  background: "rgba(255, 255, 255, 0.16)",
-                  border: "1px solid rgba(255, 255, 255, 0.3)",
-                  color: "#ffffff",
-                  borderRadius: "50%",
-                  width: 36,
-                  height: 36,
-                  display: "grid",
-                  placeItems: "center",
-                  cursor: "pointer",
-                  backdropFilter: "blur(6px)",
-                }}
-              >
-                {copied ? <Check size={16} /> : <Share2 size={16} />}
-              </button>
-            </div>
           </div>
         </section>
 
-        {/* Clean Search Bar & Product Listing Grid */}
+        {/* Compact Rounded Search Bar & Listing Grid */}
         <section className="container ref-search-section">
-          <div className="ref-search-pill" style={{ borderRadius: 12 }}>
-            <Search size={19} color="#71717A" aria-hidden="true" />
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search product name or property type"
-              aria-label="Search product name or property type"
-            />
+          <div className="ref-search-row">
+            <div className="ref-search-pill">
+              <Search size={15} color="#787885" aria-hidden="true" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onFocus={() => setSearchActive(true)}
+                onBlur={() => {
+                  if (!searchQuery.trim()) {
+                    setSearchActive(false);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    handleCancelSearch();
+                  }
+                }}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products or properties..."
+                aria-label="Search Showroom listings"
+              />
+            </div>
+
+            {showCancel && (
+              <button
+                type="button"
+                className="ref-search-cancel"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={handleCancelSearch}
+              >
+                Cancel
+              </button>
+            )}
           </div>
 
           {products.length === 0 ? (
             <div className="empty-state">
-              <ShoppingBag size={30} style={{ marginInline: "auto" }} />
-              <h3>This vendor hasn&apos;t listed any products yet.</h3>
-              <p>Check back soon or message the vendor on the Kova app.</p>
+              <ShoppingBag size={26} style={{ marginInline: "auto" }} />
+              <h3>This Showroom has no listings yet.</h3>
+              <p>Check back soon for new products and properties.</p>
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="empty-state">
-              <Search size={30} style={{ marginInline: "auto" }} />
-              <h3>No products found matching your search.</h3>
+              <Search size={26} style={{ marginInline: "auto" }} />
+              <h3>No listings found matching your search.</h3>
               <p>
                 Try another keyword or{" "}
                 <button
                   type="button"
-                  onClick={() => setSearchQuery("")}
+                  onClick={handleCancelSearch}
                   style={{
                     background: "none",
                     border: "none",
@@ -284,8 +229,8 @@ export function StorefrontClient({
                         <div className="ref-play-overlay" aria-hidden="true">
                           <div
                             style={{
-                              width: 44,
-                              height: 44,
+                              width: 36,
+                              height: 36,
                               borderRadius: "50%",
                               background: "rgba(20, 20, 26, 0.45)",
                               backdropFilter: "blur(6px)",
@@ -294,7 +239,7 @@ export function StorefrontClient({
                               placeItems: "center",
                             }}
                           >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="#fff">
                               <path d="M8 5v14l11-7z" />
                             </svg>
                           </div>
@@ -336,14 +281,7 @@ export function StorefrontClient({
         vendor={vendor}
         rating={liveRating}
         listingsCount={vendor.stats.posts}
-        onStartChat={() => setChatPromptOpen(true)}
         onRateUser={() => setRateOpen(true)}
-      />
-
-      <DownloadChatModal
-        open={chatPromptOpen}
-        onClose={() => setChatPromptOpen(false)}
-        vendor={vendor}
       />
 
       <RateVendorModal

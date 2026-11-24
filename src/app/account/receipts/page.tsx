@@ -89,15 +89,15 @@ export default function AccountReceiptsPage() {
       <KovaHeader />
 
       <main id="main" className="storefront-main">
-        <div className="container" style={{ maxWidth: 880 }}>
+        <div className="container" style={{ maxWidth: 760 }}>
           <div
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
               flexWrap: "wrap",
-              gap: "1rem",
-              marginBottom: "1.5rem",
+              gap: "0.75rem",
+              marginBottom: "1.05rem",
             }}
           >
             <div>
@@ -107,7 +107,7 @@ export default function AccountReceiptsPage() {
               >
                 My Receipts &amp; History
               </h1>
-              <p style={{ color: "var(--muted)", margin: "0.25rem 0 0" }}>
+              <p style={{ color: "var(--muted)", fontSize: "0.8rem", margin: "0.18rem 0 0" }}>
                 Click any transaction to view your full receipt breakdown and
                 download a PDF copy.
               </p>
@@ -247,7 +247,7 @@ export default function AccountReceiptsPage() {
                 appear here permanently.
               </p>
               <Link href="/" className="btn btn--brand btn--sm">
-                Browse Storefront
+                Browse Showroom
               </Link>
             </div>
           ) : (
@@ -535,8 +535,8 @@ export default function AccountReceiptsPage() {
                 </dd>
               </div>
               <div>
-                <dt style={{ color: "var(--muted)", fontSize: "0.76rem" }}>
-                  Seller / Storefront
+                <dt style={{ color: "var(--muted)", fontSize: "0.74rem" }}>
+                  Seller / Showroom
                 </dt>
                 <dd style={{ margin: "0.15rem 0 0", fontWeight: 600 }}>
                   {selectedReceipt.vendorName} (@{selectedReceipt.vendorUsername})

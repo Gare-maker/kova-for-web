@@ -57,9 +57,7 @@ export function PaymentOptionsModal({
 
   const handleProceed = () => {
     if (paymentMode === "product") {
-      router.push(
-        `/checkout/${product.id}?type=product&qty=${quantity}`
-      );
+      router.push(`/checkout/${product.id}?type=product&qty=${quantity}`);
     } else {
       router.push(
         `/checkout/${product.id}?type=property&feeType=${propertyFeeType}`
@@ -81,7 +79,7 @@ export function PaymentOptionsModal({
         className="surface-card"
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: "min(480px, 100%)",
+          width: "min(420px, 100%)",
           maxHeight: "90vh",
           overflowY: "auto",
           position: "relative",
@@ -92,7 +90,7 @@ export function PaymentOptionsModal({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            marginBottom: "0.85rem",
+            marginBottom: "0.65rem",
           }}
         >
           <button
@@ -101,17 +99,17 @@ export function PaymentOptionsModal({
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: "0.4rem",
+              gap: "0.35rem",
               background: "none",
               border: "none",
               padding: 0,
               cursor: "pointer",
               color: "var(--ink-strong)",
-              fontSize: "0.9rem",
+              fontSize: "0.82rem",
               fontWeight: 600,
             }}
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={15} />
             Back
           </button>
 
@@ -123,43 +121,42 @@ export function PaymentOptionsModal({
               background: "var(--paper-deep)",
               border: "none",
               borderRadius: "50%",
-              width: 32,
-              height: 32,
+              width: 28,
+              height: 28,
               display: "grid",
               placeItems: "center",
               cursor: "pointer",
               color: "var(--ink-strong)",
             }}
           >
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
 
         <h2
           className="display display--sm"
-          style={{ color: "var(--ink-strong)", marginBottom: "0.25rem" }}
+          style={{ color: "var(--ink-strong)", marginBottom: "0.2rem" }}
         >
           Select Payment Type
         </h2>
-        <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 1rem" }}>
+        <p style={{ color: "var(--muted)", fontSize: "0.8rem", margin: "0 0 0.85rem" }}>
           Choose how you would like to pay for <strong>{product.name}</strong>.
         </p>
 
-        {/* Two Distinct Payment Type Tabs */}
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
-            gap: "0.65rem",
-            marginBottom: "1.15rem",
+            gap: "0.5rem",
+            marginBottom: "0.9rem",
           }}
         >
           <button
             type="button"
             onClick={() => setPaymentMode("product")}
             style={{
-              padding: "0.8rem 0.75rem",
-              borderRadius: 12,
+              padding: "0.6rem 0.55rem",
+              borderRadius: 10,
               border:
                 paymentMode === "product"
                   ? "1.5px solid var(--brand)"
@@ -167,19 +164,17 @@ export function PaymentOptionsModal({
               background:
                 paymentMode === "product" ? "var(--brand-soft)" : "#ffffff",
               color:
-                paymentMode === "product"
-                  ? "var(--forest)"
-                  : "var(--ink-soft)",
+                paymentMode === "product" ? "var(--forest)" : "var(--ink-soft)",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: "0.35rem",
+              gap: "0.25rem",
               cursor: "pointer",
               fontWeight: 600,
-              fontSize: "0.88rem",
+              fontSize: "0.8rem",
             }}
           >
-            <ShoppingBag size={18} />
+            <ShoppingBag size={16} />
             Product Payment
           </button>
 
@@ -187,8 +182,8 @@ export function PaymentOptionsModal({
             type="button"
             onClick={() => setPaymentMode("property")}
             style={{
-              padding: "0.8rem 0.75rem",
-              borderRadius: 12,
+              padding: "0.6rem 0.55rem",
+              borderRadius: 10,
               border:
                 paymentMode === "property"
                   ? "1.5px solid var(--brand)"
@@ -196,32 +191,29 @@ export function PaymentOptionsModal({
               background:
                 paymentMode === "property" ? "var(--brand-soft)" : "#ffffff",
               color:
-                paymentMode === "property"
-                  ? "var(--forest)"
-                  : "var(--ink-soft)",
+                paymentMode === "property" ? "var(--forest)" : "var(--ink-soft)",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: "0.35rem",
+              gap: "0.25rem",
               cursor: "pointer",
               fontWeight: 600,
-              fontSize: "0.88rem",
+              fontSize: "0.8rem",
             }}
           >
-            <Home size={18} />
+            <Home size={16} />
             Property Payment
           </button>
         </div>
 
-        {/* Option 1: Product Payment with Quantity Selector */}
         {paymentMode === "product" ? (
           <div
             style={{
               background: "var(--paper-subtle)",
               border: "1px solid var(--line)",
-              borderRadius: 12,
-              padding: "1rem",
-              marginBottom: "1.15rem",
+              borderRadius: 10,
+              padding: "0.8rem",
+              marginBottom: "0.9rem",
             }}
           >
             <div
@@ -229,14 +221,14 @@ export function PaymentOptionsModal({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                marginBottom: "0.9rem",
+                marginBottom: "0.7rem",
               }}
             >
               <div>
-                <div style={{ fontWeight: 600, fontSize: "0.92rem" }}>
+                <div style={{ fontWeight: 600, fontSize: "0.84rem" }}>
                   Quantity
                 </div>
-                <div style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
+                <div style={{ fontSize: "0.74rem", color: "var(--muted)" }}>
                   {formatNaira(product.price)} each · {safeMax} available
                 </div>
               </div>
@@ -245,11 +237,11 @@ export function PaymentOptionsModal({
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: "0.65rem",
+                  gap: "0.5rem",
                   background: "#ffffff",
                   border: "1px solid var(--line-strong)",
-                  borderRadius: 10,
-                  padding: "0.25rem 0.4rem",
+                  borderRadius: 8,
+                  padding: "0.18rem 0.3rem",
                 }}
               >
                 <button
@@ -258,9 +250,9 @@ export function PaymentOptionsModal({
                   disabled={quantity <= 1}
                   aria-label="Decrease quantity"
                   style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: 7,
+                    width: 26,
+                    height: 26,
+                    borderRadius: 6,
                     border: "none",
                     background: "var(--paper-subtle)",
                     display: "grid",
@@ -268,14 +260,14 @@ export function PaymentOptionsModal({
                     cursor: quantity <= 1 ? "not-allowed" : "pointer",
                   }}
                 >
-                  <Minus size={15} />
+                  <Minus size={13} />
                 </button>
                 <span
                   style={{
-                    minWidth: 24,
+                    minWidth: 20,
                     textAlign: "center",
                     fontWeight: 600,
-                    fontSize: "0.96rem",
+                    fontSize: "0.88rem",
                   }}
                 >
                   {quantity}
@@ -286,9 +278,9 @@ export function PaymentOptionsModal({
                   disabled={quantity >= safeMax}
                   aria-label="Increase quantity"
                   style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: 7,
+                    width: 26,
+                    height: 26,
+                    borderRadius: 6,
                     border: "none",
                     background: "var(--paper-subtle)",
                     display: "grid",
@@ -296,7 +288,7 @@ export function PaymentOptionsModal({
                     cursor: quantity >= safeMax ? "not-allowed" : "pointer",
                   }}
                 >
-                  <Plus size={15} />
+                  <Plus size={13} />
                 </button>
               </div>
             </div>
@@ -304,10 +296,10 @@ export function PaymentOptionsModal({
             <div
               style={{
                 borderTop: "1px solid var(--line)",
-                paddingTop: "0.75rem",
+                paddingTop: "0.6rem",
                 display: "grid",
-                gap: "0.35rem",
-                fontSize: "0.88rem",
+                gap: "0.28rem",
+                fontSize: "0.82rem",
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -320,9 +312,9 @@ export function PaymentOptionsModal({
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
-                  paddingTop: "0.4rem",
+                  paddingTop: "0.3rem",
                   fontWeight: 600,
-                  fontSize: "1rem",
+                  fontSize: "0.92rem",
                   color: "var(--ink-strong)",
                 }}
               >
@@ -334,8 +326,7 @@ export function PaymentOptionsModal({
             </div>
           </div>
         ) : (
-          /* Option 2: Property Payment (Inspection Fee or Agent Fee) */
-          <div style={{ display: "grid", gap: "0.65rem", marginBottom: "1.15rem" }}>
+          <div style={{ display: "grid", gap: "0.5rem", marginBottom: "0.9rem" }}>
             <button
               type="button"
               onClick={() => setPropertyFeeType("inspection")}
@@ -343,8 +334,8 @@ export function PaymentOptionsModal({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "0.95rem 1rem",
-                borderRadius: 12,
+                padding: "0.75rem 0.85rem",
+                borderRadius: 10,
                 border:
                   propertyFeeType === "inspection"
                     ? "1.5px solid var(--brand)"
@@ -361,22 +352,23 @@ export function PaymentOptionsModal({
                 <div
                   style={{
                     fontWeight: 600,
+                    fontSize: "0.84rem",
                     color: "var(--ink-strong)",
                     display: "flex",
                     alignItems: "center",
-                    gap: "0.4rem",
+                    gap: "0.35rem",
                   }}
                 >
                   {propertyFeeType === "inspection" && (
-                    <CheckCircle2 size={16} color="var(--brand)" />
+                    <CheckCircle2 size={14} color="var(--brand)" />
                   )}
                   Inspection Fee
                 </div>
-                <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
+                <div style={{ fontSize: "0.74rem", color: "var(--muted)" }}>
                   Book a verified physical inspection of this property
                 </div>
               </div>
-              <div style={{ fontWeight: 600, color: "var(--brand-dark)" }}>
+              <div style={{ fontWeight: 600, fontSize: "0.86rem", color: "var(--brand-dark)" }}>
                 {formatNaira(inspectionAmount)}
               </div>
             </button>
@@ -388,8 +380,8 @@ export function PaymentOptionsModal({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "0.95rem 1rem",
-                borderRadius: 12,
+                padding: "0.75rem 0.85rem",
+                borderRadius: 10,
                 border:
                   propertyFeeType === "agent"
                     ? "1.5px solid var(--brand)"
@@ -404,22 +396,23 @@ export function PaymentOptionsModal({
                 <div
                   style={{
                     fontWeight: 600,
+                    fontSize: "0.84rem",
                     color: "var(--ink-strong)",
                     display: "flex",
                     alignItems: "center",
-                    gap: "0.4rem",
+                    gap: "0.35rem",
                   }}
                 >
                   {propertyFeeType === "agent" && (
-                    <CheckCircle2 size={16} color="var(--brand)" />
+                    <CheckCircle2 size={14} color="var(--brand)" />
                   )}
                   Agent Fee
                 </div>
-                <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
+                <div style={{ fontSize: "0.74rem", color: "var(--muted)" }}>
                   Pay the official property agent commission via Kova
                 </div>
               </div>
-              <div style={{ fontWeight: 600, color: "var(--brand-dark)" }}>
+              <div style={{ fontWeight: 600, fontSize: "0.86rem", color: "var(--brand-dark)" }}>
                 {formatNaira(agentAmount)}
               </div>
             </button>
@@ -440,4 +433,3 @@ export function PaymentOptionsModal({
     </div>
   );
 }
-

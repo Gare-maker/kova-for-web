@@ -371,6 +371,8 @@ function verifyPassword(password: string, stored: string): boolean {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
+const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
 export function registerBuyerAccount(params: {
   firstAndMiddleName: string;
   surname: string;
@@ -378,7 +380,7 @@ export function registerBuyerAccount(params: {
   email: string;
   phone: string;
   password: string;
-}): { error?: string; user?: UserAccount } {
+}): { error?: string; user?: UserAccount; verificationToken?: string } {
   const db = readDb();
   const normEmail = params.email.trim().toLowerCase();
   const normPhone = normalizePhone(params.phone);
@@ -386,7 +388,7 @@ export function registerBuyerAccount(params: {
   const existing = db.users.find(
     (u) => u.email.toLowerCase() === normEmail
   );
-  if (existing && existing.passwordHash) {
+  if (existing && existing.passwordHash && existing.emailVerified !== false) {
     return {
       error:
         "An account with this email already exists. Please sign in instead.",
@@ -394,6 +396,10 @@ export function registerBuyerAccount(params: {
   }
 
   const now = new Date().toISOString();
+  const verificationToken = crypto.randomBytes(24).toString("hex");
+  const verificationExpiresAt = new Date(
+    Date.now() + VERIFICATION_TTL_MS
+  ).toISOString();
   const fullName = `${params.firstAndMiddleName.trim()} ${params.surname.trim()}`.trim();
 
   if (existing) {
@@ -404,9 +410,12 @@ export function registerBuyerAccount(params: {
     existing.phone = normPhone;
     existing.role = "Buyer";
     existing.passwordHash = hashPassword(params.password);
+    existing.emailVerified = false;
+    existing.verificationToken = verificationToken;
+    existing.verificationExpiresAt = verificationExpiresAt;
     existing.confirmationEmailSentAt = now;
     writeDb(db);
-    return { user: existing };
+    return { user: existing, verificationToken };
   }
 
   const user: UserAccount = {
@@ -419,19 +428,85 @@ export function registerBuyerAccount(params: {
     email: normEmail,
     role: "Buyer",
     passwordHash: hashPassword(params.password),
+    emailVerified: false,
+    verificationToken,
+    verificationExpiresAt,
     confirmationEmailSentAt: now,
     createdAt: now,
   };
 
   db.users.push(user);
   writeDb(db);
-  return { user };
+  return { user, verificationToken };
+}
+
+export function verifyUserEmailToken(token: string): {
+  status: "verified" | "expired" | "invalid";
+  user?: UserAccount;
+  email?: string;
+  error?: string;
+} {
+  const clean = token.trim();
+  if (!clean) {
+    return {
+      status: "invalid",
+      error: "This verification link is invalid or incomplete.",
+    };
+  }
+  const db = readDb();
+  const user = db.users.find((u) => u.verificationToken === clean);
+  if (!user) {
+    return {
+      status: "invalid",
+      error: "This verification link is invalid or has already been used.",
+    };
+  }
+  if (
+    user.verificationExpiresAt &&
+    new Date(user.verificationExpiresAt).getTime() < Date.now()
+  ) {
+    return {
+      status: "expired",
+      email: user.email,
+      error: "This verification link has expired. Please request a new one.",
+    };
+  }
+
+  user.emailVerified = true;
+  user.verificationToken = null;
+  user.verificationExpiresAt = null;
+  writeDb(db);
+  return { status: "verified", user };
+}
+
+export function regenerateVerificationToken(email: string): {
+  error?: string;
+  user?: UserAccount;
+  verificationToken?: string;
+} {
+  const db = readDb();
+  const normEmail = email.trim().toLowerCase();
+  const user = db.users.find((u) => u.email.toLowerCase() === normEmail);
+  if (!user) {
+    return { error: "No account found with that email address." };
+  }
+  if (user.emailVerified === true) {
+    return { error: "This email address is already verified. You can sign in now." };
+  }
+  const verificationToken = crypto.randomBytes(24).toString("hex");
+  user.verificationToken = verificationToken;
+  user.verificationExpiresAt = new Date(
+    Date.now() + VERIFICATION_TTL_MS
+  ).toISOString();
+  user.confirmationEmailSentAt = new Date().toISOString();
+  writeDb(db);
+  return { user, verificationToken };
 }
 
 export function authenticateBuyer(
   email: string,
   password: string
-): { error?: string; user?: UserAccount } {
+): { error?: string; needsVerification?: boolean; user?: UserAccount } {
   const db = readDb();
   const normEmail = email.trim().toLowerCase();
   const user = db.users.find((u) => u.email.toLowerCase() === normEmail);
@@ -440,6 +515,12 @@ export function authenticateBuyer(
   }
   if (!verifyPassword(password, user.passwordHash)) {
     return { error: "Invalid email address or password." };
+  }
+  if (user.emailVerified === false) {
+    return {
+      needsVerification: true,
+      error: "Please verify your email address before signing in.",
+    };
   }
   return { user };
 }
@@ -602,7 +683,7 @@ export function createOrderAndReservation(params: {
   }
   const vendor = db.vendors.find((v) => v.id === product.vendorId);
   if (!vendor || !vendor.eligible) {
-    return { error: "This vendor storefront is currently unavailable." };
+    return { error: "This Showroom is currently unavailable." };
   }
 
   const paymentCategory: PaymentCategory = params.paymentCategory ?? "product";

@@ -11,11 +11,11 @@ const nunitoSans = Nunito_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "Kova · Public Vendor Storefront & Commerce",
-    template: "%s · Kova",
+    default: "Kova Showroom · Buy, Sell, Lease, Discover",
+    template: "%s · Kova Showroom",
   },
   description:
-    "Browse verified Kova vendors, explore listings, chat directly with sellers, and complete secure Paystack payments in your browser.",
+    "Explore verified Kova Showrooms, browse available listings, complete secure Paystack payments, and download official receipts.",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL || "https://kova.com"
   ),

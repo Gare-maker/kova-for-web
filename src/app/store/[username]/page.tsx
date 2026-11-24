@@ -20,13 +20,13 @@ export async function generateMetadata({
   const vendor = getVendorByUsername(username);
   if (!vendor) {
     return {
-      title: "Storefront Not Found",
+      title: "Showroom Not Found",
     };
   }
 
   const products = getVendorProducts(vendor.id);
-  const title = `${vendor.fullName} (@${vendor.username}) · Kova Storefront`;
-  const description = `${vendor.bio} · ${products.length} active listings on Kova.`;
+  const title = `${vendor.fullName} (@${vendor.username}) · Kova Showroom`;
+  const description = `${vendor.bio} · ${products.length} active listings on Kova Showroom.`;
 
   return {
     title,
@@ -71,7 +71,7 @@ export default async function VendorStorefrontPage({
   });
 
   return (
-    <Suspense fallback={<div style={{ padding: "3rem", textAlign: "center" }}>Loading storefront...</div>}>
+    <Suspense fallback={<div style={{ padding: "2.5rem", textAlign: "center", fontSize: "0.84rem" }}>Loading Showroom...</div>}>
       <StorefrontClient vendor={vendor} products={products} />
     </Suspense>
   );

@@ -43,7 +43,7 @@ export default async function ReceiptPage({
                   Sign in to Receipt History
                 </Link>
                 <Link href="/" className="btn btn--outline btn--sm">
-                  Return to Kova Storefronts
+                  Return to Kova Showroom
                 </Link>
               </div>
             </div>

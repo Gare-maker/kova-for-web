@@ -75,7 +75,7 @@ export function downloadReceiptPdf(receipt: Receipt): void {
 
   y += 15;
   doc.text(receipt.customerEmail, 44, y);
-  doc.text("Kova Verified Storefront", pageW / 2 + 12, y);
+  doc.text("Kova Verified Showroom", pageW / 2 + 12, y);
 
   if (receipt.currentLocation) {
     y += 15;

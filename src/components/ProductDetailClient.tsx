@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
-  MessageSquareText,
   Star,
   Plug,
   Droplet,
@@ -17,7 +16,6 @@ import type { Vendor, Product, VendorRating } from "@/lib/types";
 import { formatNaira, getInitials } from "@/lib/format";
 import { KovaHeader } from "./KovaHeader";
 import { KovaFooter } from "./KovaFooter";
-import { DownloadChatModal } from "./DownloadChatModal";
 import { RateVendorModal } from "./RateVendorModal";
 import { UserProfileModal } from "./UserProfileModal";
 import { PaymentOptionsModal } from "./PaymentOptionsModal";
@@ -32,9 +30,9 @@ interface ProductDetailClientProps {
   isAuthenticated: boolean;
 }
 
-function VerifiedSealSmall({ color = "#EAB308" }: { color?: string }) {
+function VerifiedSealSmall({ color = "#1D9BF0" }: { color?: string }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-label="Verified">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-label="Verified">
       <path
         d="M12 1.75l2.37 1.72 2.9-.31 1.18 2.68 2.68 1.18-.31 2.9L22.25 12l-1.72 2.37.31 2.9-2.68 1.18-1.18 2.68-2.9-.31L12 22.25l-2.37-1.72-2.9.31-1.18-2.68-2.68-1.18.31-2.9L1.75 12l1.72-2.37-.31-2.9 2.68-1.18 1.18-2.68 2.9.31L12 1.75z"
         fill={color}
@@ -55,18 +53,18 @@ function VerifiedSealSmall({ color = "#EAB308" }: { color?: string }) {
 function AmenityIcon({ label }: { label: string }) {
   const lower = label.toLowerCase();
   if (lower.includes("electric") || lower.includes("power")) {
-    return <Plug size={20} strokeWidth={1.6} color="#52525B" />;
+    return <Plug size={15} strokeWidth={1.7} color="#52525B" />;
   }
   if (lower.includes("water")) {
-    return <Droplet size={20} strokeWidth={1.6} color="#52525B" />;
+    return <Droplet size={15} strokeWidth={1.7} color="#52525B" />;
   }
   if (lower.includes("wardrobe")) {
-    return <DoorClosed size={20} strokeWidth={1.6} color="#52525B" />;
+    return <DoorClosed size={15} strokeWidth={1.7} color="#52525B" />;
   }
   if (lower.includes("security")) {
-    return <ShieldCheck size={20} strokeWidth={1.6} color="#52525B" />;
+    return <ShieldCheck size={15} strokeWidth={1.7} color="#52525B" />;
   }
-  return <Sparkles size={20} strokeWidth={1.6} color="#52525B" />;
+  return <Sparkles size={15} strokeWidth={1.7} color="#52525B" />;
 }
 
 export function ProductDetailClient({
@@ -80,7 +78,6 @@ export function ProductDetailClient({
 }: ProductDetailClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [chatPromptOpen, setChatPromptOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -90,12 +87,10 @@ export function ProductDetailClient({
   );
   const [reviews, setReviews] = useState<VendorRating[]>(initialReviews);
 
-  // Scroll automatically to top on navigation
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, [product.id]);
 
-  // If user returned from Buyer Registration with ?pay=1 while authenticated, open Payment Options
   useEffect(() => {
     if (isAuthenticated && searchParams.get("pay") === "1") {
       setPaymentModalOpen(true);
@@ -105,7 +100,6 @@ export function ProductDetailClient({
   const q = searchParams.get("q");
   const backHref = q ? `/?q=${encodeURIComponent(q)}` : `/`;
 
-  // Prefetch back target for instant Back navigation
   useEffect(() => {
     router.prefetch(backHref);
   }, [router, backHref]);
@@ -154,7 +148,7 @@ export function ProductDetailClient({
     <>
       <KovaHeader />
 
-      {/* Clean Sub-bar (Back navigation only — Like, Share, Flag removed) */}
+      {/* Compact Sub-bar */}
       <div className="kova-subbar">
         <div className="container kova-subbar__inner">
           <Link
@@ -163,15 +157,15 @@ export function ProductDetailClient({
             onClick={handleBack}
             className="kova-subbar__left"
           >
-            <ArrowLeft size={20} />
-            {isProperty ? "Property Details" : "Product Details"}
+            <ArrowLeft size={16} />
+            Back to Showroom
           </Link>
         </div>
       </div>
 
       <main id="main" className="ref-detail-page">
         <div className="ref-detail-shell">
-          {/* Uncropped Full Product Media */}
+          {/* Uncropped Product Media */}
           <div className="ref-detail-hero">
             <img
               src={product.images[0] || "/listings/flat-exterior.jpg"}
@@ -180,43 +174,23 @@ export function ProductDetailClient({
             />
           </div>
 
-          {/* All Details Expanded & Visible by Default */}
+          {/* Clean, Compact, Scannable Product Details */}
           <div className="ref-detail-sheet">
             <div className="ref-detail-sheet__inner">
-              {/* Header Row: Title, Location, Price/Stock + Seller Avatar & Rating */}
               <div className="ref-detail-header-row">
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <h1 className="ref-detail-title">{product.name}</h1>
+                  <span className="ref-detail-loc">{product.location}</span>
 
-                  <div className="ref-detail-loc-row">
-                    <span className="ref-detail-loc">{product.location}</span>
-                  </div>
-
-                  <div
-                    className="ref-detail-price"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      flexWrap: "wrap",
-                      gap: "0.55rem",
-                    }}
-                  >
+                  <div className="ref-detail-price">
                     <span>
-                      <strong
-                        style={{
-                          fontWeight: 600,
-                          color: "var(--ink-strong)",
-                          fontSize: "1.15rem",
-                        }}
-                      >
-                        {formatNaira(product.price)}
-                      </strong>
+                      {formatNaira(product.price)}
                       {product.pricePeriod ? (
                         <span
                           style={{
                             color: "var(--muted)",
                             fontWeight: 400,
-                            fontSize: "0.92rem",
+                            fontSize: "0.84rem",
                           }}
                         >
                           {" "}
@@ -238,7 +212,7 @@ export function ProductDetailClient({
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    gap: "0.3rem",
+                    gap: "0.2rem",
                     flex: "none",
                   }}
                 >
@@ -248,11 +222,8 @@ export function ProductDetailClient({
                     onClick={() => setProfileOpen(true)}
                     title={`View ${vendor.fullName}'s profile`}
                   >
-                    <div className="ref-avatar ref-avatar--sm">
-                      <div
-                        className="ref-avatar__circle"
-                        style={{ fontSize: "0.95rem" }}
-                      >
+                    <div className="ref-avatar--sm">
+                      <div className="ref-avatar__circle">
                         {vendor.avatarUrl ? (
                           <img src={vendor.avatarUrl} alt={vendor.fullName} />
                         ) : (
@@ -261,7 +232,7 @@ export function ProductDetailClient({
                       </div>
                       {vendor.verificationStatus === "verified" && (
                         <span className="ref-verified-seal">
-                          <VerifiedSealSmall color="#EAB308" />
+                          <VerifiedSealSmall />
                         </span>
                       )}
                     </div>
@@ -280,7 +251,7 @@ export function ProductDetailClient({
                     title="Click to rate seller"
                   >
                     {liveRating.toFixed(1)}
-                    <Star size={14} fill="#FACC15" color="#FACC15" />
+                    <Star size={12} fill="#FACC15" color="#FACC15" />
                   </button>
                 </div>
               </div>
@@ -288,21 +259,21 @@ export function ProductDetailClient({
               {!effectiveAvailable && (
                 <div
                   style={{
-                    marginTop: "0.9rem",
-                    padding: "0.75rem 0.9rem",
-                    borderRadius: 10,
+                    marginTop: "0.7rem",
+                    padding: "0.6rem 0.75rem",
+                    borderRadius: 8,
                     background: "var(--danger-soft)",
                     color: "var(--danger)",
-                    fontSize: "0.86rem",
+                    fontSize: "0.8rem",
                     fontWeight: 500,
                   }}
                 >
                   {unavailableReason ||
-                    "Sorry, this product is currently unavailable."}
+                    "Sorry, this item is currently unavailable."}
                 </div>
               )}
 
-              {/* Primary Payment CTA (Auth-gated -> Payment Options Modal) */}
+              {/* Primary Action: Make Payment */}
               {effectiveAvailable ? (
                 <button
                   type="button"
@@ -321,18 +292,9 @@ export function ProductDetailClient({
                 </button>
               )}
 
-              <button
-                type="button"
-                className="kova-chat-cta-btn"
-                onClick={() => setChatPromptOpen(true)}
-              >
-                {isProperty ? "Chat With Agent" : "Chat With Seller"}
-                <MessageSquareText size={18} />
-              </button>
-
-              {/* 3-Column Fee / Info Row */}
+              {/* Product / Property Key Info (No Status label or badge anywhere) */}
               {isProperty ? (
-                <div className="kova-three-fees">
+                <div className="kova-info-grid kova-info-grid--three">
                   <div>
                     <div className="ref-fee-label">Inspection</div>
                     <div className="ref-fee-val">
@@ -357,37 +319,31 @@ export function ProductDetailClient({
                   </div>
                 </div>
               ) : (
-                <div className="kova-three-fees">
+                <div className="kova-info-grid">
                   <div>
                     <div className="ref-fee-label">Condition</div>
                     <div className="ref-fee-val">{product.condition}</div>
                   </div>
-                  <div>
+                  <div style={{ textAlign: "right" }}>
                     <div className="ref-fee-label">Category</div>
                     <div className="ref-fee-val">{product.category}</div>
-                  </div>
-                  <div>
-                    <div className="ref-fee-label">Status</div>
-                    <div className="ref-fee-val">
-                      {effectiveAvailable ? "Available" : "Sold Out"}
-                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Full Description (always expanded) */}
+              {/* Description */}
               <div className="ref-desc-block">
                 <h2 className="ref-desc-heading">Description</h2>
                 <p className="ref-desc-text">{product.description}</p>
               </div>
 
-              {/* Amenities Section */}
+              {/* Amenities (for properties) */}
               {product.amenities && product.amenities.length > 0 && (
                 <div
                   style={{
-                    marginTop: "1.25rem",
-                    paddingTop: "1.25rem",
-                    borderTop: "6px solid #f5f6f8",
+                    marginTop: "0.9rem",
+                    paddingTop: "0.85rem",
+                    borderTop: "1px solid var(--line)",
                   }}
                 >
                   <h2 className="ref-desc-heading">Amenities</h2>
@@ -402,12 +358,11 @@ export function ProductDetailClient({
                 </div>
               )}
 
-              {/* Seller Profile Spotlight */}
+              {/* Compact Seller Row */}
               <div
                 style={{
-                  marginTop: "1.25rem",
-                  paddingTop: "0.35rem",
-                  borderTop: "6px solid #f5f6f8",
+                  marginTop: "0.9rem",
+                  borderTop: "1px solid var(--line)",
                 }}
               >
                 <div className="kova-seller-spotlight">
@@ -429,18 +384,23 @@ export function ProductDetailClient({
                         getInitials(vendor.fullName)
                       )}
                     </div>
-                    <div
-                      style={{
-                        fontWeight: 600,
-                        fontSize: "0.96rem",
-                        color: "var(--ink-strong)",
-                      }}
-                    >
-                      @{vendor.username}
+                    <div>
+                      <div
+                        style={{
+                          fontWeight: 600,
+                          fontSize: "0.86rem",
+                          color: "var(--ink-strong)",
+                        }}
+                      >
+                        @{vendor.username}
+                      </div>
+                      <span
+                        className="kova-role-badge"
+                        style={{ marginTop: "0.2rem" }}
+                      >
+                        {vendor.categoryBadge || vendor.role}
+                      </span>
                     </div>
-                    <span className="kova-role-badge">
-                      {vendor.categoryBadge || vendor.role}
-                    </span>
                   </button>
 
                   <div className="kova-seller-spotlight__stats">
@@ -459,12 +419,11 @@ export function ProductDetailClient({
                           border: "none",
                           padding: 0,
                           cursor: "pointer",
-                          textAlign: "left",
                         }}
                       >
                         <div className="kova-spotlight-stat__val">
                           {liveRating.toFixed(1)}
-                          <Star size={15} fill="#FACC15" color="#FACC15" />
+                          <Star size={12} fill="#FACC15" color="#FACC15" />
                         </div>
                         <div className="kova-spotlight-stat__label">Rating</div>
                       </button>
@@ -479,12 +438,11 @@ export function ProductDetailClient({
                 </div>
               </div>
 
-              {/* Reviews Section */}
+              {/* Compact Reviews Section */}
               <div
                 style={{
-                  marginTop: "0.75rem",
-                  paddingTop: "1.25rem",
-                  borderTop: "6px solid #f5f6f8",
+                  paddingTop: "0.85rem",
+                  borderTop: "1px solid var(--line)",
                 }}
               >
                 <div
@@ -492,21 +450,20 @@ export function ProductDetailClient({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    gap: "0.75rem",
-                    marginBottom: "0.85rem",
+                    gap: "0.5rem",
+                    marginBottom: "0.6rem",
                   }}
                 >
                   <h2 className="ref-desc-heading" style={{ margin: 0 }}>
-                    {product.name} Reviews
+                    Reviews
                   </h2>
                   <button
                     type="button"
                     className="btn btn--outline btn--sm"
-                    style={{ fontWeight: 500 }}
                     onClick={() => setRateOpen(true)}
                   >
-                    <Star size={14} fill="#FACC15" color="#FACC15" />
-                    Rate &amp; Review
+                    <Star size={12} fill="#FACC15" color="#FACC15" />
+                    Rate
                   </button>
                 </div>
 
@@ -514,22 +471,22 @@ export function ProductDetailClient({
                   <p
                     style={{
                       color: "var(--muted)",
-                      fontSize: "0.88rem",
+                      fontSize: "0.8rem",
                       margin: 0,
                     }}
                   >
-                    No reviews yet. Be the first to rate this user.
+                    No reviews yet. Be the first to rate this seller.
                   </p>
                 ) : (
-                  <div style={{ display: "grid", gap: "0.65rem" }}>
+                  <div style={{ display: "grid", gap: "0.45rem" }}>
                     {reviews.slice(0, 3).map((r) => (
                       <div
                         key={r.id}
                         style={{
                           background: "var(--paper-subtle)",
-                          borderRadius: 10,
-                          padding: "0.75rem 0.9rem",
-                          fontSize: "0.88rem",
+                          borderRadius: 8,
+                          padding: "0.55rem 0.7rem",
+                          fontSize: "0.8rem",
                         }}
                       >
                         <div
@@ -551,19 +508,19 @@ export function ProductDetailClient({
                             style={{
                               display: "inline-flex",
                               alignItems: "center",
-                              gap: 3,
+                              gap: 2,
                             }}
                           >
                             {r.stars}
-                            <Star size={12} fill="#FACC15" color="#FACC15" />
+                            <Star size={11} fill="#FACC15" color="#FACC15" />
                           </span>
                         </div>
                         {r.comment && (
                           <p
                             style={{
-                              margin: "0.3rem 0 0",
+                              margin: "0.2rem 0 0",
                               color: "var(--muted)",
-                              lineHeight: 1.45,
+                              lineHeight: 1.4,
                             }}
                           >
                             {r.comment}
@@ -594,15 +551,7 @@ export function ProductDetailClient({
         vendor={vendor}
         rating={liveRating}
         listingsCount={vendor.stats.posts}
-        onStartChat={() => setChatPromptOpen(true)}
         onRateUser={() => setRateOpen(true)}
-      />
-
-      <DownloadChatModal
-        open={chatPromptOpen}
-        onClose={() => setChatPromptOpen(false)}
-        vendor={vendor}
-        product={product}
       />
 
       <RateVendorModal

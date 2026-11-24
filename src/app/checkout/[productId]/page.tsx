@@ -57,7 +57,7 @@ export default async function CheckoutPage({
               <h1 className="display display--sm">Product not found</h1>
               <p>The product you&apos;re looking for could not be found.</p>
               <Link href="/" className="btn btn--brand btn--sm">
-                Back to Storefront
+                Back to Showroom
               </Link>
             </div>
           </div>
