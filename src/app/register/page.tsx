@@ -32,7 +32,9 @@ function RegisterFormInner() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-  }, []);
+    const cleanNext = nextUrl.replace(/\?pay=1$/, "");
+    router.prefetch(cleanNext.startsWith("/product/") ? cleanNext : "/");
+  }, [router, nextUrl]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();

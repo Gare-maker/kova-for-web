@@ -859,7 +859,7 @@ select {
   cursor: pointer;
 }
 
-/* Mobile Details Experience (Uncropped Full Media + Always Visible Scrollable Details Below) */
+/* Mobile Details Experience (Uncropped Full Media + Straight Divider + Scrollable Details) */
 @media (max-width: 899px) {
   .ref-detail-shell {
     padding: 0;
@@ -870,7 +870,7 @@ select {
     border-radius: 0;
     background: #f5f6f8;
     width: 100%;
-    padding-bottom: 14px;
+    padding-bottom: 0;
   }
   .ref-detail-hero img,
   .ref-detail-hero video {
@@ -881,11 +881,12 @@ select {
   }
   .ref-detail-sheet {
     border: none;
-    border-radius: 20px 20px 0 0;
-    margin-top: -14px;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    margin-top: 0;
     position: relative;
     z-index: 2;
-    box-shadow: 0 -4px 18px rgba(18, 18, 30, 0.06);
+    box-shadow: none;
   }
   .ref-detail-sheet__inner {
     padding: 1.15rem 1.1rem 1.75rem;

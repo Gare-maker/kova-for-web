@@ -73,7 +73,8 @@ export function CheckoutClient({
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-  }, []);
+    router.prefetch(`/product/${product.id}`);
+  }, [router, product.id]);
 
   useEffect(() => {
     if (!verifyRef) return;
@@ -245,6 +246,15 @@ export function CheckoutClient({
     }
     if (step === "review") {
       setStep("form");
+      return;
+    }
+    if (
+      typeof window !== "undefined" &&
+      window.history.length > 1 &&
+      document.referrer &&
+      new URL(document.referrer).origin === window.location.origin
+    ) {
+      router.back();
       return;
     }
     router.push(`/product/${product.id}`);

@@ -105,6 +105,23 @@ export function ProductDetailClient({
   const q = searchParams.get("q");
   const backHref = q ? `/?q=${encodeURIComponent(q)}` : `/`;
 
+  // Prefetch back target for instant Back navigation
+  useEffect(() => {
+    router.prefetch(backHref);
+  }, [router, backHref]);
+
+  const handleBack = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (
+      typeof window !== "undefined" &&
+      window.history.length > 1 &&
+      document.referrer &&
+      new URL(document.referrer).origin === window.location.origin
+    ) {
+      e.preventDefault();
+      router.back();
+    }
+  };
+
   const isProperty =
     product.category.toLowerCase().includes("propert") ||
     product.category.toLowerCase().includes("apartment");
@@ -140,7 +157,12 @@ export function ProductDetailClient({
       {/* Clean Sub-bar (Back navigation only — Like, Share, Flag removed) */}
       <div className="kova-subbar">
         <div className="container kova-subbar__inner">
-          <Link href={backHref} className="kova-subbar__left">
+          <Link
+            href={backHref}
+            prefetch={true}
+            onClick={handleBack}
+            className="kova-subbar__left"
+          >
             <ArrowLeft size={20} />
             {isProperty ? "Property Details" : "Product Details"}
           </Link>
