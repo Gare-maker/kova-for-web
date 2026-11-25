@@ -262,7 +262,7 @@ export function CheckoutClient({
 
   return (
     <>
-      <KovaHeader />
+      <KovaHeader brandName={vendor.fullName} />
 
       <main id="main" className="storefront-main">
         <div className="container">

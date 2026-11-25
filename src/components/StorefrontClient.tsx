@@ -153,7 +153,7 @@ export function StorefrontClient({
 
   return (
     <>
-      <KovaHeader />
+      <KovaHeader brandName={vendor.fullName} />
 
       <main id="main" className="ref-storefront">
         {/* Unified Profile Header + Search Section with Full-Bleed 30% Opacity Background Image */}
@@ -323,25 +323,12 @@ export function StorefrontClient({
                     className="ref-listing-card"
                   >
                     <div className="ref-listing-card__media">
-                      {product.isVideo && product.videoUrl ? (
-                        <video
-                          src={product.videoUrl}
-                          poster={product.images[0] || "/listings/smartphone.jpg"}
-                          autoPlay
-                          muted
-                          loop
-                          playsInline
-                          preload="metadata"
-                          aria-label={`${product.name} preview video`}
-                        />
-                      ) : (
-                        <img
-                          src={product.images[0] || "/listings/smartphone.jpg"}
-                          alt={product.name}
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      )}
+                      <img
+                        src={product.images[0] || "/listings/smartphone.jpg"}
+                        alt={product.name}
+                        loading="lazy"
+                        decoding="async"
+                      />
                       {isProp ? (
                         <span className="kova-prop-badge">Property</span>
                       ) : (
@@ -350,12 +337,19 @@ export function StorefrontClient({
                         </span>
                       )}
                       {product.isVideo && (
-                        <span className="ref-video-pill" aria-label="Video listing">
-                          <svg width="9" height="9" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
-                            <path d="M8 5v14l11-7z" />
-                          </svg>
-                          Video
-                        </span>
+                        <>
+                          <span className="ref-video-play-dot" aria-hidden="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          </span>
+                          <span className="ref-video-pill" aria-label="Video listing">
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Video
+                          </span>
+                        </>
                       )}
                       {!product.effectiveAvailable && (
                         <span className="ref-sold-tag">Unavailable</span>

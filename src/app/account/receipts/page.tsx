@@ -26,6 +26,10 @@ export default function AccountReceiptsPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
+  const [resendPreviewUrl, setResendPreviewUrl] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const loadSession = async () => {
@@ -50,6 +54,9 @@ export default function AccountReceiptsPage() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setUnverifiedEmail(null);
+    setResendMessage(null);
+    setResendPreviewUrl(null);
     setSubmitting(true);
     try {
       const res = await fetch("/api/auth/login", {
@@ -58,6 +65,13 @@ export default function AccountReceiptsPage() {
         body: JSON.stringify({ email: email.trim(), password }),
       });
       const data = await res.json();
+      if (res.status === 403 && data.needsVerification) {
+        setUnverifiedEmail(email.trim());
+        setError(
+          data.error || "Please verify your email address before signing in."
+        );
+        return;
+      }
       if (!res.ok) {
         setError(data.error || "Invalid email address or password.");
         return;
@@ -67,6 +81,32 @@ export default function AccountReceiptsPage() {
       setError("Network error. Please try again.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!unverifiedEmail) return;
+    setResending(true);
+    try {
+      const res = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: unverifiedEmail,
+          next: "/account/receipts",
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setResendMessage(
+          data.message || `Verification link resent to ${unverifiedEmail}.`
+        );
+        setResendPreviewUrl(data.verificationPreviewUrl ?? null);
+      } else {
+        setError(data.error || "Unable to resend verification email.");
+      }
+    } finally {
+      setResending(false);
     }
   };
 
@@ -152,17 +192,44 @@ export default function AccountReceiptsPage() {
                   style={{
                     background: "var(--danger-soft)",
                     color: "var(--danger)",
-                    padding: "0.55rem 0.72rem",
+                    padding: "0.6rem 0.75rem",
                     borderRadius: 8,
                     fontSize: "0.76rem",
                     marginBottom: "0.75rem",
                     display: "flex",
-                    alignItems: "center",
-                    gap: "0.38rem",
+                    flexDirection: "column",
+                    gap: "0.45rem",
                   }}
                 >
-                  <AlertCircle size={14} />
-                  {error}
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.38rem" }}>
+                    <AlertCircle size={14} />
+                    <span>{error}</span>
+                  </div>
+                  {unverifiedEmail && (
+                    <div style={{ display: "flex", gap: "0.45rem", flexWrap: "wrap" }}>
+                      <button
+                        type="button"
+                        className="btn btn--outline btn--sm"
+                        onClick={handleResendVerification}
+                        disabled={resending}
+                      >
+                        {resending ? "Sending..." : "Resend Verification Email"}
+                      </button>
+                      {resendPreviewUrl && (
+                        <Link
+                          href={resendPreviewUrl}
+                          className="btn btn--brand btn--sm"
+                        >
+                          Verify Email Now
+                        </Link>
+                      )}
+                    </div>
+                  )}
+                  {resendMessage && (
+                    <div style={{ color: "var(--forest)", fontWeight: 500 }}>
+                      {resendMessage}
+                    </div>
+                  )}
                 </div>
               )}
 

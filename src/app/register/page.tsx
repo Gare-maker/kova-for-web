@@ -10,15 +10,21 @@ import {
   UserCheck,
   RefreshCw,
   ArrowLeft,
+  CheckCircle2,
+  KeyRound,
+  Info,
 } from "lucide-react";
 import { KovaHeader } from "@/components/KovaHeader";
 import { KovaFooter } from "@/components/KovaFooter";
+import { KovaAccountIntroModal } from "@/components/KovaAccountIntroModal";
+import { KovaPromoCard } from "@/components/KovaPromoCard";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [nextUrl, setNextUrl] = useState("/");
 
   const [mode, setMode] = useState<"register" | "login">("register");
+  const [introModalOpen, setIntroModalOpen] = useState(true);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -29,6 +35,7 @@ export default function RegisterPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [needsVerifyEmail, setNeedsVerifyEmail] = useState<string | null>(null);
+  const [registeredSuccess, setRegisteredSuccess] = useState(false);
   const [verifyNotice, setVerifyNotice] = useState<string | null>(null);
   const [verifyPreviewUrl, setVerifyPreviewUrl] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
@@ -38,6 +45,10 @@ export default function RegisterPage() {
     const params = new URLSearchParams(window.location.search);
     const next = params.get("next") || "/";
     setNextUrl(next);
+    if (params.get("mode") === "login") {
+      setMode("login");
+      setIntroModalOpen(false);
+    }
     const cleanNext = next.replace(/\?pay=1$/, "");
     router.prefetch(cleanNext.startsWith("/product/") ? cleanNext : "/");
   }, [router]);
@@ -76,16 +87,18 @@ export default function RegisterPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Unable to register your Buyer account.");
+        setError(data.error || "Unable to register your account.");
         return;
       }
 
+      setRegisteredSuccess(true);
       setNeedsVerifyEmail(email.trim());
       setVerifyNotice(
         data.message ||
-          `We sent a verification email to ${email.trim()}. Click the verification link to activate your Buyer account.`
+          `We sent a verification email to ${email.trim()}. Click the verification link to activate your Kova account.`
       );
       setVerifyPreviewUrl(data.verificationPreviewUrl ?? null);
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
     } catch {
       setError("Network error while creating account. Please try again.");
     } finally {
@@ -105,6 +118,7 @@ export default function RegisterPage() {
       });
       const data = await res.json();
       if (res.status === 403 && data.needsVerification) {
+        setRegisteredSuccess(false);
         setNeedsVerifyEmail(email.trim());
         setVerifyNotice(
           data.error || "Please verify your email address before signing in."
@@ -127,6 +141,7 @@ export default function RegisterPage() {
   const handleResendVerification = async () => {
     if (!needsVerifyEmail) return;
     setResending(true);
+    setError(null);
     try {
       const res = await fetch("/api/auth/resend-verification", {
         method: "POST",
@@ -156,12 +171,38 @@ export default function RegisterPage() {
     router.push(cleanNext.startsWith("/product/") ? cleanNext : "/");
   };
 
+  const showTwoColumn = mode === "register" && !needsVerifyEmail;
+
   return (
     <>
       <KovaHeader />
+
+      {/* Dismissible Entry Pop-up Explaining Kova Account Benefits */}
+      <KovaAccountIntroModal
+        open={introModalOpen && mode === "register" && !needsVerifyEmail}
+        onContinue={() => setIntroModalOpen(false)}
+        onCancel={() => {
+          setIntroModalOpen(false);
+          handleBack();
+        }}
+      />
+
       <main id="main" className="storefront-main">
-        <div className="container" style={{ maxWidth: 430 }}>
-          <div style={{ marginBottom: "0.65rem" }}>
+        <div
+          className="container"
+          style={{
+            maxWidth: showTwoColumn ? 900 : needsVerifyEmail ? 560 : 440,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "0.7rem",
+              gap: "0.5rem",
+            }}
+          >
             <button
               type="button"
               onClick={handleBack}
@@ -171,44 +212,77 @@ export default function RegisterPage() {
               <ArrowLeft size={14} />
               Back
             </button>
+
+            {mode === "register" && !needsVerifyEmail && (
+              <button
+                type="button"
+                className="kova-info-trigger"
+                onClick={() => setIntroModalOpen(true)}
+              >
+                <Info size={13} aria-hidden="true" />
+                <span>How Kova Account Works</span>
+              </button>
+            )}
           </div>
-          <div className="auth-card">
-            {needsVerifyEmail ? (
-              <div style={{ textAlign: "center", paddingBlock: "0.35rem" }}>
-                <div
-                  style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: "50%",
-                    background: "var(--brand-soft)",
-                    color: "var(--brand)",
-                    display: "grid",
-                    placeItems: "center",
-                    margin: "0 auto 0.65rem",
-                  }}
-                >
-                  <MailCheck size={20} />
+
+          {needsVerifyEmail ? (
+            <div className="auth-card kova-success-card">
+              <div className="kova-success-header">
+                <div className="kova-success-icon">
+                  {registeredSuccess ? (
+                    <CheckCircle2 size={24} />
+                  ) : (
+                    <MailCheck size={22} />
+                  )}
                 </div>
-                <h1 className="auth-card__title">Verify Your Email</h1>
-                <p className="auth-card__desc" style={{ marginBottom: "0.9rem" }}>
-                  {verifyNotice}
+
+                <div className="kova-success-powered">
+                  <img
+                    src="/brand/kova-logo-main.svg"
+                    alt="Kova"
+                    width={58}
+                    height={15}
+                  />
+                  <span>Powered by Kova</span>
+                </div>
+
+                <h1 className="auth-card__title">
+                  {registeredSuccess
+                    ? "Your account has been created successfully!"
+                    : "Verify Your Email"}
+                </h1>
+
+                <p className="kova-success-lead">
+                  <strong>Your account is powered by Kova.</strong> You can now
+                  use the same email address and password to log in to the Kova
+                  app, discover more vendors, explore products, and shop across
+                  the platform.
                 </p>
 
+                <div className="kova-safety-callout">
+                  <KeyRound size={15} aria-hidden="true" />
+                  <span>
+                    <strong>
+                      Keep your login details safe. You will need them to access
+                      Kova.
+                    </strong>
+                  </span>
+                </div>
+              </div>
+
+              {/* Verification Status & Direct Action */}
+              <div className="kova-verify-box">
+                <p className="kova-verify-box__msg">{verifyNotice}</p>
+
+                {error && (
+                  <div className="kova-error-banner" style={{ marginBottom: "0.65rem" }}>
+                    <AlertCircle size={14} />
+                    <span>{error}</span>
+                  </div>
+                )}
+
                 {verifyPreviewUrl && (
-                  <div
-                    style={{
-                      background: "var(--paper-subtle)",
-                      border: "1px solid var(--line)",
-                      borderRadius: 10,
-                      padding: "0.7rem",
-                      marginBottom: "0.85rem",
-                      fontSize: "0.76rem",
-                      color: "var(--ink-soft)",
-                    }}
-                  >
-                    <div style={{ marginBottom: "0.45rem" }}>
-                      Complete verification directly:
-                    </div>
+                  <div style={{ marginBottom: "0.75rem" }}>
                     <Link
                       href={verifyPreviewUrl}
                       className="btn btn--brand btn--sm"
@@ -240,6 +314,7 @@ export default function RegisterPage() {
                     className="btn btn--ghost btn--sm"
                     onClick={() => {
                       setNeedsVerifyEmail(null);
+                      setRegisteredSuccess(false);
                       setMode("login");
                     }}
                   >
@@ -247,8 +322,13 @@ export default function RegisterPage() {
                   </button>
                 </div>
               </div>
-            ) : (
-              <>
+
+              {/* Subtle Kova App Preview & Download Action */}
+              <KovaPromoCard variant="success" />
+            </div>
+          ) : (
+            <div className={showTwoColumn ? "register-grid" : undefined}>
+              <div className="auth-card">
                 <div
                   style={{
                     display: "inline-flex",
@@ -264,16 +344,16 @@ export default function RegisterPage() {
                   }}
                 >
                   <UserCheck size={12} />
-                  Buyer Account
+                  Kova Account
                 </div>
 
                 <h1 className="auth-card__title">
-                  {mode === "register" ? "Create Buyer Account" : "Sign In"}
+                  {mode === "register" ? "Create Your Account" : "Sign In"}
                 </h1>
                 <p className="auth-card__desc">
                   {mode === "register"
-                    ? "Register and verify your email to make payments."
-                    : "Access payments and saved receipts."}
+                    ? "Register once to shop here and access the main Kova app."
+                    : "Sign in with your Kova email and password to access payments and saved receipts."}
                 </p>
 
                 <div
@@ -332,54 +412,44 @@ export default function RegisterPage() {
                 </div>
 
                 {error && (
-                  <div
-                    style={{
-                      background: "var(--danger-soft)",
-                      color: "var(--danger)",
-                      padding: "0.55rem 0.72rem",
-                      borderRadius: 8,
-                      fontSize: "0.76rem",
-                      marginBottom: "0.75rem",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.38rem",
-                    }}
-                  >
+                  <div className="kova-error-banner">
                     <AlertCircle size={14} />
-                    {error}
+                    <span>{error}</span>
                   </div>
                 )}
 
                 {mode === "register" ? (
                   <form onSubmit={handleRegister}>
-                    <div className="form-group">
-                      <label className="form-label" htmlFor="reg-first-name">
-                        First Name *
-                      </label>
-                      <input
-                        id="reg-first-name"
-                        className="form-input"
-                        placeholder="e.g. Chinedu"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        autoComplete="given-name"
-                        required
-                      />
-                    </div>
+                    <div className="form-row-two">
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="reg-first-name">
+                          First Name *
+                        </label>
+                        <input
+                          id="reg-first-name"
+                          className="form-input"
+                          placeholder="e.g. Chinedu"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          autoComplete="given-name"
+                          required
+                        />
+                      </div>
 
-                    <div className="form-group">
-                      <label className="form-label" htmlFor="reg-last-name">
-                        Last Name *
-                      </label>
-                      <input
-                        id="reg-last-name"
-                        className="form-input"
-                        placeholder="e.g. Okeke"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        autoComplete="family-name"
-                        required
-                      />
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="reg-last-name">
+                          Last Name *
+                        </label>
+                        <input
+                          id="reg-last-name"
+                          className="form-input"
+                          placeholder="e.g. Okeke"
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          autoComplete="family-name"
+                          required
+                        />
+                      </div>
                     </div>
 
                     <div className="form-group">
@@ -396,6 +466,10 @@ export default function RegisterPage() {
                         autoComplete="email"
                         required
                       />
+                      <span className="kova-field-hint">
+                        Powered by Kova — use this same email and password on
+                        the Kova mobile app.
+                      </span>
                     </div>
 
                     <div className="form-group">
@@ -452,7 +526,7 @@ export default function RegisterPage() {
                       disabled={submitting}
                     >
                       {submitting
-                        ? "Sending Verification Email..."
+                        ? "Creating Your Kova Account..."
                         : "Create Buyer Account"}
                     </button>
                   </form>
@@ -513,11 +587,20 @@ export default function RegisterPage() {
                   }}
                 >
                   <ShieldCheck size={13} color="var(--brand)" />
-                  Email verification secures your Buyer account and receipts.
+                  Email verification secures your Kova account and saved
+                  receipts.
                 </p>
-              </>
-            )}
-          </div>
+              </div>
+
+              {/* Kova Account Awareness + Click-to-Play App Preview Card */}
+              {showTwoColumn && (
+                <KovaPromoCard
+                  variant="register"
+                  emailEntered={Boolean(email.trim())}
+                />
+              )}
+            </div>
+          )}
         </div>
       </main>
       <KovaFooter />

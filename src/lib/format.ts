@@ -1,4 +1,8 @@
 export const KOVA_COMMISSION_RATE = 0.049; // 4.9%
+export const KOVA_PLAY_STORE_URL =
+  "https://play.google.com/store/apps/details?id=com.kovamarketplace.app";
+export const KOVA_APP_PREVIEW_VIDEO = "/brand/kova-app-preview.mp4";
+export const KOVA_APP_PREVIEW_POSTER = "/brand/kova-app-preview.jpg";
 
 export function formatNaira(amount: number): string {
   return `₦${Math.round(amount).toLocaleString("en-NG")}`;

@@ -10,6 +10,7 @@ import {
   DoorClosed,
   ShieldCheck,
   Sparkles,
+  Play,
 } from "lucide-react";
 import type { Vendor, Product, VendorRating } from "@/lib/types";
 import { formatNaira } from "@/lib/format";
@@ -55,9 +56,11 @@ export function ProductDetailClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    setVideoPlaying(false);
   }, [product.id]);
 
   useEffect(() => {
@@ -67,7 +70,13 @@ export function ProductDetailClient({
   }, [isAuthenticated, searchParams]);
 
   const q = searchParams.get("q");
-  const backHref = q ? `/?q=${encodeURIComponent(q)}` : `/`;
+  const vendorBasePath =
+    vendor.username.toLowerCase() === "zarablue"
+      ? "/"
+      : `/store/${encodeURIComponent(vendor.username)}`;
+  const backHref = q
+    ? `${vendorBasePath}?q=${encodeURIComponent(q)}`
+    : vendorBasePath;
 
   useEffect(() => {
     router.prefetch(backHref);
@@ -101,7 +110,7 @@ export function ProductDetailClient({
 
   return (
     <>
-      <KovaHeader />
+      <KovaHeader brandName={vendor.fullName} />
 
       {/* Restored Original Back to Showroom Position on Product Details */}
       <div className="kova-subbar">
@@ -120,20 +129,43 @@ export function ProductDetailClient({
 
       <main id="main" className="ref-detail-page">
         <div className="ref-detail-shell">
-          {/* 1. Product / Property Media (Playable Video or Image) */}
+          {/* 1. Product / Property Media (Click-to-Play Video or Image — Zero Autoplay) */}
           <div className="ref-detail-hero">
             {product.isVideo && product.videoUrl ? (
-              <video
-                src={product.videoUrl}
-                poster={product.images[0] || "/listings/flat-exterior.jpg"}
-                controls
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                aria-label={`${product.name} product video`}
-              />
+              videoPlaying ? (
+                <video
+                  src={product.videoUrl}
+                  poster={product.images[0] || "/listings/flat-exterior.jpg"}
+                  controls
+                  autoPlay
+                  playsInline
+                  preload="auto"
+                  aria-label={`${product.name} product video`}
+                />
+              ) : (
+                <button
+                  type="button"
+                  className="kova-detail-video-trigger"
+                  onClick={() => setVideoPlaying(true)}
+                  aria-label={`Play ${product.name} video`}
+                >
+                  <img
+                    src={product.images[0] || "/listings/flat-exterior.jpg"}
+                    alt={product.name}
+                    decoding="async"
+                  />
+                  <span className="kova-detail-video-scrim" aria-hidden="true" />
+                  <span className="kova-detail-video-play" aria-hidden="true">
+                    <Play size={24} fill="#ffffff" color="#ffffff" />
+                  </span>
+                  <span className="ref-video-pill" aria-hidden="true">
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="#fff">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                    Tap to Play Video
+                  </span>
+                </button>
+              )
             ) : (
               <img
                 src={product.images[0] || "/listings/flat-exterior.jpg"}

@@ -32,7 +32,7 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
 
   return (
     <>
-      <KovaHeader />
+      <KovaHeader brandName={receipt.vendorName} />
 
       <main id="main" className="storefront-main">
         <div className="container" style={{ maxWidth: 680 }}>
@@ -278,7 +278,14 @@ export function ReceiptClient({ receipt }: { receipt: Receipt }) {
         </div>
       </main>
 
-      <KovaFooter />
+      <KovaFooter
+        vendor={{
+          username: receipt.vendorUsername,
+          fullName: receipt.vendorName,
+          role: "",
+          bio: "",
+        }}
+      />
     </>
   );
 }
