@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Search, ShoppingBag } from "lucide-react";
+import { Search, ShoppingBag, MapPin } from "lucide-react";
 import type { Vendor, Product } from "@/lib/types";
 import { formatNaira, getInitials } from "@/lib/format";
 import { KovaHeader } from "./KovaHeader";
@@ -22,7 +22,7 @@ interface StorefrontClientProps {
   basePath?: string;
 }
 
-function VerifiedSeal({ size = 21 }: { size?: number }) {
+function VerifiedSeal({ size = 20 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-label="Verified">
       <path
@@ -50,18 +50,32 @@ export function StorefrontClient({
   const searchParams = useSearchParams();
   const routePath = basePath ?? `/store/${encodeURIComponent(vendor.username)}`;
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const profileHeaderRef = useRef<HTMLElement>(null);
   const didMountRef = useRef(false);
 
   const [searchQuery, setSearchQuery] = useState(
     () => searchParams.get("q") ?? ""
   );
   const [searchActive, setSearchActive] = useState(false);
+  const [isSearchStuck, setIsSearchStuck] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
   const [liveRating, setLiveRating] = useState(vendor.rating);
   const [liveRatingCount, setLiveRatingCount] = useState(
     vendor.ratingCount ?? 120
   );
+
+  // Track when the sticky search bar is pinned beneath the header for crisp elevation
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleScroll = () => {
+      const heroHeight = profileHeaderRef.current?.offsetHeight ?? 200;
+      setIsSearchStuck(window.scrollY >= Math.max(20, heroHeight - 4));
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Debounced URL query sync preserving Next.js history state so typing is instant and uninterrupted
   useEffect(() => {
@@ -82,7 +96,7 @@ export function StorefrontClient({
     return () => window.clearTimeout(timer);
   }, [searchQuery, routePath]);
 
-  // Multi-word tokenized search across product title, description, category, location, condition, options, amenities & price
+  // Multi-word tokenized search across product & property fields
   const filteredProducts = useMemo(() => {
     const cleaned = searchQuery.trim().toLowerCase();
     if (!cleaned) return products;
@@ -110,6 +124,20 @@ export function StorefrontClient({
     return q ? `?q=${encodeURIComponent(q)}` : "";
   }, [searchQuery]);
 
+  // Smoothly scroll the profile header upwards so the green sticky search bar locks flush under the header
+  const scrollToStickySearch = () => {
+    if (typeof window === "undefined" || !profileHeaderRef.current) return;
+    const targetTop = profileHeaderRef.current.offsetHeight;
+    if (window.scrollY < targetTop - 4) {
+      window.scrollTo({ top: targetTop, behavior: "smooth" });
+    }
+  };
+
+  const handleActivateSearch = () => {
+    setSearchActive(true);
+    scrollToStickySearch();
+  };
+
   const handleCancelSearch = () => {
     setSearchQuery("");
     setSearchActive(false);
@@ -126,6 +154,7 @@ export function StorefrontClient({
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    scrollToStickySearch();
     searchInputRef.current?.blur();
   };
 
@@ -137,8 +166,21 @@ export function StorefrontClient({
       <KovaHeader />
 
       <main id="main" className="ref-storefront">
-        {/* Restored Green Profile Section with Integrated Rounded Search Bar */}
-        <section className="showroom-hero-green" aria-label="Business profile">
+        {/* Green Profile Header with Vendor Profile Picture Covering Full Background at 60% Opacity */}
+        <section
+          ref={profileHeaderRef}
+          className="showroom-hero-green"
+          aria-label="Business profile"
+        >
+          {vendor.avatarUrl && (
+            <div
+              className="showroom-hero-green__bg"
+              style={{ backgroundImage: `url(${vendor.avatarUrl})` }}
+              aria-hidden="true"
+            />
+          )}
+          <div className="showroom-hero-green__scrim" aria-hidden="true" />
+
           <div className="container showroom-profile__inner">
             <button
               type="button"
@@ -156,7 +198,7 @@ export function StorefrontClient({
                 </div>
                 {vendor.verificationStatus === "verified" && (
                   <span className="showroom-avatar__seal">
-                    <VerifiedSeal size={21} />
+                    <VerifiedSeal size={20} />
                   </span>
                 )}
               </div>
@@ -166,7 +208,16 @@ export function StorefrontClient({
                 {vendor.categoryBadge || vendor.role}
               </p>
             </button>
+          </div>
+        </section>
 
+        {/* Sticky Green Search Header (locks flush under site header on click or scroll) */}
+        <div
+          className={`showroom-sticky-search ${
+            isSearchStuck ? "showroom-sticky-search--stuck" : ""
+          }`}
+        >
+          <div className="container">
             <form
               role="search"
               onSubmit={handleSearchSubmit}
@@ -175,14 +226,17 @@ export function StorefrontClient({
               <div className="ref-search-row">
                 <div
                   className="ref-search-pill"
-                  onClick={() => searchInputRef.current?.focus()}
+                  onClick={() => {
+                    searchInputRef.current?.focus();
+                    handleActivateSearch();
+                  }}
                 >
                   <Search size={16} color="#6E6981" aria-hidden="true" />
                   <input
                     ref={searchInputRef}
                     type="text"
                     value={searchQuery}
-                    onFocus={() => setSearchActive(true)}
+                    onFocus={handleActivateSearch}
                     onBlur={() => {
                       if (!searchQuery.trim()) {
                         setSearchActive(false);
@@ -215,9 +269,9 @@ export function StorefrontClient({
               </div>
             </form>
           </div>
-        </section>
+        </div>
 
-        {/* Spacious Product Listing Grid */}
+        {/* Spacious Product & Property Listing Grid */}
         <section className="container ref-listings-section">
           {trimmedQuery && (
             <div className="ref-search-status" role="status" aria-live="polite">
@@ -268,7 +322,9 @@ export function StorefrontClient({
           ) : (
             <div className="ref-listing-grid">
               {filteredProducts.map((product) => {
-                const isProp = product.category.toLowerCase() === "properties";
+                const isProp =
+                  product.category.toLowerCase().includes("propert") ||
+                  product.category.toLowerCase().includes("apartment");
                 return (
                   <Link
                     key={product.id}
@@ -282,7 +338,9 @@ export function StorefrontClient({
                         loading="lazy"
                         decoding="async"
                       />
-                      {!isProp && (
+                      {isProp ? (
+                        <span className="kova-prop-badge">Property</span>
+                      ) : (
                         <span className="kova-cond-badge">
                           {product.condition}
                         </span>
@@ -323,9 +381,16 @@ export function StorefrontClient({
                           </span>
                         ) : null}
                       </div>
-                      <p className="ref-listing-card__desc">
-                        {product.description}
-                      </p>
+                      {isProp ? (
+                        <div className="ref-listing-card__prop-loc">
+                          <MapPin size={11} aria-hidden="true" />
+                          <span>{product.location}</span>
+                        </div>
+                      ) : (
+                        <p className="ref-listing-card__desc">
+                          {product.description}
+                        </p>
+                      )}
                     </div>
                   </Link>
                 );
@@ -335,7 +400,7 @@ export function StorefrontClient({
         </section>
       </main>
 
-      <KovaFooter />
+      <KovaFooter vendor={vendor} />
 
       <UserProfileModal
         open={profileOpen}

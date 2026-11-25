@@ -911,7 +911,7 @@ export function CheckoutClient({
         </div>
       </main>
 
-      <KovaFooter />
+      <KovaFooter vendor={vendor} />
     </>
   );
 }

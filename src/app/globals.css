@@ -25,7 +25,7 @@
   --font-display: var(--font-nunito), "Nunito Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-sans: var(--font-nunito), "Nunito Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --container: 1020px;
-  --gutter: clamp(1rem, 3vw, 2rem);
+  --gutter: clamp(0.95rem, 3vw, 2rem);
   --nav-h: 52px;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --shadow-soft: 0 6px 20px -14px rgba(18, 18, 30, 0.1);
@@ -185,12 +185,12 @@ select {
 }
 
 /* =========================================================
-   HEADER: BORDERLESS POWERED BY KOVA + CLEAN NAVIGATION
+   HEADER: SUBTLE POWERED BY KOVA + DIRECT SHOWROOM/RECEIPTS NAV
    ========================================================= */
 .site-header {
   z-index: 900;
   height: var(--nav-h);
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(255, 255, 255, 0.98);
   border-bottom: 1px solid var(--line);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
@@ -202,172 +202,134 @@ select {
 .nav {
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   height: 100%;
   display: flex;
 }
-/* Subtle top-left Powered by Kova with NO fill, border, stroke, or container */
+/* Reduced, quiet top-left Powered by Kova with no container/border */
 .header-powered {
   display: inline-flex;
   align-items: center;
-  gap: 0.34rem;
+  gap: 0.26rem;
   background: transparent;
   border: none;
   padding: 0;
-  font-size: 0.72rem;
+  font-size: 0.64rem;
   font-weight: 500;
-  color: var(--muted);
+  color: var(--muted-light);
+  opacity: 0.86;
   white-space: nowrap;
   flex: none;
   line-height: 1;
+  transition: opacity 0.16s ease, color 0.16s ease;
+}
+.header-powered:hover {
+  opacity: 1;
+  color: var(--muted);
 }
 .header-powered img {
-  height: 14px;
+  height: 10.5px;
   width: auto;
   display: block;
 }
 
+/* Directly tappable Showroom & My Receipts navigation on desktop AND mobile */
 .nav__links {
   align-items: center;
-  gap: 1.25rem;
+  gap: 0.35rem;
   display: flex;
 }
 .nav__link {
   color: var(--ink-soft);
-  padding: 0.25rem 0.1rem;
-  font-size: 0.8rem;
+  padding: 0.38rem 0.68rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
   font-weight: 600;
-  transition: color 0.16s;
+  transition: color 0.16s ease, background-color 0.16s ease;
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
-  gap: 0.34rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-.nav__link:hover,
-.nav__link--active {
-  color: var(--brand);
-}
-
-.nav__mobile-actions {
-  display: none;
-  align-items: center;
-}
-.nav__menu-btn {
-  display: inline-flex;
-  background: #ffffff;
-  border: 1px solid var(--line-strong);
-  border-radius: 8px;
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  cursor: pointer;
-  color: var(--ink-strong);
-  align-items: center;
-  justify-content: center;
-  transition: border-color 0.16s ease, background-color 0.16s ease;
-}
-.nav__menu-btn:hover {
-  border-color: var(--brand);
-  background: var(--paper-subtle);
-}
-
-@media (max-width: 768px) {
-  .nav__links {
-    display: none;
-  }
-  .nav__mobile-actions {
-    display: flex;
-  }
-}
-
-/* Floating Downward Dropdown with Subtle Blurred Backdrop */
-.nav-dropdown-backdrop {
-  position: fixed;
-  inset: var(--nav-h) 0 0 0;
-  background: rgba(18, 18, 31, 0.12);
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
-  z-index: 880;
-  animation: fadeInBackdrop 140ms ease-out forwards;
-}
-.nav-dropdown-menu {
-  position: fixed;
-  top: calc(var(--nav-h) + 6px);
-  right: var(--gutter);
-  width: min(216px, calc(100vw - 2rem));
-  background: rgba(255, 255, 255, 0.96);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--line-strong);
-  border-radius: 11px;
-  padding: 0.38rem;
-  box-shadow: var(--shadow-dropdown);
-  z-index: 950;
-  display: flex;
-  flex-direction: column;
-  gap: 0.12rem;
-  transform-origin: top right;
-  animation: dropdownOpen 160ms var(--ease-out) forwards;
-}
-.nav-dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 0.52rem;
-  width: 100%;
-  text-align: left;
+  gap: 0.32rem;
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 0.52rem 0.68rem;
-  border-radius: 7px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--ink-strong);
-  transition: background-color 0.14s ease, color 0.14s ease;
 }
-.nav-dropdown-item:hover,
-.nav-dropdown-item--active {
-  background: var(--brand-soft);
+.nav__link:hover {
+  color: var(--ink-strong);
+  background: var(--paper-subtle);
+}
+.nav__link--active {
   color: var(--brand-dark);
+  background: var(--brand-soft);
+}
+.nav__link--active:hover {
+  color: var(--brand-dark);
+  background: var(--brand-soft);
 }
 
-@keyframes dropdownOpen {
-  from {
-    opacity: 0;
-    transform: translateY(-6px) scale(0.98);
+@media (max-width: 480px) {
+  .header-powered {
+    font-size: 0.6rem;
+    gap: 0.22rem;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+  .header-powered img {
+    height: 9.5px;
   }
-}
-@keyframes fadeInBackdrop {
-  from {
-    opacity: 0;
+  .nav__links {
+    gap: 0.25rem;
   }
-  to {
-    opacity: 1;
+  .nav__link {
+    padding: 0.34rem 0.56rem;
+    font-size: 0.74rem;
+    gap: 0.26rem;
   }
 }
 
 /* =========================================================
-   RESTORED GREEN SHOWROOM PROFILE + INTEGRATED SEARCH BAR
+   PROFILE HEADER (PROFILE IMAGE BACKGROUND AT 60% OPACITY)
+   & SEAMLESS STICKY GREEN SEARCH HEADER
    ========================================================= */
 .ref-storefront {
   background: #ffffff;
   min-height: calc(100vh - var(--nav-h) - 62px);
-  padding-bottom: 3.25rem;
+  padding-bottom: 3.5rem;
 }
 
 .showroom-hero-green {
-  background: linear-gradient(180deg, #2c9b43 0%, #238839 100%);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #2c9b43 0%, #248a3a 100%);
   color: #ffffff;
-  padding: 2rem 0 2.2rem;
+  padding: 2.35rem 0 1.45rem;
+  min-height: 215px;
+  display: flex;
+  align-items: center;
+}
+.showroom-hero-green__bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 0;
+}
+.showroom-hero-green__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(16, 74, 29, 0.36) 0%,
+    rgba(28, 118, 48, 0.56) 72%,
+    rgba(36, 138, 58, 0.88) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
 }
 .showroom-profile__inner {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -385,10 +347,10 @@ select {
 }
 .showroom-avatar {
   position: relative;
-  width: 86px;
-  height: 86px;
+  width: 82px;
+  height: 82px;
   border-radius: 50%;
-  box-shadow: 0 0 0 6px rgba(150, 237, 196, 0.16), 0 8px 20px -8px rgba(7, 47, 16, 0.42);
+  box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.16), 0 10px 24px -8px rgba(7, 47, 16, 0.48);
 }
 .showroom-avatar__ring {
   position: relative;
@@ -396,12 +358,12 @@ select {
   height: 100%;
   border-radius: 50%;
   overflow: hidden;
-  border: 2.5px solid rgba(255, 255, 255, 0.92);
+  border: 2.5px solid rgba(255, 255, 255, 0.94);
   background: #faf8f5;
   color: var(--forest);
   display: grid;
   place-items: center;
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   font-weight: 700;
 }
 .showroom-avatar__ring img {
@@ -411,7 +373,6 @@ select {
   object-position: center;
   display: block;
 }
-/* Subtle light Kova green overlay blending the profile image cleanly into the green hero */
 .showroom-avatar__ring::after {
   content: "";
   position: absolute;
@@ -428,33 +389,46 @@ select {
   position: absolute;
   bottom: -1px;
   right: -1px;
-  width: 22px;
-  height: 22px;
+  width: 21px;
+  height: 21px;
   display: grid;
   place-items: center;
   z-index: 2;
 }
 .showroom-profile__name {
-  margin: 0.85rem 0 0;
+  margin: 0.78rem 0 0;
   font-size: clamp(1.32rem, 2.2vw, 1.56rem);
   font-weight: 700;
   letter-spacing: -0.02em;
   color: #ffffff;
   line-height: 1.22;
+  text-shadow: 0 1px 10px rgba(7, 47, 16, 0.34);
 }
 .showroom-profile__category {
-  margin: 0.3rem 0 0;
+  margin: 0.28rem 0 0;
   font-size: 0.9rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.94);
   line-height: 1.35;
+  text-shadow: 0 1px 8px rgba(7, 47, 16, 0.28);
 }
 
-/* Integrated Rounded Pill Search Bar inside Green Profile Section */
+/* Sticky Green Search Band (locks flush beneath .site-header on click/scroll) */
+.showroom-sticky-search {
+  position: sticky;
+  top: var(--nav-h);
+  z-index: 800;
+  background: linear-gradient(180deg, #248a3a 0%, #1f7d34 100%);
+  padding: 0.78rem 0 0.92rem;
+  transition: box-shadow 0.2s ease;
+}
+.showroom-sticky-search--stuck {
+  box-shadow: 0 8px 20px -10px rgba(7, 47, 16, 0.42);
+}
 .ref-search-form {
   width: 100%;
-  max-width: 520px;
-  margin: 1.3rem auto 0;
+  max-width: 540px;
+  margin-inline: auto;
 }
 .ref-search-row {
   display: flex;
@@ -467,12 +441,12 @@ select {
   display: flex;
   align-items: center;
   background: #ffffff;
-  border: 1.5px solid rgba(255, 255, 255, 0.92);
+  border: 1.5px solid rgba(255, 255, 255, 0.94);
   border-radius: 999px;
   height: 44px;
   padding: 0 1rem 0 1.15rem;
   gap: 0.55rem;
-  box-shadow: 0 8px 22px -10px rgba(7, 47, 16, 0.34);
+  box-shadow: 0 6px 18px -8px rgba(7, 47, 16, 0.32);
   cursor: text;
   transition: box-shadow 0.16s ease, border-color 0.16s ease;
 }
@@ -495,7 +469,7 @@ select {
 }
 .ref-search-cancel {
   background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.34);
   border-radius: 999px;
   color: #ffffff;
   font-size: 0.78rem;
@@ -512,10 +486,10 @@ select {
 }
 
 /* =========================================================
-   SPACIOUS LISTING GRID & THIN, COMPACT PRODUCT CARDS
+   SPACIOUS LISTING GRID & TALLER PRODUCT / PROPERTY CARDS
    ========================================================= */
 .ref-listings-section {
-  padding-top: 2rem;
+  padding-top: 1.85rem;
 }
 .ref-search-status {
   display: flex;
@@ -542,18 +516,18 @@ select {
 .ref-listing-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 2.25rem 1.85rem;
+  gap: 2.25rem 1.75rem;
 }
 @media (max-width: 900px) {
   .ref-listing-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1.95rem 1.5rem;
+    gap: 1.95rem 1.45rem;
   }
 }
 @media (max-width: 600px) {
   .ref-listing-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.65rem 1.25rem;
+    gap: 1.7rem 1.15rem;
   }
 }
 
@@ -566,8 +540,8 @@ select {
 .ref-listing-card__media {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3;
-  border-radius: 10px;
+  aspect-ratio: 1 / 1.06;
+  border-radius: 12px;
   overflow: hidden;
   background: #f5f6f8;
   border: 1px solid var(--line);
@@ -578,11 +552,12 @@ select {
 .ref-listing-card__media img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  transition: transform 0.26s var(--ease-out);
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.28s var(--ease-out);
 }
 .ref-listing-card:hover .ref-listing-card__media img {
-  transform: scale(1.03);
+  transform: scale(1.035);
 }
 .ref-play-overlay {
   position: absolute;
@@ -593,48 +568,61 @@ select {
 }
 .ref-sold-tag {
   position: absolute;
-  top: 0.4rem;
-  left: 0.4rem;
-  background: rgba(18, 18, 24, 0.74);
+  top: 0.45rem;
+  left: 0.45rem;
+  background: rgba(18, 18, 24, 0.76);
   color: #ffffff;
   font-size: 0.64rem;
   font-weight: 600;
-  padding: 0.14rem 0.42rem;
-  border-radius: 5px;
+  padding: 0.16rem 0.44rem;
+  border-radius: 6px;
 }
 .kova-cond-badge {
   position: absolute;
-  top: 0.4rem;
-  right: 0.4rem;
+  top: 0.45rem;
+  right: 0.45rem;
   background: rgba(255, 248, 236, 0.95);
   color: #8c6d42;
-  border: 1px solid rgba(217, 179, 120, 0.36);
-  border-radius: 5px;
-  padding: 0.1rem 0.4rem;
+  border: 1px solid rgba(217, 179, 120, 0.38);
+  border-radius: 6px;
+  padding: 0.12rem 0.44rem;
+  font-size: 0.64rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.kova-prop-badge {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  background: rgba(44, 155, 67, 0.94);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 6px;
+  padding: 0.12rem 0.46rem;
   font-size: 0.64rem;
   font-weight: 600;
   line-height: 1.25;
 }
 .ref-listing-card__meta {
-  padding: 0.46rem 0.08rem 0;
+  padding: 0.58rem 0.1rem 0.15rem;
   display: flex;
   flex-direction: column;
-  gap: 0.08rem;
+  gap: 0.12rem;
 }
 .ref-listing-card__title {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.86rem;
   font-weight: 600;
   color: var(--ink-strong);
-  line-height: 1.26;
+  line-height: 1.3;
   display: -webkit-box;
-  -webkit-line-clamp: 1;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 .ref-listing-card__price {
-  margin: 0.04rem 0 0;
-  font-size: 0.86rem;
+  margin: 0.08rem 0 0;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--ink-strong);
   line-height: 1.25;
@@ -646,15 +634,30 @@ select {
 }
 .ref-listing-card__loc,
 .ref-listing-card__desc {
-  margin: 0.06rem 0 0;
-  font-size: 0.72rem;
+  margin: 0.08rem 0 0;
+  font-size: 0.73rem;
   font-weight: 400;
   color: var(--muted);
-  line-height: 1.35;
+  line-height: 1.36;
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+.ref-listing-card__prop-loc {
+  margin-top: 0.1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.24rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--brand-dark);
+  min-width: 0;
+}
+.ref-listing-card__prop-loc span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* =========================================================
@@ -724,7 +727,7 @@ select {
   overflow: hidden;
 }
 .ref-detail-sheet__inner {
-  padding: 1.2rem 1.25rem 1.35rem;
+  padding: 1.25rem 1.3rem 1.4rem;
 }
 .ref-detail-title {
   margin: 0;
@@ -732,12 +735,18 @@ select {
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--ink-strong);
-  line-height: 1.24;
+  line-height: 1.25;
+}
+/* Clean visual divider separating Product Name and Price */
+.ref-detail-title-divider {
+  border: none;
+  border-top: 1px solid var(--line-strong);
+  margin: 0.8rem 0;
 }
 
 .ref-detail-price {
-  margin-top: 0.55rem;
-  font-size: 1.18rem;
+  margin-top: 0;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--ink-strong);
   display: flex;
@@ -750,7 +759,7 @@ select {
   font-size: 0.78rem;
   color: var(--muted);
   display: block;
-  margin-top: 0.25rem;
+  margin-top: 0.28rem;
 }
 .kova-stock-pill {
   background: var(--brand-soft);
@@ -769,7 +778,7 @@ select {
   border-top: 1px solid var(--line);
 }
 .ref-desc-heading {
-  margin: 0 0 0.24rem;
+  margin: 0 0 0.26rem;
   font-size: 0.86rem;
   font-weight: 600;
   color: var(--ink-strong);
@@ -779,7 +788,7 @@ select {
   font-size: 0.82rem;
   font-weight: 400;
   color: var(--ink-soft);
-  line-height: 1.52;
+  line-height: 1.54;
 }
 
 .kova-info-grid {
@@ -1010,43 +1019,127 @@ select {
 }
 
 /* =========================================================
-   UNIFIED GREEN FOOTER: POWERED BY KOVA (LEFT) + COPYRIGHT (RIGHT)
+   POLISHED DARK STOREFRONT FOOTER
    ========================================================= */
 .site-footer {
-  background: linear-gradient(180deg, #2c9b43 0%, #238839 100%);
-  color: #ffffff;
-  border-top: none;
-  padding: 1rem 0;
+  background: #0f1115;
+  color: #e5e7eb;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 2.5rem 0 1.35rem;
 }
-.footer-bar {
+.footer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 0.8fr) minmax(0, 1.1fr);
+  gap: 2rem;
+  padding-bottom: 1.85rem;
+}
+@media (max-width: 760px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding-bottom: 1.45rem;
+  }
+}
+.footer-brand-name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.015em;
+}
+.footer-category-tag {
+  display: inline-block;
+  margin-top: 0.35rem;
+  padding: 0.14rem 0.52rem;
+  border-radius: 999px;
+  background: rgba(44, 155, 67, 0.18);
+  color: #86efac;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+.footer-about-text {
+  margin: 0.55rem 0 0;
+  font-size: 0.8rem;
+  color: #a1a6b3;
+  line-height: 1.55;
+  max-width: 40ch;
+}
+.footer-meta-row {
+  margin-top: 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.76rem;
+  color: #cbd5e1;
+}
+.footer-heading {
+  margin: 0 0 0.7rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #ffffff;
+}
+.footer-link-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.48rem;
+  font-size: 0.8rem;
+  color: #a1a6b3;
+}
+.footer-link-list a {
+  transition: color 0.16s ease;
+}
+.footer-link-list a:hover {
+  color: #86efac;
+}
+.footer-info-item,
+.footer-info-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+}
+.footer-info-item svg,
+.footer-info-link svg {
+  color: #4ade80;
+  flex: none;
+}
+
+.footer-bottom {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.85rem;
   flex-wrap: wrap;
+  padding-top: 1.15rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 .footer-powered {
   display: inline-flex;
   align-items: center;
-  gap: 0.34rem;
-  font-size: 0.75rem;
+  gap: 0.28rem;
+  font-size: 0.68rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.92);
+  color: #8b91a0;
   line-height: 1;
 }
 .footer-powered img {
-  height: 13px;
+  height: 10.5px;
   width: auto;
   display: block;
   filter: brightness(0) invert(1);
+  opacity: 0.82;
 }
 .footer-copyright {
   margin: 0;
   padding: 0;
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.94);
-  font-size: 0.75rem;
-  font-weight: 500;
+  color: #8b91a0;
+  font-size: 0.72rem;
+  font-weight: 400;
   line-height: 1.3;
 }

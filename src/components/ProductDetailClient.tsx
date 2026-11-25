@@ -46,6 +46,7 @@ function AmenityIcon({ label }: { label: string }) {
 
 export function ProductDetailClient({
   product,
+  vendor,
   effectiveAvailable,
   effectiveRemaining,
   unavailableReason,
@@ -133,6 +134,9 @@ export function ProductDetailClient({
             <div className="ref-detail-sheet__inner">
               {/* 2. Product / Property Title */}
               <h1 className="ref-detail-title">{product.name}</h1>
+
+              {/* Clear Visual Divider Between Product Name and Price */}
+              <hr className="ref-detail-title-divider" />
 
               {/* 3. Price / Rental Amount */}
               <div className="ref-detail-price">
@@ -262,7 +266,7 @@ export function ProductDetailClient({
         </div>
       </main>
 
-      <KovaFooter />
+      <KovaFooter vendor={vendor} />
 
       <PaymentOptionsModal
         open={paymentModalOpen}

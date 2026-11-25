@@ -317,14 +317,14 @@ function ensureDbFile(): KovaDatabase {
       }
     }
     // Hydrate separate demo Showroom vendor & listings without modifying existing vendor data
+    const nowHydrate = new Date().toISOString();
     if (!parsed.vendors.some((v) => v.id === DEMO_SHOWROOM_VENDOR_ID)) {
-      const now = new Date().toISOString();
       parsed.vendors.push(createDemoShowroomVendor());
-      const existingIds = new Set(parsed.products.map((p) => p.id));
-      for (const p of createDemoShowroomProducts(now)) {
-        if (!existingIds.has(p.id)) {
-          parsed.products.push(p);
-        }
+    }
+    const existingIds = new Set(parsed.products.map((p) => p.id));
+    for (const p of createDemoShowroomProducts(nowHydrate)) {
+      if (!existingIds.has(p.id)) {
+        parsed.products.push(p);
       }
     }
     globalForDb.__kovaMemoryDb = parsed;
