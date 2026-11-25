@@ -9,6 +9,7 @@ import {
   AlertCircle,
   UserCheck,
   RefreshCw,
+  ArrowLeft,
 } from "lucide-react";
 import { KovaHeader } from "@/components/KovaHeader";
 import { KovaFooter } from "@/components/KovaFooter";
@@ -149,11 +150,31 @@ export default function RegisterPage() {
     }
   };
 
+  const handleBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+      return;
+    }
+    const cleanNext = nextUrl.replace(/\?pay=1$/, "");
+    router.push(cleanNext.startsWith("/product/") ? cleanNext : "/");
+  };
+
   return (
     <>
       <KovaHeader />
       <main id="main" className="storefront-main">
       <div className="container" style={{ maxWidth: 430 }}>
+        <div style={{ marginBottom: "0.65rem" }}>
+          <button
+            type="button"
+            onClick={handleBack}
+            className="btn btn--ghost btn--sm"
+            style={{ paddingLeft: 0 }}
+          >
+            <ArrowLeft size={14} />
+            Back
+          </button>
+        </div>
         <div className="auth-card">
           {needsVerifyEmail ? (
             <div style={{ textAlign: "center", paddingBlock: "0.35rem" }}>

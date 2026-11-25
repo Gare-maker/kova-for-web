@@ -19,8 +19,6 @@ import { KovaHeader } from "@/components/KovaHeader";
 import { KovaFooter } from "@/components/KovaFooter";
 
 export default function AccountReceiptsPage() {
-  const [isHistoryView, setIsHistoryView] = useState(false);
-
   const [user, setUser] = useState<UserAccount | null>(null);
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
@@ -46,22 +44,7 @@ export default function AccountReceiptsPage() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-    const syncView = () => {
-      const params = new URLSearchParams(window.location.search);
-      setIsHistoryView(params.get("view") === "history");
-    };
-    const onCustomView = (e: Event) => {
-      const detail = (e as CustomEvent<string>).detail;
-      setIsHistoryView(detail === "history");
-    };
-    syncView();
-    window.addEventListener("popstate", syncView);
-    window.addEventListener("kova:receiptsview", onCustomView);
     loadSession();
-    return () => {
-      window.removeEventListener("popstate", syncView);
-      window.removeEventListener("kova:receiptsview", onCustomView);
-    };
   }, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -120,7 +103,7 @@ export default function AccountReceiptsPage() {
               className="display display--md"
               style={{ color: "var(--ink-strong)" }}
             >
-              {isHistoryView ? "Transaction History" : "My Receipts"}
+              My Receipts
             </h1>
             {user && (
               <button
@@ -158,7 +141,7 @@ export default function AccountReceiptsPage() {
                 Buyer Account
               </div>
               <h2 className="auth-card__title">
-                Sign In to View {isHistoryView ? "History" : "Receipts"}
+                Sign In to View Receipts
               </h2>
               <p className="auth-card__desc">
                 Enter your Buyer email and password to access saved payments.

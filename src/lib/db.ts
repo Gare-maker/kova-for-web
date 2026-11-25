@@ -18,6 +18,11 @@ import {
   VerificationStatus,
 } from "./types";
 import { calculateCommission } from "./format";
+import {
+  DEMO_SHOWROOM_VENDOR_ID,
+  createDemoShowroomVendor,
+  createDemoShowroomProducts,
+} from "./demoShowroom";
 
 const DATA_DIR = process.env.VERCEL
   ? path.join(os.tmpdir(), "kova-data")
@@ -274,9 +279,12 @@ function createSeedDatabase(): KovaDatabase {
     },
   ];
 
+  const demoVendor = createDemoShowroomVendor();
+  const demoProducts = createDemoShowroomProducts(now);
+
   return {
-    vendors,
-    products,
+    vendors: [...vendors, demoVendor],
+    products: [...products, ...demoProducts],
     users: [],
     ratings,
     reservations: [],
@@ -306,6 +314,17 @@ function ensureDbFile(): KovaDatabase {
     for (const v of parsed.vendors ?? []) {
       if (v.stats && typeof v.stats.views !== "number") {
         v.stats.views = 4800;
+      }
+    }
+    // Hydrate separate demo Showroom vendor & listings without modifying existing vendor data
+    if (!parsed.vendors.some((v) => v.id === DEMO_SHOWROOM_VENDOR_ID)) {
+      const now = new Date().toISOString();
+      parsed.vendors.push(createDemoShowroomVendor());
+      const existingIds = new Set(parsed.products.map((p) => p.id));
+      for (const p of createDemoShowroomProducts(now)) {
+        if (!existingIds.has(p.id)) {
+          parsed.products.push(p);
+        }
       }
     }
     globalForDb.__kovaMemoryDb = parsed;

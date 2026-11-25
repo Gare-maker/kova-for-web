@@ -10,7 +10,8 @@ import { StorefrontClient } from "@/components/StorefrontClient";
 export const dynamic = "force-dynamic";
 
 export default function HomePage() {
-  const vendor = getVendorByUsername("MichealH");
+  const vendor =
+    getVendorByUsername("ZaraGlow") ?? getVendorByUsername("MichealH");
   if (!vendor) {
     return null;
   }

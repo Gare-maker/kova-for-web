@@ -262,16 +262,7 @@ export function CheckoutClient({
 
   return (
     <>
-      <KovaHeader
-        backHref="/"
-        onBack={
-          step === "paystack"
-            ? () => setStep("review")
-            : step === "review"
-            ? () => setStep("form")
-            : undefined
-        }
-      />
+      <KovaHeader />
 
       <main id="main" className="storefront-main">
         <div className="container">
@@ -291,16 +282,14 @@ export function CheckoutClient({
             >
               Make Payment
             </h1>
-            {step === "form" && (
-              <button
-                type="button"
-                onClick={handleBack}
-                className="btn btn--ghost btn--sm"
-              >
-                <ArrowLeft size={14} />
-                Back to Product
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleBack}
+              className="btn btn--ghost btn--sm"
+            >
+              <ArrowLeft size={14} />
+              {step === "form" ? "Back to Product" : "Back"}
+            </button>
           </div>
           <p style={{ color: "var(--muted)", fontSize: "0.78rem", marginTop: 0, marginBottom: "1rem" }}>
             {paymentLabel} · Sold by <strong>{vendor.fullName}</strong>

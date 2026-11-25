@@ -323,9 +323,9 @@ export function StorefrontClient({
                           </span>
                         ) : null}
                       </div>
-                      <span className="ref-listing-card__loc">
-                        {product.location}
-                      </span>
+                      <p className="ref-listing-card__desc">
+                        {product.description}
+                      </p>
                     </div>
                   </Link>
                 );

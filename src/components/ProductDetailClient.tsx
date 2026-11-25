@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
+  ArrowLeft,
   Plug,
   Droplet,
   DoorClosed,
@@ -10,10 +12,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import type { Vendor, Product, VendorRating } from "@/lib/types";
-import { formatNaira, getInitials } from "@/lib/format";
+import { formatNaira } from "@/lib/format";
 import { KovaHeader } from "./KovaHeader";
 import { KovaFooter } from "./KovaFooter";
-import { UserProfileModal } from "./UserProfileModal";
 import { PaymentOptionsModal } from "./PaymentOptionsModal";
 
 interface ProductDetailClientProps {
@@ -24,26 +25,6 @@ interface ProductDetailClientProps {
   unavailableReason: string | null;
   initialReviews?: VendorRating[];
   isAuthenticated: boolean;
-}
-
-function VerifiedSealSmall({ color = "#1D9BF0" }: { color?: string }) {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-label="Verified">
-      <path
-        d="M12 1.75l2.37 1.72 2.9-.31 1.18 2.68 2.68 1.18-.31 2.9L22.25 12l-1.72 2.37.31 2.9-2.68 1.18-1.18 2.68-2.9-.31L12 22.25l-2.37-1.72-2.9.31-1.18-2.68-2.68-1.18.31-2.9L1.75 12l1.72-2.37-.31-2.9 2.68-1.18 1.18-2.68 2.9.31L12 1.75z"
-        fill={color}
-        stroke="#FFFFFF"
-        strokeWidth="1.5"
-      />
-      <path
-        d="M8.6 12.2l2.2 2.2 4.6-4.8"
-        stroke="#FFFFFF"
-        strokeWidth="2.1"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
 }
 
 function AmenityIcon({ label }: { label: string }) {
@@ -65,7 +46,6 @@ function AmenityIcon({ label }: { label: string }) {
 
 export function ProductDetailClient({
   product,
-  vendor,
   effectiveAvailable,
   effectiveRemaining,
   unavailableReason,
@@ -73,7 +53,6 @@ export function ProductDetailClient({
 }: ProductDetailClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [profileOpen, setProfileOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 
   useEffect(() => {
@@ -88,6 +67,23 @@ export function ProductDetailClient({
 
   const q = searchParams.get("q");
   const backHref = q ? `/?q=${encodeURIComponent(q)}` : `/`;
+
+  useEffect(() => {
+    router.prefetch(backHref);
+  }, [router, backHref]);
+
+  const handleBack = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (
+      typeof window !== "undefined" &&
+      window.history.length > 1 &&
+      document.referrer &&
+      new URL(document.referrer).origin === window.location.origin &&
+      new URL(document.referrer).pathname === "/"
+    ) {
+      e.preventDefault();
+      router.back();
+    }
+  };
 
   const isProperty =
     product.category.toLowerCase().includes("propert") ||
@@ -104,11 +100,26 @@ export function ProductDetailClient({
 
   return (
     <>
-      <KovaHeader backHref={backHref} />
+      <KovaHeader />
+
+      {/* Restored Original Back to Showroom Position on Product Details */}
+      <div className="kova-subbar">
+        <div className="container kova-subbar__inner">
+          <Link
+            href={backHref}
+            prefetch={true}
+            onClick={handleBack}
+            className="kova-subbar__left"
+          >
+            <ArrowLeft size={15} />
+            Back to Showroom
+          </Link>
+        </div>
+      </div>
 
       <main id="main" className="ref-detail-page">
         <div className="ref-detail-shell">
-          {/* 1. Product Image (uncropped, aspect-preserved) */}
+          {/* 1. Product / Property Image */}
           <div className="ref-detail-hero">
             <img
               src={product.images[0] || "/listings/flat-exterior.jpg"}
@@ -117,45 +128,13 @@ export function ProductDetailClient({
             />
           </div>
 
-          {/* Focused, Uncluttered Product Information */}
+          {/* Focused Product / Property Information (No Seller Profile, No Stats, No Status, No Chat) */}
           <div className="ref-detail-sheet">
             <div className="ref-detail-sheet__inner">
-              {/* 2. Product Title (Prominent H1) */}
+              {/* 2. Product / Property Title */}
               <h1 className="ref-detail-title">{product.name}</h1>
 
-              {/* 3. Seller / Business Profile Information with Actual Profile Picture */}
-              <button
-                type="button"
-                onClick={() => setProfileOpen(true)}
-                className="detail-seller-inline"
-                title={`View ${vendor.fullName}'s profile`}
-              >
-                <div className="detail-seller-inline__avatar">
-                  <div className="detail-seller-inline__ring">
-                    {vendor.avatarUrl ? (
-                      <img src={vendor.avatarUrl} alt={vendor.fullName} />
-                    ) : (
-                      getInitials(vendor.fullName)
-                    )}
-                  </div>
-                  {vendor.verificationStatus === "verified" && (
-                    <span className="detail-seller-inline__seal">
-                      <VerifiedSealSmall />
-                    </span>
-                  )}
-                </div>
-                <div className="detail-seller-inline__text">
-                  <span className="detail-seller-inline__name">
-                    @{vendor.username}
-                  </span>
-                  <span className="detail-seller-inline__sub">
-                    {vendor.fullName}
-                    {vendor.categoryBadge ? ` · ${vendor.categoryBadge}` : ""}
-                  </span>
-                </div>
-              </button>
-
-              {/* 4. Product Price & Location */}
+              {/* 3. Price / Rental Amount */}
               <div className="ref-detail-price">
                 <span>
                   {formatNaira(product.price)}
@@ -179,6 +158,8 @@ export function ProductDetailClient({
                   </span>
                 )}
               </div>
+
+              {/* 4. Location */}
               <span className="ref-detail-loc">{product.location}</span>
 
               {!effectiveAvailable && (
@@ -198,13 +179,13 @@ export function ProductDetailClient({
                 </div>
               )}
 
-              {/* 5. Product Description */}
+              {/* 5. Description */}
               <div className="ref-desc-block">
                 <h2 className="ref-desc-heading">Description</h2>
                 <p className="ref-desc-text">{product.description}</p>
               </div>
 
-              {/* 6. Other Relevant Product / Property Info (No Status, No Views/Ratings/Deals) */}
+              {/* 6. Other Relevant Product / Property Details */}
               {isProperty ? (
                 <div className="kova-info-grid kova-info-grid--three">
                   <div>
@@ -243,7 +224,7 @@ export function ProductDetailClient({
                 </div>
               )}
 
-              {/* Property Amenities */}
+              {/* Amenities (for properties) */}
               {product.amenities && product.amenities.length > 0 && (
                 <div className="kova-amenities-block">
                   <h2 className="ref-desc-heading">Amenities</h2>
@@ -288,14 +269,6 @@ export function ProductDetailClient({
         onClose={() => setPaymentModalOpen(false)}
         product={product}
         maxQuantity={effectiveRemaining}
-      />
-
-      <UserProfileModal
-        open={profileOpen}
-        onClose={() => setProfileOpen(false)}
-        vendor={vendor}
-        rating={vendor.rating}
-        listingsCount={vendor.stats.posts}
       />
     </>
   );

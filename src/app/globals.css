@@ -254,23 +254,6 @@ select {
 .nav__mobile-actions {
   display: none;
   align-items: center;
-  gap: 0.5rem;
-}
-.nav__mobile-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.28rem;
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: var(--ink-strong);
-  background: none;
-  border: none;
-  padding: 0.25rem 0.35rem;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.nav__mobile-back:hover {
-  color: var(--brand);
 }
 .nav__menu-btn {
   display: inline-flex;
@@ -402,18 +385,20 @@ select {
 }
 .showroom-avatar {
   position: relative;
-  width: 82px;
-  height: 82px;
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 6px rgba(150, 237, 196, 0.16), 0 8px 20px -8px rgba(7, 47, 16, 0.42);
 }
 .showroom-avatar__ring {
+  position: relative;
   width: 100%;
   height: 100%;
   border-radius: 50%;
   overflow: hidden;
-  border: 2.5px solid rgba(255, 255, 255, 0.94);
-  box-shadow: 0 8px 20px -8px rgba(7, 47, 16, 0.45);
-  background: var(--forest);
-  color: #ffffff;
+  border: 2.5px solid rgba(255, 255, 255, 0.92);
+  background: #faf8f5;
+  color: var(--forest);
   display: grid;
   place-items: center;
   font-size: 1.35rem;
@@ -423,6 +408,21 @@ select {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+  display: block;
+}
+/* Subtle light Kova green overlay blending the profile image cleanly into the green hero */
+.showroom-avatar__ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(
+    180deg,
+    rgba(44, 155, 67, 0.08) 0%,
+    rgba(34, 129, 54, 0.16) 100%
+  );
+  pointer-events: none;
 }
 .showroom-avatar__seal {
   position: absolute;
@@ -432,9 +432,10 @@ select {
   height: 22px;
   display: grid;
   place-items: center;
+  z-index: 2;
 }
 .showroom-profile__name {
-  margin: 0.78rem 0 0;
+  margin: 0.85rem 0 0;
   font-size: clamp(1.32rem, 2.2vw, 1.56rem);
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -643,27 +644,54 @@ select {
   font-size: 0.72rem;
   color: var(--muted);
 }
-.ref-listing-card__loc {
-  margin-top: 0.06rem;
+.ref-listing-card__loc,
+.ref-listing-card__desc {
+  margin: 0.06rem 0 0;
   font-size: 0.72rem;
   font-weight: 400;
   color: var(--muted);
-  white-space: nowrap;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* =========================================================
-   CLEAN PRODUCT DETAILS PAGE (SELLER INLINE UNDER TITLE)
+   RESTORED BACK SUB-BAR & FOCUSED PRODUCT DETAILS PAGE
    ========================================================= */
+.kova-subbar {
+  background: #ffffff;
+  border-bottom: 1px solid var(--line);
+}
+.kova-subbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 42px;
+  gap: 0.5rem;
+}
+.kova-subbar__left {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  transition: color 0.16s ease;
+}
+.kova-subbar__left:hover {
+  color: var(--brand);
+}
+
 .ref-detail-page {
   background: #ffffff;
-  min-height: calc(100vh - var(--nav-h) - 62px);
+  min-height: calc(100vh - var(--nav-h) - 104px);
 }
 .ref-detail-shell {
   max-width: 920px;
   margin-inline: auto;
-  padding: 1.5rem var(--gutter) 3rem;
+  padding: 1.35rem var(--gutter) 3rem;
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
   gap: 2rem;
@@ -684,7 +712,7 @@ select {
 .ref-detail-hero video {
   width: 100%;
   height: auto;
-  max-height: min(440px, calc(100dvh - 170px));
+  max-height: min(440px, calc(100dvh - 180px));
   object-fit: contain;
   display: block;
 }
@@ -707,77 +735,8 @@ select {
   line-height: 1.24;
 }
 
-/* Restored Seller Profile Row Directly Underneath Product Title */
-.detail-seller-inline {
-  margin-top: 0.65rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.58rem;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  text-align: left;
-  color: inherit;
-}
-.detail-seller-inline:hover .detail-seller-inline__name {
-  color: var(--brand);
-}
-.detail-seller-inline__avatar {
-  position: relative;
-  width: 36px;
-  height: 36px;
-  flex: none;
-}
-.detail-seller-inline__ring {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 1.5px solid var(--line-strong);
-  background: var(--forest);
-  color: #ffffff;
-  display: grid;
-  place-items: center;
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-.detail-seller-inline__ring img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.detail-seller-inline__seal {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 14px;
-  height: 14px;
-  display: grid;
-  place-items: center;
-}
-.detail-seller-inline__text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.04rem;
-  min-width: 0;
-}
-.detail-seller-inline__name {
-  font-size: 0.84rem;
-  font-weight: 600;
-  color: var(--ink-strong);
-  line-height: 1.2;
-  transition: color 0.16s ease;
-}
-.detail-seller-inline__sub {
-  font-size: 0.72rem;
-  font-weight: 400;
-  color: var(--muted);
-  line-height: 1.2;
-}
-
 .ref-detail-price {
-  margin-top: 0.85rem;
+  margin-top: 0.55rem;
   font-size: 1.18rem;
   font-weight: 700;
   color: var(--ink-strong);
@@ -788,10 +747,10 @@ select {
   line-height: 1.25;
 }
 .ref-detail-loc {
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   color: var(--muted);
   display: block;
-  margin-top: 0.22rem;
+  margin-top: 0.25rem;
 }
 .kova-stock-pill {
   background: var(--brand-soft);
@@ -1051,13 +1010,13 @@ select {
 }
 
 /* =========================================================
-   FOOTER: POWERED BY KOVA (LEFT) + KOVA GREEN COPYRIGHT (RIGHT)
+   UNIFIED GREEN FOOTER: POWERED BY KOVA (LEFT) + COPYRIGHT (RIGHT)
    ========================================================= */
 .site-footer {
-  background: #ffffff;
-  color: var(--ink);
-  border-top: 1px solid var(--line);
-  padding: 0.95rem 0;
+  background: linear-gradient(180deg, #2c9b43 0%, #238839 100%);
+  color: #ffffff;
+  border-top: none;
+  padding: 1rem 0;
 }
 .footer-bar {
   display: flex;
@@ -1070,24 +1029,24 @@ select {
   display: inline-flex;
   align-items: center;
   gap: 0.34rem;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.92);
   line-height: 1;
 }
 .footer-powered img {
   height: 13px;
   width: auto;
   display: block;
+  filter: brightness(0) invert(1);
 }
 .footer-copyright {
-  display: inline-flex;
-  align-items: center;
-  background: var(--brand);
-  color: #ffffff;
-  border-radius: 8px;
-  padding: 0.38rem 0.82rem;
-  font-size: 0.74rem;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 0.75rem;
   font-weight: 500;
-  line-height: 1.2;
+  line-height: 1.3;
 }

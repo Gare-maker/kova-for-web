@@ -15,9 +15,9 @@ export function KovaFooter() {
           />
         </div>
 
-        <div className="footer-copyright">
+        <p className="footer-copyright">
           &copy; Kova Digital Market Limited. All rights reserved.
-        </div>
+        </p>
       </div>
     </footer>
   );
