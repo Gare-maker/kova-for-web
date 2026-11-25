@@ -51,6 +51,7 @@ export interface Product {
   location: string;
   images: string[];
   isVideo?: boolean;
+  videoUrl?: string;
   quantity: number;
   status: ProductStatus;
   availability: ProductAvailability;
@@ -78,10 +79,12 @@ export interface CustomerInfo {
 
 export interface UserAccount {
   id: string;
-  firstAndMiddleName: string;
-  surname: string;
+  firstName: string;
+  lastName: string;
   name: string;
-  usernameOrBusiness: string;
+  firstAndMiddleName?: string;
+  surname?: string;
+  usernameOrBusiness?: string;
   phone: string;
   email: string;
   role: "Buyer";

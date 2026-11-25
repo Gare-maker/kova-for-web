@@ -11,7 +11,9 @@ export const dynamic = "force-dynamic";
 
 export default function HomePage() {
   const vendor =
-    getVendorByUsername("ZaraGlow") ?? getVendorByUsername("MichealH");
+    getVendorByUsername("ZaraBlue") ??
+    getVendorByUsername("ZaraGlow") ??
+    getVendorByUsername("MichealH");
   if (!vendor) {
     return null;
   }

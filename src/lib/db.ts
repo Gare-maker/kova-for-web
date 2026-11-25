@@ -318,13 +318,23 @@ function ensureDbFile(): KovaDatabase {
     }
     // Hydrate separate demo Showroom vendor & listings without modifying existing vendor data
     const nowHydrate = new Date().toISOString();
-    if (!parsed.vendors.some((v) => v.id === DEMO_SHOWROOM_VENDOR_ID)) {
+    const existingDemo = parsed.vendors.find(
+      (v) => v.id === DEMO_SHOWROOM_VENDOR_ID
+    );
+    if (!existingDemo) {
       parsed.vendors.push(createDemoShowroomVendor());
+    } else {
+      existingDemo.fullName = "Zara Blue";
+      existingDemo.username = "ZaraBlue";
     }
-    const existingIds = new Set(parsed.products.map((p) => p.id));
+    const existingById = new Map(parsed.products.map((p) => [p.id, p]));
     for (const p of createDemoShowroomProducts(nowHydrate)) {
-      if (!existingIds.has(p.id)) {
+      const existingProd = existingById.get(p.id);
+      if (!existingProd) {
         parsed.products.push(p);
+      } else if (p.isVideo && p.videoUrl && !existingProd.videoUrl) {
+        existingProd.isVideo = true;
+        existingProd.videoUrl = p.videoUrl;
       }
     }
     globalForDb.__kovaMemoryDb = parsed;
@@ -399,9 +409,8 @@ function verifyPassword(password: string, stored: string): boolean {
 const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 export function registerBuyerAccount(params: {
-  firstAndMiddleName: string;
-  surname: string;
-  usernameOrBusiness: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
   password: string;
@@ -425,13 +434,17 @@ export function registerBuyerAccount(params: {
   const verificationExpiresAt = new Date(
     Date.now() + VERIFICATION_TTL_MS
   ).toISOString();
-  const fullName = `${params.firstAndMiddleName.trim()} ${params.surname.trim()}`.trim();
+  const cleanFirst = params.firstName.trim();
+  const cleanLast = params.lastName.trim();
+  const fullName = `${cleanFirst} ${cleanLast}`.trim();
 
   if (existing) {
-    existing.firstAndMiddleName = params.firstAndMiddleName.trim();
-    existing.surname = params.surname.trim();
+    existing.firstName = cleanFirst;
+    existing.lastName = cleanLast;
+    existing.firstAndMiddleName = cleanFirst;
+    existing.surname = cleanLast;
     existing.name = fullName;
-    existing.usernameOrBusiness = params.usernameOrBusiness.trim();
+    existing.usernameOrBusiness = fullName;
     existing.phone = normPhone;
     existing.role = "Buyer";
     existing.passwordHash = hashPassword(params.password);
@@ -445,10 +458,12 @@ export function registerBuyerAccount(params: {
 
   const user: UserAccount = {
     id: `usr_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`,
-    firstAndMiddleName: params.firstAndMiddleName.trim(),
-    surname: params.surname.trim(),
+    firstName: cleanFirst,
+    lastName: cleanLast,
+    firstAndMiddleName: cleanFirst,
+    surname: cleanLast,
     name: fullName,
-    usernameOrBusiness: params.usernameOrBusiness.trim(),
+    usernameOrBusiness: fullName,
     phone: normPhone,
     email: normEmail,
     role: "Buyer",
@@ -571,13 +586,15 @@ export function getOrCreateUserAccount(params: {
   );
   if (!user) {
     const parts = params.name.trim().split(/\s+/);
-    const surname = parts.length > 1 ? parts[parts.length - 1] : "";
-    const firstAndMiddleName =
+    const lastName = parts.length > 1 ? parts[parts.length - 1] : "";
+    const firstName =
       parts.length > 1 ? parts.slice(0, -1).join(" ") : params.name.trim();
     user = {
       id: `usr_${crypto.createHash("sha256").update(`${normEmail}|${normPhone}`).digest("hex").slice(0, 16)}`,
-      firstAndMiddleName,
-      surname,
+      firstName,
+      lastName,
+      firstAndMiddleName: firstName,
+      surname: lastName,
       name: params.name.trim(),
       usernameOrBusiness: params.name.trim(),
       phone: normPhone,
@@ -623,7 +640,9 @@ export function getVendorByUsername(username: string): Vendor | null {
     (v) =>
       v.username.toLowerCase() === decoded ||
       slugifyUsername(v.username) === slug ||
-      v.id.toLowerCase() === decoded
+      v.id.toLowerCase() === decoded ||
+      (v.id === DEMO_SHOWROOM_VENDOR_ID &&
+        (slug === "zaraglow" || slug === "zarablue"))
   );
   if (!vendor || !vendor.eligible) return null;
   return vendor;

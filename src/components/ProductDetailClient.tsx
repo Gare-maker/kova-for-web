@@ -120,13 +120,27 @@ export function ProductDetailClient({
 
       <main id="main" className="ref-detail-page">
         <div className="ref-detail-shell">
-          {/* 1. Product / Property Image */}
+          {/* 1. Product / Property Media (Playable Video or Image) */}
           <div className="ref-detail-hero">
-            <img
-              src={product.images[0] || "/listings/flat-exterior.jpg"}
-              alt={product.name}
-              decoding="async"
-            />
+            {product.isVideo && product.videoUrl ? (
+              <video
+                src={product.videoUrl}
+                poster={product.images[0] || "/listings/flat-exterior.jpg"}
+                controls
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                aria-label={`${product.name} product video`}
+              />
+            ) : (
+              <img
+                src={product.images[0] || "/listings/flat-exterior.jpg"}
+                alt={product.name}
+                decoding="async"
+              />
+            )}
           </div>
 
           {/* Focused Product / Property Information (No Seller Profile, No Stats, No Status, No Chat) */}

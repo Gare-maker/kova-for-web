@@ -4,7 +4,6 @@ import { registerBuyerAccount } from "@/lib/db";
 async function dispatchVerificationEmail(params: {
   email: string;
   name: string;
-  usernameOrBusiness: string;
   verifyUrl: string;
 }): Promise<{ sent: boolean; provider: "resend" | "local" }> {
   const resendKey = process.env.RESEND_API_KEY;
@@ -20,7 +19,7 @@ async function dispatchVerificationEmail(params: {
           from: process.env.KOVA_EMAIL_FROM || "Kova <onboarding@kovadml.com>",
           to: [params.email],
           subject: "Verify your Kova Buyer account",
-          html: `<p>Hi ${params.name},</p><p>Welcome to Kova Showroom! Please verify your email address for <strong>${params.usernameOrBusiness}</strong> to finish creating your Buyer account:</p><p><a href="${params.verifyUrl}" style="display:inline-block;padding:10px 18px;background:#2C9B43;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:600;">Verify Email Address</a></p><p>This verification link expires in 24 hours.</p>`,
+          html: `<p>Hi ${params.name},</p><p>Welcome to Kova Showroom! Please verify your email address to finish creating your Buyer account:</p><p><a href="${params.verifyUrl}" style="display:inline-block;padding:10px 18px;background:#2C9B43;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:600;">Verify Email Address</a></p><p>This verification link expires in 24 hours.</p>`,
         }),
       });
       return { sent: res.ok, provider: "resend" };
@@ -34,9 +33,10 @@ async function dispatchVerificationEmail(params: {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const firstAndMiddleName = String(body.firstAndMiddleName ?? "").trim();
-    const surname = String(body.surname ?? "").trim();
-    const usernameOrBusiness = String(body.usernameOrBusiness ?? "").trim();
+    const firstName = String(
+      body.firstName ?? body.firstAndMiddleName ?? ""
+    ).trim();
+    const lastName = String(body.lastName ?? body.surname ?? "").trim();
     const email = String(body.email ?? "").trim();
     const phone = String(body.phone ?? "").trim();
     const password = String(body.password ?? "");
@@ -47,9 +47,8 @@ export async function POST(req: Request) {
         : "/";
 
     if (
-      !firstAndMiddleName ||
-      !surname ||
-      !usernameOrBusiness ||
+      !firstName ||
+      !lastName ||
       !email ||
       !phone ||
       !password ||
@@ -57,17 +56,6 @@ export async function POST(req: Request) {
     ) {
       return NextResponse.json(
         { error: "Please fill in all required fields." },
-        { status: 400 }
-      );
-    }
-
-    const nameParts = firstAndMiddleName.split(/\s+/).filter(Boolean);
-    if (nameParts.length < 2) {
-      return NextResponse.json(
-        {
-          error:
-            "Please enter both your First Name and Middle Name (two names).",
-        },
         { status: 400 }
       );
     }
@@ -94,9 +82,8 @@ export async function POST(req: Request) {
     }
 
     const result = registerBuyerAccount({
-      firstAndMiddleName,
-      surname,
-      usernameOrBusiness,
+      firstName,
+      lastName,
       email,
       phone,
       password,
@@ -121,7 +108,6 @@ export async function POST(req: Request) {
     const mail = await dispatchVerificationEmail({
       email: result.user.email,
       name: result.user.name,
-      usernameOrBusiness: result.user.usernameOrBusiness,
       verifyUrl,
     });
 

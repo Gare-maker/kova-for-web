@@ -50,14 +50,16 @@ export function StorefrontClient({
   const searchParams = useSearchParams();
   const routePath = basePath ?? `/store/${encodeURIComponent(vendor.username)}`;
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const profileHeaderRef = useRef<HTMLElement>(null);
+  const heroSectionRef = useRef<HTMLElement>(null);
   const didMountRef = useRef(false);
 
   const [searchQuery, setSearchQuery] = useState(
     () => searchParams.get("q") ?? ""
   );
-  const [searchActive, setSearchActive] = useState(false);
-  const [isSearchStuck, setIsSearchStuck] = useState(false);
+  // Search bar does NOT stick on normal scroll — ONLY sticks at the top when clicked/activated
+  const [searchPinned, setSearchPinned] = useState(
+    () => Boolean((searchParams.get("q") ?? "").trim())
+  );
   const [profileOpen, setProfileOpen] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
   const [liveRating, setLiveRating] = useState(vendor.rating);
@@ -65,19 +67,7 @@ export function StorefrontClient({
     vendor.ratingCount ?? 120
   );
 
-  // Track when the sticky search bar is pinned beneath the header for crisp elevation
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const handleScroll = () => {
-      const heroHeight = profileHeaderRef.current?.offsetHeight ?? 200;
-      setIsSearchStuck(window.scrollY >= Math.max(20, heroHeight - 4));
-    };
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Debounced URL query sync preserving Next.js history state so typing is instant and uninterrupted
+  // Debounced URL query sync preserving Next.js history state
   useEffect(() => {
     if (!didMountRef.current) {
       didMountRef.current = true;
@@ -124,23 +114,24 @@ export function StorefrontClient({
     return q ? `?q=${encodeURIComponent(q)}` : "";
   }, [searchQuery]);
 
-  // Smoothly scroll the profile header upwards so the green sticky search bar locks flush under the header
-  const scrollToStickySearch = () => {
-    if (typeof window === "undefined" || !profileHeaderRef.current) return;
-    const targetTop = profileHeaderRef.current.offsetHeight;
-    if (window.scrollY < targetTop - 4) {
-      window.scrollTo({ top: targetTop, behavior: "smooth" });
-    }
-  };
-
+  // Clicking the search bar pins it to the top beneath the header and smoothly scrolls the hero upwards
   const handleActivateSearch = () => {
-    setSearchActive(true);
-    scrollToStickySearch();
+    setSearchPinned(true);
+    if (typeof window !== "undefined" && heroSectionRef.current) {
+      const pinnedBarHeight = 72;
+      const targetTop = Math.max(
+        0,
+        heroSectionRef.current.offsetHeight - pinnedBarHeight
+      );
+      if (window.scrollY < targetTop - 4) {
+        window.scrollTo({ top: targetTop, behavior: "smooth" });
+      }
+    }
   };
 
   const handleCancelSearch = () => {
     setSearchQuery("");
-    setSearchActive(false);
+    setSearchPinned(false);
     if (searchInputRef.current) {
       searchInputRef.current.blur();
     }
@@ -154,11 +145,10 @@ export function StorefrontClient({
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    scrollToStickySearch();
     searchInputRef.current?.blur();
   };
 
-  const showCancel = searchActive || searchQuery.length > 0;
+  const showCancel = searchPinned || searchQuery.length > 0;
   const trimmedQuery = searchQuery.trim();
 
   return (
@@ -166,9 +156,9 @@ export function StorefrontClient({
       <KovaHeader />
 
       <main id="main" className="ref-storefront">
-        {/* Green Profile Header with Vendor Profile Picture Covering Full Background at 60% Opacity */}
+        {/* Unified Profile Header + Search Section with Full-Bleed 30% Opacity Background Image */}
         <section
-          ref={profileHeaderRef}
+          ref={heroSectionRef}
           className="showroom-hero-green"
           aria-label="Business profile"
         >
@@ -203,73 +193,74 @@ export function StorefrontClient({
                 )}
               </div>
 
-              <h1 className="showroom-profile__name">@{vendor.username}</h1>
+              <h1 className="showroom-profile__name">{vendor.fullName}</h1>
               <p className="showroom-profile__category">
                 {vendor.categoryBadge || vendor.role}
               </p>
             </button>
+
+            {/* Search bar sits inside hero normally (non-sticky on scroll); pins to top ONLY when clicked */}
+            <div
+              className={`showroom-search-slot ${
+                searchPinned ? "showroom-search-slot--placeholder" : ""
+              }`}
+            >
+              <div
+                className={`showroom-search-wrap ${
+                  searchPinned ? "showroom-search-wrap--pinned" : ""
+                }`}
+              >
+                <div className={searchPinned ? "container" : undefined}>
+                  <form
+                    role="search"
+                    onSubmit={handleSearchSubmit}
+                    className="ref-search-form"
+                  >
+                    <div className="ref-search-row">
+                      <div
+                        className="ref-search-pill"
+                        onClick={() => {
+                          searchInputRef.current?.focus();
+                          handleActivateSearch();
+                        }}
+                      >
+                        <Search size={16} color="#6E6981" aria-hidden="true" />
+                        <input
+                          ref={searchInputRef}
+                          type="text"
+                          value={searchQuery}
+                          onFocus={handleActivateSearch}
+                          onKeyDown={(e) => {
+                            if (e.key === "Escape") {
+                              e.preventDefault();
+                              handleCancelSearch();
+                            }
+                          }}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="Search products or properties..."
+                          aria-label="Search Showroom listings"
+                          autoComplete="off"
+                          enterKeyHint="search"
+                        />
+                      </div>
+
+                      {showCancel && (
+                        <button
+                          type="button"
+                          className="ref-search-cancel"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={handleCancelSearch}
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
-
-        {/* Sticky Green Search Header (locks flush under site header on click or scroll) */}
-        <div
-          className={`showroom-sticky-search ${
-            isSearchStuck ? "showroom-sticky-search--stuck" : ""
-          }`}
-        >
-          <div className="container">
-            <form
-              role="search"
-              onSubmit={handleSearchSubmit}
-              className="ref-search-form"
-            >
-              <div className="ref-search-row">
-                <div
-                  className="ref-search-pill"
-                  onClick={() => {
-                    searchInputRef.current?.focus();
-                    handleActivateSearch();
-                  }}
-                >
-                  <Search size={16} color="#6E6981" aria-hidden="true" />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={searchQuery}
-                    onFocus={handleActivateSearch}
-                    onBlur={() => {
-                      if (!searchQuery.trim()) {
-                        setSearchActive(false);
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Escape") {
-                        e.preventDefault();
-                        handleCancelSearch();
-                      }
-                    }}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search products or properties..."
-                    aria-label="Search Showroom listings"
-                    autoComplete="off"
-                    enterKeyHint="search"
-                  />
-                </div>
-
-                {showCancel && (
-                  <button
-                    type="button"
-                    className="ref-search-cancel"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={handleCancelSearch}
-                  >
-                    Cancel
-                  </button>
-                )}
-              </div>
-            </form>
-          </div>
-        </div>
 
         {/* Spacious Product & Property Listing Grid */}
         <section className="container ref-listings-section">
@@ -332,12 +323,25 @@ export function StorefrontClient({
                     className="ref-listing-card"
                   >
                     <div className="ref-listing-card__media">
-                      <img
-                        src={product.images[0] || "/listings/smartphone.jpg"}
-                        alt={product.name}
-                        loading="lazy"
-                        decoding="async"
-                      />
+                      {product.isVideo && product.videoUrl ? (
+                        <video
+                          src={product.videoUrl}
+                          poster={product.images[0] || "/listings/smartphone.jpg"}
+                          autoPlay
+                          muted
+                          loop
+                          playsInline
+                          preload="metadata"
+                          aria-label={`${product.name} preview video`}
+                        />
+                      ) : (
+                        <img
+                          src={product.images[0] || "/listings/smartphone.jpg"}
+                          alt={product.name}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      )}
                       {isProp ? (
                         <span className="kova-prop-badge">Property</span>
                       ) : (
@@ -346,24 +350,12 @@ export function StorefrontClient({
                         </span>
                       )}
                       {product.isVideo && (
-                        <div className="ref-play-overlay" aria-hidden="true">
-                          <div
-                            style={{
-                              width: 32,
-                              height: 32,
-                              borderRadius: "50%",
-                              background: "rgba(20, 20, 26, 0.46)",
-                              backdropFilter: "blur(6px)",
-                              border: "1.5px solid rgba(255,255,255,0.84)",
-                              display: "grid",
-                              placeItems: "center",
-                            }}
-                          >
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="#fff">
-                              <path d="M8 5v14l11-7z" />
-                            </svg>
-                          </div>
-                        </div>
+                        <span className="ref-video-pill" aria-label="Video listing">
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                          Video
+                        </span>
                       )}
                       {!product.effectiveAvailable && (
                         <span className="ref-sold-tag">Unavailable</span>
@@ -371,7 +363,9 @@ export function StorefrontClient({
                     </div>
 
                     <div className="ref-listing-card__meta">
-                      <h2 className="ref-listing-card__title">{product.name}</h2>
+                      <h2 className="ref-listing-card__title" title={product.name}>
+                        {product.name}
+                      </h2>
                       <div className="ref-listing-card__price">
                         {formatNaira(product.price)}
                         {product.pricePeriod ? (
