@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getReceiptByIdAndToken } from "@/lib/db";
-import { getAuthenticatedUserId } from "@/lib/session";
 import { ReceiptClient } from "@/components/ReceiptClient";
-import { KovaHeader } from "@/components/KovaHeader";
 import { KovaFooter } from "@/components/KovaFooter";
 
 export const dynamic = "force-dynamic";
@@ -22,14 +20,12 @@ export default async function ReceiptPage({
 }) {
   const { receiptId } = await params;
   const { token } = await searchParams;
-  const sessionUserId = await getAuthenticatedUserId();
 
-  const receipt = getReceiptByIdAndToken(receiptId, token, sessionUserId);
+  const receipt = getReceiptByIdAndToken(receiptId, token);
 
   if (!receipt) {
     return (
       <>
-        <KovaHeader />
         <main id="main" className="storefront-main">
           <div className="container">
             <div
@@ -37,15 +33,13 @@ export default async function ReceiptPage({
               style={{ maxWidth: 560, marginInline: "auto" }}
             >
               <h1 className="display display--sm">Receipt unavailable</h1>
-              <p>We couldn&apos;t retrieve your receipt. Please try again.</p>
-              <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
-                <Link href="/account/receipts" className="btn btn--brand btn--sm">
-                  Sign in to Receipt History
-                </Link>
-                <Link href="/" className="btn btn--outline btn--sm">
-                  Return to Kova Showroom
-                </Link>
-              </div>
+              <p>
+                We couldn&apos;t retrieve your receipt link. Check the receipt
+                copy sent to your email address or return to the showroom.
+              </p>
+              <Link href="/" className="btn btn--brand btn--sm">
+                Return to Showroom
+              </Link>
             </div>
           </div>
         </main>

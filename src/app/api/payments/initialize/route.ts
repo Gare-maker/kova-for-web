@@ -1,18 +1,9 @@
 import { NextResponse } from "next/server";
 import { createOrderAndReservation } from "@/lib/db";
-import { getAuthenticatedUserId } from "@/lib/session";
 import type { PaymentCategory } from "@/lib/types";
 
 export async function POST(req: Request) {
   try {
-    const authenticatedUserId = await getAuthenticatedUserId();
-    if (!authenticatedUserId) {
-      return NextResponse.json(
-        { error: "Please create a Buyer account or sign in before paying." },
-        { status: 401 }
-      );
-    }
-
     const body = await req.json();
     const productId = String(body.productId ?? "").trim();
     const quantity = Number(body.quantity ?? 1);
@@ -24,24 +15,20 @@ export async function POST(req: Request) {
     const name = String(body.customer?.name ?? "").trim();
     const phone = String(body.customer?.phone ?? "").trim();
     const email = String(body.customer?.email ?? "").trim();
-    const currentLocation = String(body.customer?.currentLocation ?? "").trim();
-    const deliveryAddress = String(body.customer?.deliveryAddress ?? "").trim();
+    const location = String(
+      body.customer?.location ?? body.customer?.currentLocation ?? ""
+    ).trim();
+    const deliveryAddress =
+      String(body.customer?.deliveryAddress ?? "").trim() || location;
     const deliveryNotes = body.customer?.deliveryNotes
       ? String(body.customer.deliveryNotes).trim()
       : undefined;
 
-    if (
-      !productId ||
-      !name ||
-      !phone ||
-      !email ||
-      !currentLocation ||
-      !deliveryAddress
-    ) {
+    if (!productId || !name || !phone || !email || !location) {
       return NextResponse.json(
         {
           error:
-            "Please provide your full name, phone number, email, current location, and delivery address.",
+            "Please provide your full name, email address, phone number, and location.",
         },
         { status: 400 }
       );
@@ -58,12 +45,11 @@ export async function POST(req: Request) {
       productId,
       quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
       paymentCategory,
-      authenticatedUserId,
       customer: {
         name,
         phone,
         email,
-        currentLocation,
+        currentLocation: location,
         deliveryAddress,
         deliveryNotes,
       },
@@ -100,6 +86,7 @@ export async function POST(req: Request) {
             paymentCategory: order.paymentCategory,
             vendorId: order.vendorId,
             productId: order.productId,
+            customerLocation: order.customer.currentLocation,
             source: "public_website",
           },
         }),

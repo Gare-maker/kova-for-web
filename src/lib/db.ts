@@ -886,6 +886,8 @@ export function markOrderPaidAndGenerateReceipt(
     deliveryNotes: order.customer.deliveryNotes,
     vendorName: order.vendorName,
     vendorUsername: order.vendorUsername,
+    vendorLocation: vendor?.location,
+    vendorCategory: vendor?.categoryBadge || vendor?.role,
     productId: order.productId,
     productName: order.productName,
     productDescription: product?.description ?? "",
@@ -900,6 +902,9 @@ export function markOrderPaidAndGenerateReceipt(
     paymentMethod,
     paymentStatus: "Paid",
     paidAt: now,
+    emailSent: false,
+    emailSentAt: null,
+    emailDeliveryProvider: null,
   };
 
   db.receipts.push(receipt);
@@ -926,21 +931,27 @@ export function markOrderPaidAndGenerateReceipt(
   return { order, receipt, alreadyProcessed: false };
 }
 
+export function recordReceiptEmailStatus(
+  receiptId: string,
+  status: { sent: boolean; sentAt: string; provider: string }
+): void {
+  const db = readDb();
+  const receipt = db.receipts.find((r) => r.id === receiptId);
+  if (!receipt) return;
+  receipt.emailSent = status.sent;
+  receipt.emailSentAt = status.sentAt;
+  receipt.emailDeliveryProvider = status.provider;
+  writeDb(db);
+}
+
 export function getReceiptByIdAndToken(
   receiptId: string,
-  token: string | null | undefined,
-  sessionUserId?: string | null
+  token: string | null | undefined
 ): Receipt | null {
   const db = readDb();
   const receipt = db.receipts.find((r) => r.id === receiptId);
-  if (!receipt) return null;
+  if (!receipt || !token) return null;
 
-  // Allow access if authenticated as the owning user OR via valid cryptographic token
-  if (sessionUserId && receipt.userId === sessionUserId) {
-    return receipt;
-  }
-
-  if (!token) return null;
   const a = Buffer.from(receipt.accessToken);
   const b = Buffer.from(token);
   if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {

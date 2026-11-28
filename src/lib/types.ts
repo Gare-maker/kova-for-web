@@ -149,6 +149,8 @@ export interface Receipt {
   deliveryNotes?: string;
   vendorName: string;
   vendorUsername: string;
+  vendorLocation?: string;
+  vendorCategory?: string;
   productId: string;
   productName: string;
   productDescription: string;
@@ -163,6 +165,9 @@ export interface Receipt {
   paymentMethod: string;
   paymentStatus: "Paid";
   paidAt: string;
+  emailSent?: boolean;
+  emailSentAt?: string | null;
+  emailDeliveryProvider?: string | null;
 }
 
 export interface VendorNotification {

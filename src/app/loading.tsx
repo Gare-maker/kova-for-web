@@ -3,13 +3,6 @@ export default function Loading() {
     <div style={{ minHeight: "100vh", background: "#ffffff" }}>
       <div
         style={{
-          height: 52,
-          background: "#ffffff",
-          borderBottom: "1px solid #eef0f3",
-        }}
-      />
-      <div
-        style={{
           background: "linear-gradient(180deg, #2c9b43 0%, #238839 100%)",
           padding: "2.25rem 0 2.1rem",
           display: "flex",

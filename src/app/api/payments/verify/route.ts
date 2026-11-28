@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { markOrderPaidAndGenerateReceipt, readDb } from "@/lib/db";
-import { ACCOUNT_COOKIE_NAME, signUserId } from "@/lib/session";
+import { sendReceiptEmail } from "@/lib/emailReceipt";
 
 export async function POST(req: Request) {
   try {
@@ -64,24 +64,28 @@ export async function POST(req: Request) {
       );
     }
 
-    const res = NextResponse.json({
+    // Automatically email receipt PDF to the customer after verified payment
+    let emailSent = Boolean(result.receipt.emailSent);
+    if (!result.alreadyProcessed || !emailSent) {
+      const origin =
+        req.headers.get("origin") ||
+        process.env.NEXT_PUBLIC_APP_URL ||
+        "http://localhost:3000";
+      const dispatch = await sendReceiptEmail(result.receipt, origin);
+      emailSent = dispatch.sent;
+    }
+
+    return NextResponse.json({
       status: "paid",
       alreadyProcessed: result.alreadyProcessed ?? false,
       order: result.order,
       receiptId: result.receipt.id,
       receiptToken: result.receipt.accessToken,
       receiptUrl: `/receipt/${result.receipt.id}?token=${result.receipt.accessToken}`,
+      pdfUrl: `/api/receipts/${result.receipt.id}/pdf?token=${result.receipt.accessToken}`,
+      emailSent,
+      customerEmail: result.receipt.customerEmail,
     });
-
-    // Permanently associate this receipt with the customer's signed account session
-    res.cookies.set(ACCOUNT_COOKIE_NAME, signUserId(result.order.userId), {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30,
-    });
-
-    return res;
   } catch {
     return NextResponse.json(
       { error: "Payment verification failed." },

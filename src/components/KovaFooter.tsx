@@ -1,5 +1,4 @@
 import React from "react";
-import Link from "next/link";
 import { Mail, ShieldCheck } from "lucide-react";
 import type { Vendor } from "@/lib/types";
 
@@ -19,8 +18,8 @@ export function KovaFooter({ vendor }: KovaFooterProps = {}) {
   return (
     <footer className="site-footer">
       <div className="container">
-        <div className="footer-grid">
-          {/* Column 1: Simplified Business Information (Name -> Category -> Optional Description; No Logo or Location) */}
+        <div className="footer-grid footer-grid--minimal">
+          {/* Column 1: Business Information */}
           <div className="footer-col footer-col--about">
             <h2 className="footer-brand-name">{businessName}</h2>
             {businessCategory && (
@@ -31,29 +30,13 @@ export function KovaFooter({ vendor }: KovaFooterProps = {}) {
             )}
           </div>
 
-          {/* Column 2: Navigation */}
+          {/* Column 2: Payments & Support */}
           <div className="footer-col">
-            <h3 className="footer-heading">Navigation</h3>
-            <ul className="footer-link-list">
-              <li>
-                <Link href="/">Showroom</Link>
-              </li>
-              <li>
-                <Link href="/account/receipts">My Receipts</Link>
-              </li>
-              <li>
-                <Link href="/register">Buyer Account</Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 3: Platform & Enquiries */}
-          <div className="footer-col">
-            <h3 className="footer-heading">Platform</h3>
+            <h3 className="footer-heading">Payments &amp; Support</h3>
             <ul className="footer-link-list">
               <li className="footer-info-item">
                 <ShieldCheck size={13} aria-hidden="true" />
-                <span>Verified Paystack Checkout &amp; Receipts</span>
+                <span>Verified Paystack Payments &amp; Instant PDF Receipts</span>
               </li>
               <li>
                 <a href="mailto:admin@kovadml.com" className="footer-info-link">
@@ -74,7 +57,7 @@ export function KovaFooter({ vendor }: KovaFooterProps = {}) {
           </div>
         </div>
 
-        {/* Bottom Legal & Subtle Reduced Powered by Kova */}
+        {/* Bottom Legal & Subtle Powered by Kova */}
         <div className="footer-bottom">
           <div className="footer-powered" aria-label="Powered by Kova">
             <span>Powered by</span>

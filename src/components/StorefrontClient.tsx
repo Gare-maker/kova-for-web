@@ -6,7 +6,6 @@ import { useSearchParams } from "next/navigation";
 import { Search, ShoppingBag, MapPin } from "lucide-react";
 import type { Vendor, Product } from "@/lib/types";
 import { formatNaira, getInitials } from "@/lib/format";
-import { KovaHeader } from "./KovaHeader";
 import { KovaFooter } from "./KovaFooter";
 import { RateVendorModal } from "./RateVendorModal";
 import { UserProfileModal } from "./UserProfileModal";
@@ -153,8 +152,6 @@ export function StorefrontClient({
 
   return (
     <>
-      <KovaHeader brandName={vendor.fullName} />
-
       <main id="main" className="ref-storefront">
         {/* Unified Profile Header + Search Section with Full-Bleed 30% Opacity Background Image */}
         <section

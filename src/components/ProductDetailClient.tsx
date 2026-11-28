@@ -14,9 +14,8 @@ import {
 } from "lucide-react";
 import type { Vendor, Product, VendorRating } from "@/lib/types";
 import { formatNaira } from "@/lib/format";
-import { KovaHeader } from "./KovaHeader";
 import { KovaFooter } from "./KovaFooter";
-import { PaymentOptionsModal } from "./PaymentOptionsModal";
+import { PaymentBottomSheet } from "./PaymentBottomSheet";
 
 interface ProductDetailClientProps {
   product: Product;
@@ -25,7 +24,6 @@ interface ProductDetailClientProps {
   effectiveRemaining: number;
   unavailableReason: string | null;
   initialReviews?: VendorRating[];
-  isAuthenticated: boolean;
 }
 
 function AmenityIcon({ label }: { label: string }) {
@@ -51,23 +49,16 @@ export function ProductDetailClient({
   effectiveAvailable,
   effectiveRemaining,
   unavailableReason,
-  isAuthenticated,
 }: ProductDetailClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
   const [videoPlaying, setVideoPlaying] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     setVideoPlaying(false);
   }, [product.id]);
-
-  useEffect(() => {
-    if (isAuthenticated && searchParams.get("pay") === "1") {
-      setPaymentModalOpen(true);
-    }
-  }, [isAuthenticated, searchParams]);
 
   const q = searchParams.get("q");
   const vendorBasePath =
@@ -88,7 +79,7 @@ export function ProductDetailClient({
       window.history.length > 1 &&
       document.referrer &&
       new URL(document.referrer).origin === window.location.origin &&
-      new URL(document.referrer).pathname === "/"
+      new URL(document.referrer).pathname === vendorBasePath
     ) {
       e.preventDefault();
       router.back();
@@ -99,20 +90,8 @@ export function ProductDetailClient({
     product.category.toLowerCase().includes("propert") ||
     product.category.toLowerCase().includes("apartment");
 
-  const handlePaymentClick = () => {
-    if (!isAuthenticated) {
-      const next = encodeURIComponent(`/product/${product.id}?pay=1`);
-      router.push(`/register?next=${next}`);
-      return;
-    }
-    setPaymentModalOpen(true);
-  };
-
   return (
     <>
-      <KovaHeader brandName={vendor.fullName} />
-
-      {/* Restored Original Back to Showroom Position on Product Details */}
       <div className="kova-subbar">
         <div className="container kova-subbar__inner">
           <Link
@@ -129,7 +108,7 @@ export function ProductDetailClient({
 
       <main id="main" className="ref-detail-page">
         <div className="ref-detail-shell">
-          {/* 1. Product / Property Media (Click-to-Play Video or Image — Zero Autoplay) */}
+          {/* 1. Product / Property Media (Click-to-Play Video or Image) */}
           <div className="ref-detail-hero">
             {product.isVideo && product.videoUrl ? (
               videoPlaying ? (
@@ -175,16 +154,13 @@ export function ProductDetailClient({
             )}
           </div>
 
-          {/* Focused Product / Property Information (No Seller Profile, No Stats, No Status, No Chat) */}
+          {/* Focused Product / Property Information */}
           <div className="ref-detail-sheet">
             <div className="ref-detail-sheet__inner">
-              {/* 2. Product / Property Title */}
               <h1 className="ref-detail-title">{product.name}</h1>
 
-              {/* Clear Visual Divider Between Product Name and Price */}
               <hr className="ref-detail-title-divider" />
 
-              {/* 3. Price / Rental Amount */}
               <div className="ref-detail-price">
                 <span>
                   {formatNaira(product.price)}
@@ -209,7 +185,6 @@ export function ProductDetailClient({
                 )}
               </div>
 
-              {/* 4. Location */}
               <span className="ref-detail-loc">{product.location}</span>
 
               {!effectiveAvailable && (
@@ -229,13 +204,11 @@ export function ProductDetailClient({
                 </div>
               )}
 
-              {/* 5. Description */}
               <div className="ref-desc-block">
                 <h2 className="ref-desc-heading">Description</h2>
                 <p className="ref-desc-text">{product.description}</p>
               </div>
 
-              {/* 6. Other Relevant Product / Property Details */}
               {isProperty ? (
                 <div className="kova-info-grid kova-info-grid--three">
                   <div>
@@ -274,7 +247,6 @@ export function ProductDetailClient({
                 </div>
               )}
 
-              {/* Amenities (for properties) */}
               {product.amenities && product.amenities.length > 0 && (
                 <div className="kova-amenities-block">
                   <h2 className="ref-desc-heading">Amenities</h2>
@@ -289,11 +261,10 @@ export function ProductDetailClient({
                 </div>
               )}
 
-              {/* 7. Primary Action: Make Payment */}
               {effectiveAvailable ? (
                 <button
                   type="button"
-                  onClick={handlePaymentClick}
+                  onClick={() => setPaymentSheetOpen(true)}
                   className="ref-make-payment-btn"
                 >
                   Make Payment
@@ -314,10 +285,11 @@ export function ProductDetailClient({
 
       <KovaFooter vendor={vendor} />
 
-      <PaymentOptionsModal
-        open={paymentModalOpen}
-        onClose={() => setPaymentModalOpen(false)}
+      <PaymentBottomSheet
+        open={paymentSheetOpen}
+        onClose={() => setPaymentSheetOpen(false)}
         product={product}
+        vendor={vendor}
         maxQuantity={effectiveRemaining}
       />
     </>

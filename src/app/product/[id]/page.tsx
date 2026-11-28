@@ -7,10 +7,8 @@ import {
   readDb,
   getEffectiveAvailability,
 } from "@/lib/db";
-import { getAuthenticatedUserId } from "@/lib/session";
 import { formatNaira } from "@/lib/format";
 import { ProductDetailClient } from "@/components/ProductDetailClient";
-import { KovaHeader } from "@/components/KovaHeader";
 import { KovaFooter } from "@/components/KovaFooter";
 
 export const dynamic = "force-dynamic";
@@ -64,7 +62,6 @@ export default async function ProductPage({
   if (!result) {
     return (
       <>
-        <KovaHeader />
         <main id="main" className="storefront-main">
           <div className="container">
             <div
@@ -87,7 +84,6 @@ export default async function ProductPage({
   const db = readDb();
   const avail = getEffectiveAvailability(db, result.product);
   const initialReviews = getVendorRatings(result.vendor.id);
-  const userId = await getAuthenticatedUserId();
 
   return (
     <Suspense
@@ -104,7 +100,6 @@ export default async function ProductPage({
         effectiveRemaining={avail.remaining}
         unavailableReason={avail.reason ?? null}
         initialReviews={initialReviews}
-        isAuthenticated={Boolean(userId)}
       />
     </Suspense>
   );

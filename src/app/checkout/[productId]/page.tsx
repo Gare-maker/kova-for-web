@@ -1,16 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import {
   getProductWithVendor,
-  getUserById,
   readDb,
   getEffectiveAvailability,
 } from "@/lib/db";
-import { getAuthenticatedUserId } from "@/lib/session";
 import { CheckoutClient } from "@/components/CheckoutClient";
-import { KovaHeader } from "@/components/KovaHeader";
 import { KovaFooter } from "@/components/KovaFooter";
 
 export const dynamic = "force-dynamic";
@@ -22,32 +18,15 @@ export const metadata: Metadata = {
 
 export default async function CheckoutPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ productId: string }>;
-  searchParams: Promise<{ type?: string; qty?: string; feeType?: string; verify?: string }>;
 }) {
   const { productId } = await params;
-  const sp = await searchParams;
-
-  // Authentication Gate: unauthenticated users must register / sign in as Buyer first
-  const userId = await getAuthenticatedUserId();
-  if (!userId) {
-    const qs = new URLSearchParams();
-    if (sp.type) qs.set("type", sp.type);
-    if (sp.qty) qs.set("qty", sp.qty);
-    if (sp.feeType) qs.set("feeType", sp.feeType);
-    const nextPath = `/checkout/${productId}${qs.toString() ? `?${qs.toString()}` : ""}`;
-    redirect(`/register?next=${encodeURIComponent(nextPath)}`);
-  }
-
-  const user = getUserById(userId);
   const result = getProductWithVendor(productId);
 
   if (!result) {
     return (
       <>
-        <KovaHeader />
         <main id="main" className="storefront-main">
           <div className="container">
             <div
@@ -83,11 +62,6 @@ export default async function CheckoutPage({
         vendor={result.vendor}
         effectiveAvailable={avail.available}
         effectiveRemaining={avail.remaining}
-        initialBuyer={
-          user
-            ? { name: user.name, phone: user.phone, email: user.email }
-            : null
-        }
       />
     </Suspense>
   );

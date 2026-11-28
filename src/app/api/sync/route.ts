@@ -13,6 +13,7 @@ export async function GET() {
     vendors: db.vendors,
     products: db.products,
     orders: db.orders,
+    receipts: db.receipts,
     notifications: db.notifications,
     conversations: db.conversations,
     messages: db.messages,

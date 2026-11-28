@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { markOrderPaidAndGenerateReceipt } from "@/lib/db";
+import { sendReceiptEmail } from "@/lib/emailReceipt";
 
 export async function POST(req: Request) {
   const rawBody = await req.text();
@@ -21,10 +22,17 @@ export async function POST(req: Request) {
   try {
     const event = JSON.parse(rawBody);
     if (event.event === "charge.success" && event.data?.reference) {
-      markOrderPaidAndGenerateReceipt(
+      const result = markOrderPaidAndGenerateReceipt(
         String(event.data.reference),
         `Paystack (${event.data.channel || "card"})`
       );
+      if (result.receipt && (!result.alreadyProcessed || !result.receipt.emailSent)) {
+        const origin =
+          req.headers.get("origin") ||
+          process.env.NEXT_PUBLIC_APP_URL ||
+          "http://localhost:3000";
+        await sendReceiptEmail(result.receipt, origin);
+      }
     }
     return NextResponse.json({ received: true });
   } catch {
